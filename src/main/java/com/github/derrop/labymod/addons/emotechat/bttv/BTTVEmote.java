@@ -1,6 +1,5 @@
 package com.github.derrop.labymod.addons.emotechat.bttv;
 
-
 import com.google.gson.annotations.SerializedName;
 
 public class BTTVEmote {

@@ -3,6 +3,8 @@ package com.github.derrop.labymod.addons.emotechat;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVSearch;
 import com.github.derrop.labymod.addons.emotechat.gui.EmoteList;
+import com.github.derrop.labymod.addons.emotechat.listener.ChatInjectListener;
+import com.github.derrop.labymod.addons.emotechat.listener.ChatSendListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import net.labymod.api.LabyModAddon;
@@ -19,34 +21,52 @@ public class EmoteChatAddon extends LabyModAddon {
 
     public static final Gson GSON = new Gson();
 
-    private static final Type SAVED_EMOTES_TYPE_TOKEN = new TypeToken<Map<String, BTTVEmote>>() {
+    private static final Type SAVED_EMOTES_TYPE_TOKEN = new TypeToken<Collection<BTTVEmote>>() {
     }.getType();
 
     private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(1);
 
     private boolean enabled;
 
-    private Map<String, BTTVEmote> savedEmotes;
+    private final Map<String, BTTVEmote> savedEmotes = new HashMap<>();
 
     @Override
     public void onEnable() {
-        if (this.enabled) {
-            // TODO: register listeners
-        }
+        super.getApi().registerForgeListener(new ChatInjectListener(this));
+        super.getApi().getEventManager().register(new ChatSendListener(this));
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    public BTTVEmote getEmoteByName(String name) {
+        return this.savedEmotes.get(name.toLowerCase());
     }
 
     @Override
     public void loadConfig() {
         this.enabled = !super.getConfig().has("enabled") || super.getConfig().get("enabled").getAsBoolean();
 
-        this.savedEmotes = super.getConfig().has("savedEmotes")
+        Collection<BTTVEmote> emotes = super.getConfig().has("savedEmotes")
                 ? GSON.fromJson(super.getConfig().get("savedEmotes"), SAVED_EMOTES_TYPE_TOKEN)
-                : new HashMap<>();
+                : Collections.emptyList();
+
+        this.savedEmotes.clear();
+        for (BTTVEmote emote : emotes) {
+            this.savedEmotes.put(emote.getName().toLowerCase(), emote);
+        }
     }
 
     @Override
     protected void fillSettings(List<SettingsElement> list) {
-        list.add(new BooleanElement("Enabled", this, new ControlElement.IconData(Material.REDSTONE_COMPARATOR), "enabled", true));
+        BooleanElement toggleEnabledElement = new BooleanElement(
+                "Enabled", this,
+                new ControlElement.IconData(Material.REDSTONE_COMPARATOR), "enabled",
+                true
+        );
+        toggleEnabledElement.addCallback(enabled -> this.enabled = enabled);
+        list.add(toggleEnabledElement);
 
         EmoteList savedEmoteList = new EmoteList("Saved emotes");
         savedEmoteList.update(this.savedEmotes.values());
@@ -64,7 +84,7 @@ public class EmoteChatAddon extends LabyModAddon {
             if (input.length() > 2) {
                 EXECUTOR_SERVICE.execute(() -> {
                     try {
-                        searchResultList.update(new BTTVSearch.Builder(input).build().execute());
+                        searchResultList.update(new BTTVSearch.Builder(input).build().execute()); // TODO: call the update method sync
                     } catch (IOException exception) {
                         exception.printStackTrace();
                     }
@@ -78,12 +98,15 @@ public class EmoteChatAddon extends LabyModAddon {
             BTTVEmote selectedEmote = searchResultList.getSelected();
 
             if (!input.isEmpty() && selectedEmote != null) {
+                // TODO: the name may not contain Constants.EMOTE_WRAPPER
                 BTTVEmote userEmote = new BTTVEmote(selectedEmote.getId(), input);
-                this.savedEmotes.put(selectedEmote.getId(), userEmote);
 
+                this.savedEmotes.values().removeIf(value -> value.getId().equals(selectedEmote.getId()));
+
+                this.savedEmotes.put(selectedEmote.getName().toLowerCase(), userEmote);
                 savedEmoteList.update(this.savedEmotes.values());
 
-                super.getConfig().add("savedEmotes", GSON.toJsonTree(this.savedEmotes));
+                super.getConfig().add("savedEmotes", GSON.toJsonTree(this.savedEmotes.values()));
                 super.saveConfig();
             }
         });
