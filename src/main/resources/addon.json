@@ -1,0 +1,7 @@
+{
+  "uuid": "%uuid%",
+  "name": "EmoteChat",
+  "mainClass": "com.github.derrop.labymod.addons.emotechat.EmoteChatAddon",
+  "author": "derrop",
+  "description": "Display emotes from BTTV in the ingame chat"
+}
