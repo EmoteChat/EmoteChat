@@ -6,6 +6,9 @@ import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import net.labymod.api.events.MessageSendEvent;
 import net.minecraft.client.Minecraft;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public class ChatSendListener implements MessageSendEvent {
 
     private final EmoteChatAddon addon;
@@ -20,41 +23,22 @@ public class ChatSendListener implements MessageSendEvent {
             return false;
         }
 
-        StringBuilder outputMessage = new StringBuilder();
-        StringBuilder currentEmote = new StringBuilder();
+        String outputMessage = Arrays.stream(message.split(" "))
+                .map(word -> {
+                    if (word.startsWith(Constants.EMOTE_WRAPPER) && word.endsWith(Constants.EMOTE_WRAPPER)) {
+                        String emoteName = word.substring(1, word.length() - 1);
 
-        char[] input = message.toCharArray();
-        boolean inEmote = false;
+                        BTTVEmote emote = this.addon.getEmoteByName(emoteName);
+                        String emoteId = emote == null ? emoteName : emote.getId();
 
-        for (char c : input) {
-            if (c == Constants.EMOTE_WRAPPER) {
-                inEmote = !inEmote;
+                        return Constants.EMOTE_WRAPPER + emoteId + Constants.EMOTE_WRAPPER;
+                    }
 
-                if (!inEmote) {
-                    String emoteName = currentEmote.toString();
-                    currentEmote.setLength(0);
+                    return word;
+                })
+                .collect(Collectors.joining(" "));
 
-                    BTTVEmote emote = this.addon.getEmoteByName(emoteName);
-                    String emoteId = emote == null ? emoteName : emote.getId();
-
-                    outputMessage.append(Constants.EMOTE_WRAPPER).append(emoteId).append(Constants.EMOTE_WRAPPER);
-                }
-
-                continue;
-            }
-
-            if (inEmote) {
-                currentEmote.append(c);
-                continue;
-            }
-
-            outputMessage.append(c);
-        }
-
-        outputMessage.append(currentEmote);
-
-        Minecraft.getMinecraft().thePlayer.sendChatMessage(outputMessage.toString());
-
+        Minecraft.getMinecraft().thePlayer.sendChatMessage(outputMessage);
         return true;
     }
 }

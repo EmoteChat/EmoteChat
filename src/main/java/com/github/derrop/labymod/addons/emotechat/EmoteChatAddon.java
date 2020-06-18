@@ -99,7 +99,9 @@ public class EmoteChatAddon extends LabyModAddon {
             public void draw(int x, int y, int maxX, int maxY, int mouseX, int mouseY) {
                 super.draw(x, y, maxX, maxY, mouseX, mouseY);
 
-                super.setEnabled(!(searchResultList.getSelected() == null || emoteNameReference.get().isEmpty()));
+                String emoteName = emoteNameReference.get();
+
+                super.setEnabled(!(searchResultList.getSelected() == null || emoteName.isEmpty() || emoteName.contains(" ")));
             }
 
         };
@@ -108,17 +110,19 @@ public class EmoteChatAddon extends LabyModAddon {
             String emoteName = emoteNameReference.get();
             BTTVEmote selectedEmote = searchResultList.getSelected();
 
-            if (!emoteName.isEmpty() && selectedEmote != null) {
-                BTTVEmote userEmote = new BTTVEmote(selectedEmote.getId(), emoteName);
-
-                this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
-                emoteList.update(this.savedEmotes);
-
-                emoteAddButton.setText("Override");
-
-                super.getConfig().add("savedEmotes", GSON.toJsonTree(this.savedEmotes));
-                super.saveConfig();
+            if (selectedEmote == null || emoteName.isEmpty() || emoteName.contains(" ")) {
+                return;
             }
+
+            BTTVEmote userEmote = new BTTVEmote(selectedEmote.getId(), emoteName);
+
+            this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
+            emoteList.update(this.savedEmotes);
+
+            emoteAddButton.setText("Override");
+
+            super.getConfig().add("savedEmotes", GSON.toJsonTree(this.savedEmotes));
+            super.saveConfig();
         });
 
         StringElement emoteNameInput = new StringElement("Set emote name", new ControlElement.IconData(Material.PAPER), "", emoteName -> {

@@ -2,10 +2,14 @@ package com.github.derrop.labymod.addons.emotechat.gui;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ChatLineEntry {
+
+    private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)§[0-9A-FK-OR]");
 
     private final boolean emote;
 
@@ -25,30 +29,14 @@ public class ChatLineEntry {
     }
 
     public static Collection<ChatLineEntry> parseEntries(String line) {
-        Collection<ChatLineEntry> entries = new ArrayList<>();
-        StringBuilder currentLine = new StringBuilder();
+        return Arrays.stream(line.split(" "))
+                .map(word -> {
+                    String strippedWord = STRIP_COLOR_PATTERN.matcher(word).replaceAll("");
+                    boolean emote = strippedWord.startsWith(Constants.EMOTE_WRAPPER) && strippedWord.endsWith(Constants.EMOTE_WRAPPER);
 
-        char[] chars = line.toCharArray();
-        boolean inEmote = false;
-        for (char c : chars) {
-            if (c == Constants.EMOTE_WRAPPER) {
-                if (currentLine.length() != 0) {
-                    // TODO: use the colors from the last entry that wasn't an emote
-                    entries.add(new ChatLineEntry(inEmote, currentLine.toString()));
-                    currentLine.setLength(0);
-                }
-                inEmote = !inEmote;
-                continue;
-            }
-
-            currentLine.append(c);
-        }
-
-        if (currentLine.length() != 0) {
-            entries.add(new ChatLineEntry(false, currentLine.toString()));
-        }
-
-        return entries;
+                    return new ChatLineEntry(emote, (emote ? strippedWord.substring(1, strippedWord.length() - 1) : word + " "));
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
