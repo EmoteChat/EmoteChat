@@ -17,4 +17,5 @@ public class EmoteChatRendererMain extends ChatRendererMain {
     public void renderChat(int updateCounter) {
         this.renderer.renderChat(updateCounter);
     }
+
 }

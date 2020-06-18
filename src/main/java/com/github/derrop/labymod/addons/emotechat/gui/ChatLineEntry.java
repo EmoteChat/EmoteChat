@@ -1,4 +1,4 @@
-package com.github.derrop.labymod.addons.emotechat.gui.chat;
+package com.github.derrop.labymod.addons.emotechat.gui;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
 
@@ -8,6 +8,7 @@ import java.util.Collection;
 public class ChatLineEntry {
 
     private final boolean emote;
+
     private final String content;
 
     public ChatLineEntry(boolean emote, String content) {
