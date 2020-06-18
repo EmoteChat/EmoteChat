@@ -316,7 +316,7 @@ public class EmoteChatRenderer {
         ResourceLocation resourceLocation = LabyMod.getInstance().getDynamicTextureManager().getTexture(emoteId, emote.getURL(3));
         Minecraft.getMinecraft().getTextureManager().bindTexture(resourceLocation);
 
-        LabyMod.getInstance().getDrawUtils().drawTexture(x, y - Constants.LINE_HEIGHT, 256, 256, Constants.CHAT_EMOTE_SIZE, Constants.CHAT_EMOTE_SIZE, alpha);
+        LabyMod.getInstance().getDrawUtils().drawTexture(x, y - ((float) Constants.LINE_HEIGHT / 2F), 256, 256, Constants.CHAT_EMOTE_SIZE, Constants.CHAT_EMOTE_SIZE, alpha);
 
         return true;
     }
