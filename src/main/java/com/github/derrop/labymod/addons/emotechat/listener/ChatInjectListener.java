@@ -1,50 +1,53 @@
 package com.github.derrop.labymod.addons.emotechat.listener;
 
 import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
-import com.github.derrop.labymod.addons.emotechat.gui.chat.EmoteChatGui;
+import com.github.derrop.labymod.addons.emotechat.gui.chatrender.EmoteChatRendererMain;
+import com.github.derrop.labymod.addons.emotechat.gui.chatrender.EmoteChatRendererSecond;
+import net.labymod.core_implementation.mc18.gui.GuiChatAdapter;
 import net.labymod.core_implementation.mc18.gui.GuiIngameCustom;
+import net.labymod.ingamechat.renderer.ChatRenderer;
+import net.labymod.main.LabyMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 
 public class ChatInjectListener {
 
-    private static final Field FIELD;
-    private static final Field CUSTOM_FIELD;
+    private static final Field MAIN_CHAT_FIELD;
+    private static final Field SECOND_CHAT_FIELD;
+    private static final Field CHAT_RENDERERS_FIELD;
 
     static {
-        Field field = null;
-        Field customField = null;
+        Field mainChat = null;
+        Field secondChat = null;
+        Field chatRenderers = null;
+
         try {
-            field = GuiIngame.class.getDeclaredField("l"); // persistantChatGUI
-            field.setAccessible(true);
+            mainChat = GuiChatAdapter.class.getDeclaredField("chatMain");
+            mainChat.setAccessible(true);
 
-            customField = GuiIngameCustom.class.getDeclaredField("persistantChatGUI");
-            customField.setAccessible(true);
+            secondChat = GuiChatAdapter.class.getDeclaredField("chatSecond");
+            secondChat.setAccessible(true);
 
-            removeFinal(field);
-            removeFinal(customField);
+            chatRenderers = GuiChatAdapter.class.getDeclaredField("chatRenderers");
+            chatRenderers.setAccessible(true);
 
-        } catch (NoSuchFieldException | IllegalAccessException exception) {
+        } catch (NoSuchFieldException exception) {
             System.err.println("Cannot initialize emote chat gui:");
             exception.printStackTrace();
         }
 
-        FIELD = field;
-        CUSTOM_FIELD = customField;
-    }
-
-    private static void removeFinal(Field field) throws IllegalAccessException, NoSuchFieldException {
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+        MAIN_CHAT_FIELD = mainChat;
+        SECOND_CHAT_FIELD = secondChat;
+        CHAT_RENDERERS_FIELD = chatRenderers;
     }
 
     private final EmoteChatAddon addon;
+
+    private boolean injected;
 
     public ChatInjectListener(EmoteChatAddon addon) {
         this.addon = addon;
@@ -57,21 +60,25 @@ public class ChatInjectListener {
         }
 
         GuiIngame ingameGUI = Minecraft.getMinecraft().ingameGUI;
-        if (ingameGUI.getChatGUI() instanceof EmoteChatGui) {
+        if (this.injected) {
             return;
         }
 
-        Field field = ingameGUI instanceof GuiIngameCustom ? CUSTOM_FIELD : FIELD;
-        if (field == null) {
-            return;
-        }
+        if (ingameGUI instanceof GuiIngameCustom && ingameGUI.getChatGUI() instanceof GuiChatAdapter) {
+            GuiChatAdapter adapter = (GuiChatAdapter) ingameGUI.getChatGUI();
 
-        // TODO: if the ingameGUI is GuiIngameCustom, the chat gui will also be custom (LabyMod's GuiChatAdapter), this should be used because if it isn't, the right chat is no more available
+            ChatRenderer main = new EmoteChatRendererMain(LabyMod.getInstance().getIngameChatManager(), this.addon);
+            ChatRenderer second = new EmoteChatRendererSecond(LabyMod.getInstance().getIngameChatManager(), this.addon);
 
-        try {
-            field.set(ingameGUI, new EmoteChatGui(this.addon, Minecraft.getMinecraft()));
-        } catch (IllegalAccessException exception) {
-            exception.printStackTrace();
+            try {
+                MAIN_CHAT_FIELD.set(adapter, main);
+                SECOND_CHAT_FIELD.set(adapter, second);
+                CHAT_RENDERERS_FIELD.set(adapter, new ChatRenderer[]{main, second});
+            } catch (IllegalAccessException exception) {
+                exception.printStackTrace();
+            }
+
+            this.injected = true;
         }
     }
 
