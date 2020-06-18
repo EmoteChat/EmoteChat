@@ -10,6 +10,7 @@ import com.github.derrop.labymod.addons.emotechat.listener.ChatSendListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import net.labymod.api.LabyModAddon;
+import net.labymod.main.LabyMod;
 import net.labymod.settings.elements.*;
 import net.labymod.utils.Material;
 

@@ -55,10 +55,6 @@ public class ChatInjectListener {
 
     @SubscribeEvent
     public void handleGameOverlayRender(RenderGameOverlayEvent event) {
-        if (!this.addon.isEnabled()) {
-            return;
-        }
-
         GuiIngame ingameGUI = Minecraft.getMinecraft().ingameGUI;
         if (this.injected) {
             return;

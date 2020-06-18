@@ -4,7 +4,7 @@ import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
 import net.labymod.ingamechat.IngameChatManager;
 import net.labymod.ingamechat.renderer.types.ChatRendererSecond;
 
-public class EmoteChatRendererSecond extends ChatRendererSecond {
+public class EmoteChatRendererSecond extends ChatRendererSecond implements EmoteChatRendererType {
 
     private final EmoteChatRenderer renderer;
 
@@ -16,5 +16,10 @@ public class EmoteChatRendererSecond extends ChatRendererSecond {
     @Override
     public void renderChat(int updateCounter) {
         this.renderer.renderChat(updateCounter);
+    }
+
+    @Override
+    public void renderDefault(int updateCounter) {
+        super.renderChat(updateCounter);
     }
 }
