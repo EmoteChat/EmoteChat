@@ -31,6 +31,10 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
 
     public void update(Collection<BTTVEmote> emotes) {
         super.clear();
+        if (emotes.isEmpty()) {
+            return;
+        }
+
         BTTVEmote[] emoteArray = emotes.toArray(new BTTVEmote[0]);
         super.fill(emoteArray);
 

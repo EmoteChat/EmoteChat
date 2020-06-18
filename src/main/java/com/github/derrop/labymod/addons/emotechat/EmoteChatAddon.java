@@ -7,16 +7,17 @@ import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteDropDownMenu;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteListContainerElement;
 import com.github.derrop.labymod.addons.emotechat.listener.ChatInjectListener;
 import com.github.derrop.labymod.addons.emotechat.listener.ChatSendListener;
+import com.github.derrop.labymod.addons.emotechat.listener.EmoteListUpdateListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import net.labymod.api.LabyModAddon;
-import net.labymod.main.LabyMod;
 import net.labymod.settings.elements.*;
 import net.labymod.utils.Material;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -30,6 +31,8 @@ public class EmoteChatAddon extends LabyModAddon {
 
     private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(1);
 
+    private final Queue<QueuedEmoteUpdate> emoteUpdateQueue = new ConcurrentLinkedQueue<>();
+
     private boolean enabled;
 
     private Map<String, BTTVEmote> savedEmotes = new HashMap<>();
@@ -37,11 +40,16 @@ public class EmoteChatAddon extends LabyModAddon {
     @Override
     public void onEnable() {
         super.getApi().registerForgeListener(new ChatInjectListener(this));
+        super.getApi().registerForgeListener(new EmoteListUpdateListener(this));
         super.getApi().getEventManager().register(new ChatSendListener(this));
     }
 
     public boolean isEnabled() {
         return this.enabled;
+    }
+
+    public Queue<QueuedEmoteUpdate> getEmoteUpdateQueue() {
+        return this.emoteUpdateQueue;
     }
 
     public BTTVEmote getEmoteByName(String name) {
@@ -82,7 +90,7 @@ public class EmoteChatAddon extends LabyModAddon {
             if (input.length() > 2) {
                 EXECUTOR_SERVICE.execute(() -> {
                     try {
-                        searchResultList.update(new BTTVSearch.Builder(input).build().execute()); // TODO: call the update method sync
+                        this.emoteUpdateQueue.offer(new QueuedEmoteUpdate(searchResultList, new BTTVSearch.Builder(input).build().execute()));
                     } catch (IOException exception) {
                         exception.printStackTrace();
                     }
