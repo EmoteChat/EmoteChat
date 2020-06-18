@@ -1,4 +1,4 @@
-package com.github.derrop.labymod.addons.emotechat.gui;
+package com.github.derrop.labymod.addons.emotechat.gui.emote;
 
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
@@ -8,17 +8,15 @@ import net.labymod.main.LabyMod;
 
 import java.util.Collection;
 
-public class EmoteList extends DropDownMenu<BTTVEmote> {
+public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
 
-    private boolean emotesSelectable = true;
-
-    public EmoteList(String title, int x, int y, int width, int height) {
+    public EmoteDropDownMenu(String title, int x, int y, int width, int height) {
         super(title, x, y, width, height);
         super.setEntryDrawer((Object object, int entityX, int entityY, String trimmedEntry) -> {
             BTTVEmote emote = (BTTVEmote) object;
 
             LabyMod.getInstance().getDrawUtils().drawImageUrl(
-                    emote.getURL(1),
+                    emote.getURL(3),
                     entityX - (double) (Constants.SETTINGS_EMOTE_SIZE / 4), entityY - (double) (Constants.SETTINGS_EMOTE_SIZE / 4),
                     256, 256,
                     Constants.SETTINGS_EMOTE_SIZE, Constants.SETTINGS_EMOTE_SIZE
@@ -27,7 +25,7 @@ public class EmoteList extends DropDownMenu<BTTVEmote> {
         });
     }
 
-    public EmoteList(String title) {
+    public EmoteDropDownMenu(String title) {
         this(title, 0, 0, 0, 0);
     }
 
@@ -36,26 +34,7 @@ public class EmoteList extends DropDownMenu<BTTVEmote> {
         BTTVEmote[] emoteArray = emotes.toArray(new BTTVEmote[0]);
         super.fill(emoteArray);
 
-        if (emoteArray.length > 0) {
-            super.setSelected(emoteArray[0]);
-        }
-    }
-
-    @Override
-    public boolean onClick(int mouseX, int mouseY, int mouseButton) {
-        if (!this.emotesSelectable && super.getHoverSelected() != null) {
-            return false;
-        }
-
-        return super.onClick(mouseX, mouseY, mouseButton);
-    }
-
-    public boolean isEmotesSelectable() {
-        return emotesSelectable;
-    }
-
-    public void setEmotesSelectable(boolean emotesSelectable) {
-        this.emotesSelectable = emotesSelectable;
+        super.setSelected(emoteArray[0]);
     }
 
 }

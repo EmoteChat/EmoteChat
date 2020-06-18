@@ -1,4 +1,4 @@
-package com.github.derrop.labymod.addons.emotechat.gui;
+package com.github.derrop.labymod.addons.emotechat.gui.chat;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
@@ -13,7 +13,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 
-import java.awt.*;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;

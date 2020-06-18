@@ -1,7 +1,7 @@
 package com.github.derrop.labymod.addons.emotechat.listener;
 
 import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
-import com.github.derrop.labymod.addons.emotechat.gui.EmoteChatGui;
+import com.github.derrop.labymod.addons.emotechat.gui.chat.EmoteChatGui;
 import net.labymod.core_implementation.mc18.gui.GuiIngameCustom;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngame;

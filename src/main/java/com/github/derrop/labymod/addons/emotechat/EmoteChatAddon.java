@@ -2,7 +2,9 @@ package com.github.derrop.labymod.addons.emotechat;
 
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVSearch;
-import com.github.derrop.labymod.addons.emotechat.gui.EmoteList;
+import com.github.derrop.labymod.addons.emotechat.gui.ButtonElement;
+import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteDropDownMenu;
+import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteListContainerElement;
 import com.github.derrop.labymod.addons.emotechat.listener.ChatInjectListener;
 import com.github.derrop.labymod.addons.emotechat.listener.ChatSendListener;
 import com.google.gson.Gson;
@@ -16,19 +18,20 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class EmoteChatAddon extends LabyModAddon {
 
     public static final Gson GSON = new Gson();
 
-    private static final Type SAVED_EMOTES_TYPE_TOKEN = new TypeToken<Collection<BTTVEmote>>() {
+    public static final Type SAVED_EMOTES_TYPE_TOKEN = new TypeToken<Map<String, BTTVEmote>>() {
     }.getType();
 
     private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(1);
 
     private boolean enabled;
 
-    private final Map<String, BTTVEmote> savedEmotes = new HashMap<>();
+    private Map<String, BTTVEmote> savedEmotes = new HashMap<>();
 
     @Override
     public void onEnable() {
@@ -48,14 +51,9 @@ public class EmoteChatAddon extends LabyModAddon {
     public void loadConfig() {
         this.enabled = !super.getConfig().has("enabled") || super.getConfig().get("enabled").getAsBoolean();
 
-        Collection<BTTVEmote> emotes = super.getConfig().has("savedEmotes")
+        this.savedEmotes = super.getConfig().has("savedEmotes")
                 ? GSON.fromJson(super.getConfig().get("savedEmotes"), SAVED_EMOTES_TYPE_TOKEN)
-                : Collections.emptyList();
-
-        this.savedEmotes.clear();
-        for (BTTVEmote emote : emotes) {
-            this.savedEmotes.put(emote.getName().toLowerCase(), emote);
-        }
+                : new HashMap<>();
     }
 
     @Override
@@ -68,17 +66,16 @@ public class EmoteChatAddon extends LabyModAddon {
         toggleEnabledElement.addCallback(enabled -> this.enabled = enabled);
         list.add(toggleEnabledElement);
 
-        EmoteList savedEmoteList = new EmoteList("Saved emotes");
-        savedEmoteList.update(this.savedEmotes.values());
-        savedEmoteList.setEmotesSelectable(false);
+        EmoteListContainerElement emoteList = new EmoteListContainerElement("Saved emotes", new ControlElement.IconData(Material.CHEST));
+        emoteList.update(this.savedEmotes);
 
-        list.add(new DropDownElement<BTTVEmote>("Saved emotes", savedEmoteList));
-        list.add(this.createEmoteAddMenu(savedEmoteList));
+        list.add(emoteList);
+        list.add(this.createEmoteAddMenu(emoteList));
     }
 
-    private ListContainerElement createEmoteAddMenu(EmoteList savedEmoteList) {
+    private ListContainerElement createEmoteAddMenu(EmoteListContainerElement emoteList) {
         ListContainerElement emoteAddMenu = new ListContainerElement("Add emote", new ControlElement.IconData(Material.NETHER_STAR));
-        EmoteList searchResultList = new EmoteList("Results");
+        EmoteDropDownMenu searchResultList = new EmoteDropDownMenu("Results");
 
         StringElement searchBarElement = new StringElement("Search for emotes on BTTV", new ControlElement.IconData(Material.ITEM_FRAME), "", input -> {
             if (input.length() > 2) {
@@ -94,27 +91,46 @@ public class EmoteChatAddon extends LabyModAddon {
             }
         });
 
-        StringElement emoteNameInput = new StringElement("Set emote name", new ControlElement.IconData(Material.PAPER), "", input -> {
+        AtomicReference<String> emoteNameReference = new AtomicReference<>("");
+
+        ButtonElement emoteAddButton = new ButtonElement("Save emote") {
+
+            @Override
+            public void draw(int x, int y, int maxX, int maxY, int mouseX, int mouseY) {
+                super.draw(x, y, maxX, maxY, mouseX, mouseY);
+
+                super.setEnabled(!(searchResultList.getSelected() == null || emoteNameReference.get().isEmpty()));
+            }
+
+        };
+        emoteAddButton.setEnabled(false);
+        emoteAddButton.setClickListener(() -> {
+            String emoteName = emoteNameReference.get();
             BTTVEmote selectedEmote = searchResultList.getSelected();
 
-            if (!input.isEmpty() && selectedEmote != null) {
-                // TODO: the name may not contain Constants.EMOTE_WRAPPER
-                BTTVEmote userEmote = new BTTVEmote(selectedEmote.getId(), input);
+            if (!emoteName.isEmpty() && selectedEmote != null) {
+                BTTVEmote userEmote = new BTTVEmote(selectedEmote.getId(), emoteName);
 
-                this.savedEmotes.values().removeIf(value -> value.getId().equals(selectedEmote.getId()));
+                this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
+                emoteList.update(this.savedEmotes);
 
-                this.savedEmotes.put(selectedEmote.getName().toLowerCase(), userEmote);
-                savedEmoteList.update(this.savedEmotes.values());
+                emoteAddButton.setText("Override");
 
-                super.getConfig().add("savedEmotes", GSON.toJsonTree(this.savedEmotes.values()));
+                super.getConfig().add("savedEmotes", GSON.toJsonTree(this.savedEmotes));
                 super.saveConfig();
             }
+        });
+
+        StringElement emoteNameInput = new StringElement("Set emote name", new ControlElement.IconData(Material.PAPER), "", emoteName -> {
+            emoteAddButton.setText(this.savedEmotes.containsKey(emoteName.toLowerCase()) ? "Override" : "Save emote");
+            emoteNameReference.set(emoteName);
         });
 
         emoteAddMenu.getSubSettings().addAll(new ArrayList<>(Arrays.asList(
                 searchBarElement,
                 new DropDownElement<BTTVEmote>("Results", searchResultList),
-                emoteNameInput
+                emoteNameInput,
+                emoteAddButton
         )));
 
         return emoteAddMenu;
