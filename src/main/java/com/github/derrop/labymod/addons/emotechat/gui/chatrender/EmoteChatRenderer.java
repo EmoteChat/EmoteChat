@@ -31,6 +31,8 @@ public class EmoteChatRenderer {
     private static final Field HOVERING_ROOM_FIELD;
     private static final Field LAST_RENDERED_LINES_COUNT_FIELD;
 
+    private static final int SPACE_LENGTH = Minecraft.getMinecraft().fontRendererObj.getStringWidth(" ");
+
     static {
         Field scrollPos = null;
         Field animationShift = null;
@@ -119,7 +121,9 @@ public class EmoteChatRenderer {
         if (!this.renderer.isChatOpen()) {
             SCROLL_POS_FIELD.setInt(this.renderer, 0);
         }
-        int i = -this.renderer.getScrollPos();
+        int pos = -this.renderer.getScrollPos();
+        int displayPos = pos;
+
         for (ChatLine chatline : chatLines) {
             if (chatline == null) {
                 continue;
@@ -127,12 +131,15 @@ public class EmoteChatRenderer {
             if (!chatline.getRoom().equals(this.manager.getSelectedRoom())) {
                 continue;
             }
-            boolean firstLine = (i == -this.renderer.getScrollPos());
-            boolean lastLine = (i == chatLineCount);
-            i++;
+            boolean firstLine = (pos == -this.renderer.getScrollPos());
+            boolean lastLine = (displayPos == chatLineCount);
+
+            pos++;
+            displayPos++;
             totalMessages++;
+
             if (!lastLine || shift == 0.0D) {
-                if (i > chatLineCount || i <= 0) {
+                if (displayPos > chatLineCount || pos <= 0) {
                     continue;
                 }
             }
@@ -163,9 +170,10 @@ public class EmoteChatRenderer {
                 continue;
             }
             int x = 0;
-            int y = (i - 1) * -9;
+            int y = (displayPos - 1) * -9;
 
-            this.drawLine(Minecraft.getMinecraft().fontRendererObj, chatline, x, y, width, fontHeight, alpha);
+            int modifier = this.drawLine(Minecraft.getMinecraft().fontRendererObj, chatline, x, y, width, fontHeight, alpha);
+            displayPos += modifier;
 
             LAST_RENDERED_LINES_COUNT_FIELD.setInt(this.renderer, visibleMessages);
         }
@@ -273,6 +281,10 @@ public class EmoteChatRenderer {
         y -= 8;
         x += 1;
 
+        if (hasEmote) {
+            y += (float) Constants.LINE_HEIGHT / 2F;
+        }
+
         for (ChatLineEntry entry : entries) {
             if (entry.isEmote() && this.drawImage(entry.getContent(), x, y, alpha)) {
                 x += Constants.CHAT_EMOTE_SIZE;
@@ -280,6 +292,7 @@ public class EmoteChatRenderer {
                 this.drawLineComponent(entry.getContent(), x, y, rgb);
                 x += font.getStringWidth(entry.getContent());
             }
+            x += SPACE_LENGTH;
         }
 
         GlStateManager.disableAlpha();
