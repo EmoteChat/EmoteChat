@@ -22,4 +22,5 @@ public class EmoteChatRendererMain extends ChatRendererMain implements EmoteChat
     public void renderDefault(int updateCounter) {
         super.renderChat(updateCounter);
     }
+
 }

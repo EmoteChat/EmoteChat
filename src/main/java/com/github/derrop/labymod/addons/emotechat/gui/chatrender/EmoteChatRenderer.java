@@ -253,25 +253,14 @@ public class EmoteChatRenderer {
         int rgb = 16777215 + (alpha << 24);
 
         Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatLine.getMessage());
-
-        boolean hasEmote = false;
-        for (ChatLineEntry entry : entries) {
-            if (entry.isEmote()) {
-                hasEmote = true;
-                break;
-            }
-        }
+        boolean hasEmote = entries.stream().anyMatch(ChatLineEntry::isEmote);
 
         if (!(LabyMod.getSettings()).fastChat || chatLine.getHighlightColor() != null) {
             DrawUtils.drawRect(
                     (int) x,
-                    (int) (!hasEmote ? y + (Constants.LINE_HEIGHT / 2) : y - (hasEmote ? (Constants.LINE_HEIGHT * 0.5D) + 1 : -Constants.LINE_HEIGHT)),
+                    (int) y - Constants.LINE_HEIGHT * (hasEmote ? 2 : 1),
                     (int) x + width,
-                    (int) y + (hasEmote ? (int) ((double) Constants.LINE_HEIGHT * 1.5D) : 0),
-                    /*x,
-                    y - fontHeight,
-                    x + width,
-                    y,*/
+                    (int) y,
                     (chatLine.getHighlightColor() != null) ? chatLine.getHighlightColor() : (alpha / 2 << 24)
             );
         }
@@ -282,14 +271,14 @@ public class EmoteChatRenderer {
         x += 1;
 
         if (hasEmote) {
-            y += (float) Constants.LINE_HEIGHT / 2F;
+            y -= Constants.LINE_HEIGHT;
         }
 
         for (ChatLineEntry entry : entries) {
             if (entry.isEmote() && this.drawImage(entry.getContent(), x, y, alpha)) {
                 x += Constants.CHAT_EMOTE_SIZE;
             } else {
-                this.drawLineComponent(entry.getContent(), x, y, rgb);
+                this.drawLineComponent(entry.getContent(), x, hasEmote ? y + (Constants.LINE_HEIGHT / 2f) : y, rgb);
                 x += font.getStringWidth(entry.getContent());
             }
             x += SPACE_LENGTH;
@@ -316,7 +305,7 @@ public class EmoteChatRenderer {
         ResourceLocation resourceLocation = LabyMod.getInstance().getDynamicTextureManager().getTexture(emoteId, emote.getURL(3));
         Minecraft.getMinecraft().getTextureManager().bindTexture(resourceLocation);
 
-        LabyMod.getInstance().getDrawUtils().drawTexture(x, y - ((float) Constants.LINE_HEIGHT / 2F), 256, 256, Constants.CHAT_EMOTE_SIZE, Constants.CHAT_EMOTE_SIZE, alpha);
+        LabyMod.getInstance().getDrawUtils().drawTexture(x, y, 256, 256, Constants.CHAT_EMOTE_SIZE, Constants.CHAT_EMOTE_SIZE, alpha);
 
         return true;
     }

@@ -32,7 +32,8 @@ public class ChatLineEntry {
         return Arrays.stream(line.split(" "))
                 .map(word -> {
                     String strippedWord = STRIP_COLOR_PATTERN.matcher(word).replaceAll("");
-                    boolean emote = strippedWord.startsWith(Constants.EMOTE_WRAPPER) && strippedWord.endsWith(Constants.EMOTE_WRAPPER);
+                    boolean emote = strippedWord.length() > (Constants.EMOTE_WRAPPER.length() * 2)
+                            && strippedWord.startsWith(Constants.EMOTE_WRAPPER) && strippedWord.endsWith(Constants.EMOTE_WRAPPER);
 
                     return new ChatLineEntry(emote, (emote ? strippedWord.substring(1, strippedWord.length() - 1) : word));
                 })
