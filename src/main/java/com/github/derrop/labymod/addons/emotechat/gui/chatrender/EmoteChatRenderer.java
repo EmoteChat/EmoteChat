@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 
+// TODO: scrolling is not possible
 // TODO: wrong line heights
 public class EmoteChatRenderer {
 
