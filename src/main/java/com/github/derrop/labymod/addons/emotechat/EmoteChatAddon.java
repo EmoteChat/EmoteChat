@@ -2,7 +2,7 @@ package com.github.derrop.labymod.addons.emotechat;
 
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVSearch;
-import com.github.derrop.labymod.addons.emotechat.gui.ButtonElement;
+import com.github.derrop.labymod.addons.emotechat.gui.element.ButtonElement;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteDropDownMenu;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteListContainerElement;
 import com.github.derrop.labymod.addons.emotechat.listener.ChatInjectListener;

@@ -1,4 +1,4 @@
-package com.github.derrop.labymod.addons.emotechat.gui;
+package com.github.derrop.labymod.addons.emotechat.gui.element;
 
 import net.labymod.core.LabyModCore;
 import net.labymod.main.LabyMod;
