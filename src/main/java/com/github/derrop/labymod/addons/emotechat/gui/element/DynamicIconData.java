@@ -26,6 +26,7 @@ public class DynamicIconData extends ControlElement.IconData {
 
     @Override
     public ResourceLocation getTextureIcon() {
-        return LabyMod.getInstance().getDynamicTextureManager().getTexture(identifier, url);
+        return LabyMod.getInstance().getDynamicTextureManager().getTexture(this.identifier, this.url);
     }
+
 }
