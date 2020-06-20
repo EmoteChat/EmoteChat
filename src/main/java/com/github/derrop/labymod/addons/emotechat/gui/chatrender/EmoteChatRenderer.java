@@ -303,9 +303,11 @@ public class EmoteChatRenderer {
         BTTVEmote emote = new BTTVEmote(emoteId, "");
 
         // TODO: Check for 404
+
         ResourceLocation resourceLocation = LabyMod.getInstance().getDynamicTextureManager().getTexture(emoteId, emote.getURL(3));
         Minecraft.getMinecraft().getTextureManager().bindTexture(resourceLocation);
 
+        GlStateManager.color(1F, 1F, 1F, alpha / 255F);
         LabyMod.getInstance().getDrawUtils().drawTexture(x, y, 256, 256, Constants.CHAT_EMOTE_SIZE, Constants.CHAT_EMOTE_SIZE, alpha);
 
         return true;

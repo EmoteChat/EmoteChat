@@ -5,7 +5,6 @@ import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.gui.ButtonElement;
 import net.labymod.main.LabyMod;
 import net.labymod.settings.elements.ListContainerElement;
-import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 
 import java.util.ArrayList;
@@ -25,8 +24,6 @@ public class EmoteListContainerElement extends ListContainerElement {
                 emotes.values().stream()
                         .map(emote -> {
                             ResourceLocation resourceLocation = LabyMod.getInstance().getDynamicTextureManager().getTexture(emote.getId(), emote.getURL(3));
-                            Minecraft.getMinecraft().getTextureManager().bindTexture(resourceLocation);
-
                             ButtonElement emoteButton = new ButtonElement(emote.getName(), new IconData(resourceLocation), "Remove");
 
                             emoteButton.setClickListener(() -> {
