@@ -28,4 +28,14 @@ public class EmoteChatRendererSecond extends ChatRendererSecond implements Emote
         return this.renderer.getChatPositionY();
     }
 
+    @Override
+    public boolean renderHoveringResizeX(boolean forceRender) {
+        return this.renderer.renderHoveringResizeX(forceRender);
+    }
+
+    @Override
+    public boolean renderHoveringResizeY(boolean forceRender) {
+        return this.renderer.renderHoveringResizeY(forceRender);
+    }
+
 }
