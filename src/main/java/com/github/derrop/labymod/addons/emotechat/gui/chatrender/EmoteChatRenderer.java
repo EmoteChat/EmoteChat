@@ -100,11 +100,45 @@ public class EmoteChatRenderer {
         }
     }
 
+    public float getChatPositionY() {
+        int lastRenderedLinesCount = 0;
+        try {
+            lastRenderedLinesCount = (int) LAST_RENDERED_LINES_COUNT_FIELD.get(this.renderer);
+        } catch (IllegalAccessException exception) {
+            exception.printStackTrace();
+        }
+
+        int lineHeight = LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT;
+
+        if (this.renderer.getChatLines().size() > 0 && lastRenderedLinesCount > 0) {
+            ChatLine chatLine = this.renderer.getChatLines().get(lastRenderedLinesCount - 1);
+
+            Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatLine.getMessage());
+            boolean hasEmote = entries.stream().anyMatch(entry -> entry.isEmote() && this.isTextureDownloaded(entry.getEmoteTexture()));
+
+            if (hasEmote) {
+                lineHeight = Constants.CHAT_EMOTE_SIZE;
+            }
+        }
+
+        float height = lastRenderedLinesCount * lineHeight * this.renderer.getChatScale();
+
+        double screenHeight = LabyMod.getInstance().getDrawUtils().getHeight() - 28;
+        float percent = this.renderer.getChatPercentY();
+        if (percent > 99.0F) {
+            return (float) screenHeight;
+        } else {
+            return percent < 50.0F ? (float) ((double) (height + 2.0F) + screenHeight / 100.0D * (double) percent) : (float) (screenHeight / 100.0D * (double) percent);
+        }
+    }
+
     private void renderChat() throws IllegalAccessException {
         List<ChatLine> chatLines = this.renderer.getChatLines();
 
-        if (chatLines.size() == 0 || !this.renderer.isVisible())
+        if (chatLines.size() == 0 || !this.renderer.isVisible()) {
             return;
+        }
+
         GlStateManager.pushMatrix();
         DrawUtils draw = LabyMod.getInstance().getDrawUtils();
         int fontHeight = (LabyModCore.getMinecraft().getFontRenderer()).FONT_HEIGHT;
@@ -120,8 +154,9 @@ public class EmoteChatRenderer {
         double shift = 0.0D;
         if ((LabyMod.getSettings()).chatAnimation) {
             shift = (System.currentTimeMillis() - lineHeight * animationSpeed - ANIMATION_SHIFT_FIELD.getLong(this.renderer)) / animationSpeed;
-            if (shift > 0.0D)
+            if (shift > 0.0D) {
                 shift = 0.0D;
+            }
         }
         double posX = this.renderer.getChatPositionX() - (float) (this.renderer.isRightBound() ? width : 0) * scale;
         double posY = this.renderer.getChatPositionY() - shift;
@@ -191,8 +226,9 @@ public class EmoteChatRenderer {
             double yEnd = visibleHeight * visibleHeight / totalHeight;
             double xStart = this.renderer.isRightBound() ? width : -1.0D;
             double xEnd = this.renderer.isRightBound() ? (width + 1) : 0.0D;
-            if (totalHeight != visibleHeight)
+            if (totalHeight != visibleHeight) {
                 draw.drawRect(xStart, -yStart, xEnd, -yStart - yEnd, -1);
+            }
             if (this.renderer.moving) {
                 double midY = yStart - visibleHeight / 2.0D;
                 double x = (-this.renderer.getChatPositionX() / scale);

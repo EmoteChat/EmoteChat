@@ -23,4 +23,9 @@ public class EmoteChatRendererMain extends ChatRendererMain implements EmoteChat
         super.renderChat(updateCounter);
     }
 
+    @Override
+    public float getChatPositionY() {
+        return this.renderer.getChatPositionY();
+    }
+
 }
