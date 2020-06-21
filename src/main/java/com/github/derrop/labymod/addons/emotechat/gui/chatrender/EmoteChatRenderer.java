@@ -2,7 +2,6 @@ package com.github.derrop.labymod.addons.emotechat.gui.chatrender;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
-import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.gui.ChatLineEntry;
 import net.labymod.core.LabyModCore;
 import net.labymod.ingamechat.IngameChatManager;
@@ -12,9 +11,11 @@ import net.labymod.main.LabyMod;
 import net.labymod.main.lang.LanguageManager;
 import net.labymod.utils.DrawUtils;
 import net.labymod.utils.ModColor;
+import net.labymod.utils.texture.ThreadDownloadTextureImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.util.ResourceLocation;
 
 import java.awt.*;
@@ -32,6 +33,8 @@ public class EmoteChatRenderer {
     private static final Field HOVERING_ROOM_FIELD;
     private static final Field LAST_RENDERED_LINES_COUNT_FIELD;
 
+    private static final Field DOWNLOADED_IMAGE_CONTENT_FIELD;
+
     private static final int SPACE_LENGTH = Minecraft.getMinecraft().fontRendererObj.getStringWidth(" ");
 
     static {
@@ -40,6 +43,8 @@ public class EmoteChatRenderer {
         Field tabMenu = null;
         Field hoveringRoom = null;
         Field lastRenderedLinesCount = null;
+
+        Field downloadedImageContentField = null;
 
         try {
             scrollPos = ChatRenderer.class.getDeclaredField("scrollPos");
@@ -56,6 +61,9 @@ public class EmoteChatRenderer {
 
             lastRenderedLinesCount = ChatRenderer.class.getDeclaredField("lastRenderedLinesCount");
             lastRenderedLinesCount.setAccessible(true);
+
+            downloadedImageContentField = ThreadDownloadTextureImage.class.getDeclaredField("bufferedImage");
+            downloadedImageContentField.setAccessible(true);
         } catch (NoSuchFieldException exception) {
             exception.printStackTrace();
         }
@@ -65,6 +73,8 @@ public class EmoteChatRenderer {
         TAB_MENU_FIELD = tabMenu;
         HOVERING_ROOM_FIELD = hoveringRoom;
         LAST_RENDERED_LINES_COUNT_FIELD = lastRenderedLinesCount;
+
+        DOWNLOADED_IMAGE_CONTENT_FIELD = downloadedImageContentField;
     }
 
     private final IngameChatManager manager;
@@ -252,7 +262,7 @@ public class EmoteChatRenderer {
         int rgb = 16777215 + (alpha << 24);
 
         Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatLine.getMessage());
-        boolean hasEmote = entries.stream().anyMatch(ChatLineEntry::isEmote);
+        boolean hasEmote = entries.stream().anyMatch(entry -> entry.isEmote() && this.isTextureDownloaded(entry.getEmoteTexture()));
 
         if (!(LabyMod.getSettings()).fastChat || chatLine.getHighlightColor() != null) {
             DrawUtils.drawRect(
@@ -274,7 +284,7 @@ public class EmoteChatRenderer {
         }
 
         for (ChatLineEntry entry : entries) {
-            if (entry.isEmote() && this.drawImage(entry.getContent(), x, y, alpha)) {
+            if (entry.isEmote() && !entry.getContent().contains(" ") && this.drawImage(entry, x, y, alpha)) {
                 x += Constants.CHAT_EMOTE_SIZE;
             } else {
                 this.drawLineComponent(entry.getContent(), x, hasEmote ? y + (Constants.LINE_HEIGHT / 2f) : y, rgb);
@@ -293,20 +303,36 @@ public class EmoteChatRenderer {
         LabyMod.getInstance().getDrawUtils().drawStringWithShadow(text, x, y, rgb);
     }
 
-    private boolean drawImage(String emoteId, float x, float y, int alpha) {
-        if (emoteId.contains(" ")) {
+    private boolean drawImage(ChatLineEntry entry, float x, float y, int alpha) {
+        ResourceLocation emoteTexture = entry.getEmoteTexture();
+
+        if (!this.isTextureDownloaded(emoteTexture)) {
+            entry.setContent(Constants.EMOTE_WRAPPER + entry.getContent() + Constants.EMOTE_WRAPPER);
             return false;
         }
 
-        BTTVEmote emote = new BTTVEmote(emoteId, "");
-
-        // TODO: Check for 404
-
-        ResourceLocation resourceLocation = LabyMod.getInstance().getDynamicTextureManager().getTexture(emoteId, emote.getURL(3));
-        Minecraft.getMinecraft().getTextureManager().bindTexture(resourceLocation);
+        Minecraft.getMinecraft().getTextureManager().bindTexture(emoteTexture);
 
         GlStateManager.color(1F, 1F, 1F, alpha / 255F);
         LabyMod.getInstance().getDrawUtils().drawTexture(x, y, 256, 256, Constants.CHAT_EMOTE_SIZE, Constants.CHAT_EMOTE_SIZE, alpha);
+
+        return true;
+    }
+
+    private boolean isTextureDownloaded(ResourceLocation resourceLocation) {
+        ITextureObject textureObject = Minecraft.getMinecraft().getTextureManager().getTexture(resourceLocation);
+
+        if (textureObject instanceof ThreadDownloadTextureImage) {
+            ThreadDownloadTextureImage downloadedTexture = (ThreadDownloadTextureImage) textureObject;
+
+            try {
+                if (DOWNLOADED_IMAGE_CONTENT_FIELD.get(downloadedTexture) == null) {
+                    return false;
+                }
+            } catch (IllegalAccessException exception) {
+                exception.printStackTrace();
+            }
+        }
 
         return true;
     }
