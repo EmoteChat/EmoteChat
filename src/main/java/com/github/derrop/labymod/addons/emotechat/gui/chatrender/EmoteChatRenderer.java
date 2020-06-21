@@ -110,7 +110,7 @@ public class EmoteChatRenderer {
 
         int emoteLinesCount = 0;
         for (int i = 0; i < totalLinesCount; i++) {
-            ChatLine chatLine = this.renderer.getChatLines().get(totalLinesCount - 1);
+            ChatLine chatLine = this.renderer.getChatLines().get(totalLinesCount - i - 1);
 
             Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatLine.getMessage());
             boolean hasEmote = entries.stream().anyMatch(entry -> entry.isEmote() && this.isTextureDownloaded(entry.getEmoteTexture()));
