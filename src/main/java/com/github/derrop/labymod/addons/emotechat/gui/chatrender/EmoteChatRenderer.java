@@ -101,27 +101,29 @@ public class EmoteChatRenderer {
     }
 
     public float getChatPositionY() {
-        int lastRenderedLinesCount = 0;
+        int totalLinesCount = 0;
         try {
-            lastRenderedLinesCount = (int) LAST_RENDERED_LINES_COUNT_FIELD.get(this.renderer);
+            totalLinesCount = (int) LAST_RENDERED_LINES_COUNT_FIELD.get(this.renderer);
         } catch (IllegalAccessException exception) {
             exception.printStackTrace();
         }
 
-        int lineHeight = LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT;
-
-        if (this.renderer.getChatLines().size() > 0 && lastRenderedLinesCount > 0) {
-            ChatLine chatLine = this.renderer.getChatLines().get(lastRenderedLinesCount - 1);
+        int emoteLinesCount = 0;
+        for (int i = 0; i < totalLinesCount; i++) {
+            ChatLine chatLine = this.renderer.getChatLines().get(totalLinesCount - 1);
 
             Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatLine.getMessage());
             boolean hasEmote = entries.stream().anyMatch(entry -> entry.isEmote() && this.isTextureDownloaded(entry.getEmoteTexture()));
 
             if (hasEmote) {
-                lineHeight = Constants.CHAT_EMOTE_SIZE;
+                emoteLinesCount++;
             }
         }
 
-        float height = lastRenderedLinesCount * lineHeight * this.renderer.getChatScale();
+        float textLineHeight = (totalLinesCount - emoteLinesCount) * LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT;
+        float emoteLineHeight = emoteLinesCount * Constants.CHAT_EMOTE_SIZE;
+
+        float height = (textLineHeight + emoteLineHeight) * this.renderer.getChatScale();
 
         double screenHeight = LabyMod.getInstance().getDrawUtils().getHeight() - 28;
         float percent = this.renderer.getChatPercentY();
