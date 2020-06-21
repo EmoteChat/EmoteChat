@@ -285,10 +285,11 @@ public class EmoteChatRenderer {
             if (entry.isEmote() && !entry.getContent().contains(" ") && this.drawImage(entry, x, y, alpha)) {
                 x += Constants.CHAT_EMOTE_SIZE;
             } else {
-                String content = entry.getColors() + entry.getContent();
+                String content = entry.getContent();
                 if (entry.isEmote()) {
                     content = Constants.EMOTE_WRAPPER + content + Constants.EMOTE_WRAPPER;
                 }
+                content = entry.getColors() + content;
                 this.drawLineComponent(content, x, hasEmote ? y + (Constants.LINE_HEIGHT / 2f) : y, rgb);
                 x += font.getStringWidth(entry.getContent());
             }

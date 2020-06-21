@@ -45,6 +45,10 @@ public class ChatLineEntry {
     }
 
     public static Collection<ChatLineEntry> parseEntries(String line) {
+        if (line.endsWith("§r")) {
+            line = line.substring(0, line.length() - 2);
+        }
+
         ChatLineEntry[] entries = Arrays.stream(line.split(" ")).map(word -> {
             String strippedWord = STRIP_COLOR_PATTERN.matcher(word).replaceAll("");
             boolean emote = strippedWord.length() > (Constants.EMOTE_WRAPPER.length() * 2)
@@ -55,7 +59,7 @@ public class ChatLineEntry {
 
         for (int i = 0; i < entries.length; i++) {
             if (i != 0) {
-                for (int j = i - 1; j >= 0; j--) {
+                for (int j = i; j >= 0; j--) {
                     String colors = getLastColors(entries[j].rawContent);
                     if (!colors.isEmpty()) {
                         entries[i].colors = colors;
