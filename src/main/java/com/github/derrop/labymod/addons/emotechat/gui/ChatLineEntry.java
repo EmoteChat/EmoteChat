@@ -16,8 +16,8 @@ public class ChatLineEntry {
 
     private final boolean emote;
 
-    private String content;
-    private String rawContent;
+    private final String content;
+    private final String rawContent;
     private String colors = "";
 
     public ChatLineEntry(boolean emote, String content, String rawContent) {
@@ -29,7 +29,7 @@ public class ChatLineEntry {
     public ResourceLocation getEmoteTexture() {
         BTTVEmote emote = new BTTVEmote(this.content, "");
 
-        return LabyMod.getInstance().getDynamicTextureManager().getTexture(emote.getId(), emote.getURL(3));
+        return LabyMod.getInstance().getDynamicTextureManager().getTexture(emote.getId(), emote.getImageURL(3));
     }
 
     public boolean isEmote() {
