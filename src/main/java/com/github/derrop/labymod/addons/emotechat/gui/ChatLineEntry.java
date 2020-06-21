@@ -17,10 +17,13 @@ public class ChatLineEntry {
     private final boolean emote;
 
     private String content;
+    private String rawContent;
+    private String colors = "";
 
-    public ChatLineEntry(boolean emote, String content) {
+    public ChatLineEntry(boolean emote, String content, String rawContent) {
         this.emote = emote;
         this.content = content;
+        this.rawContent = rawContent;
     }
 
     public ResourceLocation getEmoteTexture() {
@@ -37,8 +40,8 @@ public class ChatLineEntry {
         return this.content;
     }
 
-    public void setContent(String content) {
-        this.content = content;
+    public String getColors() {
+        return this.colors;
     }
 
     public static Collection<ChatLineEntry> parseEntries(String line) {
@@ -47,19 +50,15 @@ public class ChatLineEntry {
             boolean emote = strippedWord.length() > (Constants.EMOTE_WRAPPER.length() * 2)
                     && strippedWord.startsWith(Constants.EMOTE_WRAPPER) && strippedWord.endsWith(Constants.EMOTE_WRAPPER);
 
-            return new ChatLineEntry(emote, (emote ? strippedWord.substring(1, strippedWord.length() - 1) : word));
+            return new ChatLineEntry(emote, (emote ? strippedWord.substring(1, strippedWord.length() - 1) : word), word);
         }).toArray(ChatLineEntry[]::new);
 
         for (int i = 0; i < entries.length; i++) {
             if (i != 0) {
-                if (entries[i].emote) {
-                    continue;
-                }
-
                 for (int j = i - 1; j >= 0; j--) {
-                    String colors = getLastColors(entries[j].content);
+                    String colors = getLastColors(entries[j].rawContent);
                     if (!colors.isEmpty()) {
-                        entries[i].content = colors + entries[i].content;
+                        entries[i].colors = colors;
                         break;
                     }
                 }

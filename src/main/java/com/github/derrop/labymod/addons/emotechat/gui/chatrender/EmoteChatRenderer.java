@@ -23,8 +23,6 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 
-// TODO: scrolling is not possible
-// TODO: wrong line heights
 public class EmoteChatRenderer {
 
     private static final Field SCROLL_POS_FIELD;
@@ -287,7 +285,11 @@ public class EmoteChatRenderer {
             if (entry.isEmote() && !entry.getContent().contains(" ") && this.drawImage(entry, x, y, alpha)) {
                 x += Constants.CHAT_EMOTE_SIZE;
             } else {
-                this.drawLineComponent(entry.getContent(), x, hasEmote ? y + (Constants.LINE_HEIGHT / 2f) : y, rgb);
+                String content = entry.getColors() + entry.getContent();
+                if (entry.isEmote()) {
+                    content = Constants.EMOTE_WRAPPER + content + Constants.EMOTE_WRAPPER;
+                }
+                this.drawLineComponent(content, x, hasEmote ? y + (Constants.LINE_HEIGHT / 2f) : y, rgb);
                 x += font.getStringWidth(entry.getContent());
             }
             x += SPACE_LENGTH;
@@ -307,7 +309,6 @@ public class EmoteChatRenderer {
         ResourceLocation emoteTexture = entry.getEmoteTexture();
 
         if (!this.isTextureDownloaded(emoteTexture)) {
-            entry.setContent(Constants.EMOTE_WRAPPER + entry.getContent() + Constants.EMOTE_WRAPPER);
             return false;
         }
 

@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
+// TODO: Line width is calculated with the text, but an emote is only Constants.CHAT_EMOTE_SIZE in width
 public class EmoteChatAddon extends LabyModAddon {
 
     public static final Gson GSON = new Gson();
