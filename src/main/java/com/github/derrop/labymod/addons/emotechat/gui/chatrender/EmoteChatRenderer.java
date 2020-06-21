@@ -123,7 +123,6 @@ public class EmoteChatRenderer {
             SCROLL_POS_FIELD.setInt(this.renderer, 0);
         }
         int pos = -this.renderer.getScrollPos();
-        int displayPos = pos;
 
         for (ChatLine chatline : chatLines) {
             if (chatline == null) {
@@ -133,14 +132,13 @@ public class EmoteChatRenderer {
                 continue;
             }
             boolean firstLine = (pos == -this.renderer.getScrollPos());
-            boolean lastLine = (displayPos == chatLineCount);
+            boolean lastLine = (pos == chatLineCount);
 
             pos++;
-            displayPos++;
             totalMessages++;
 
             if (!lastLine || shift == 0.0D) {
-                if (displayPos > chatLineCount || pos <= 0) {
+                if (pos > chatLineCount || pos <= 0) {
                     continue;
                 }
             }
@@ -171,10 +169,10 @@ public class EmoteChatRenderer {
                 continue;
             }
             int x = 0;
-            int y = (displayPos - 1) * -9;
+            int y = (pos - 1) * -9;
 
             int modifier = this.drawLine(Minecraft.getMinecraft().fontRendererObj, chatline, x, y, width, fontHeight, alpha);
-            displayPos += modifier;
+            pos += modifier;
 
             LAST_RENDERED_LINES_COUNT_FIELD.setInt(this.renderer, visibleMessages);
         }
