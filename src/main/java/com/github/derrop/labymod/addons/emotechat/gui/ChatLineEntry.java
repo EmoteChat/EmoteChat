@@ -44,6 +44,7 @@ public class ChatLineEntry {
         return this.colors;
     }
 
+    // TODO: still wrong colors
     public static Collection<ChatLineEntry> parseEntries(String line) {
         if (line.endsWith("§r")) {
             line = line.substring(0, line.length() - 2);

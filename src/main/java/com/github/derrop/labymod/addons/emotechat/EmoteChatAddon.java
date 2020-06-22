@@ -1,5 +1,6 @@
 package com.github.derrop.labymod.addons.emotechat;
 
+import com.github.derrop.labymod.addons.emotechat.asm.PacketHandler;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVSearch;
 import com.github.derrop.labymod.addons.emotechat.gui.element.ButtonElement;
@@ -41,7 +42,7 @@ public class EmoteChatAddon extends LabyModAddon {
     public void onEnable() {
         super.getApi().registerForgeListener(this.minecraftTickExecutor);
         super.getApi().registerForgeListener(new ChatInjectListener(this));
-        super.getApi().getEventManager().register(new ChatSendListener(this));
+        PacketHandler.setChatModifier(new ChatSendListener(this));
     }
 
     public boolean isEnabled() {

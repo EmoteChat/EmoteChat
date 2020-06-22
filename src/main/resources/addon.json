@@ -3,5 +3,6 @@
   "name": "EmoteChat",
   "mainClass": "com.github.derrop.labymod.addons.emotechat.EmoteChatAddon",
   "author": "derrop, juliarn",
-  "description": "Bring emotes from Twitch and Discord to the Minecraft chat!"
+  "description": "Bring emotes from Twitch and Discord to the Minecraft chat!",
+  "transformerClass": "com.github.derrop.labymod.addons.emotechat.asm.EmoteClassTransformer"
 }
