@@ -8,35 +8,31 @@ import org.objectweb.asm.tree.*;
 
 public class EmoteClassTransformer implements IClassTransformer {
 
-    private static final boolean OBFUSCATED = true;
-
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        String required = EmoteClassTransformer.OBFUSCATED ? "bcy" : "net.minecraft.client.network.NetHandlerPlayClient";
-
-        if (!required.equals(transformedName)) {
+        if (!name.equals("bcy") && !name.equals("net.minecraft.client.network.NetHandlerPlayClient")) {
             return basicClass;
         }
 
         try {
-            return this.transform(basicClass);
+            return this.transform(basicClass, name.equals("bcy"));
         } catch (Exception exception) {
             exception.printStackTrace();
             return basicClass;
         }
     }
 
-    private byte[] transform(byte[] basicClass) {
+    private byte[] transform(byte[] basicClass, boolean obfuscated) {
         ClassNode node = new ClassNode();
         ClassReader reader = new ClassReader(basicClass);
         reader.accept(node, 0);
 
-        String name = EmoteClassTransformer.OBFUSCATED ? "a" : "addToSendQueue";
-        String desc = EmoteClassTransformer.OBFUSCATED ? "(Lff;)V" : "(Lnet/minecraft/network/Packet;)V";
+        String name = obfuscated ? "a" : "addToSendQueue";
+        String desc = obfuscated ? "(Lff;)V" : "(Lnet/minecraft/network/Packet;)V";
 
         for (MethodNode method : node.methods) {
             if (method.name.equals(name) && method.desc.equals(desc)) {
-                this.transformAddToSendQueue(method, EmoteClassTransformer.OBFUSCATED);
+                this.transformAddToSendQueue(method, obfuscated);
             }
         }
 

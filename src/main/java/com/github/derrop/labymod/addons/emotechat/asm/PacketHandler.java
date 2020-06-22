@@ -8,14 +8,19 @@ import java.lang.reflect.Field;
 
 public class PacketHandler {
 
-    private static final Field FIELD;
+    private static Field FIELD;
 
     static {
         try {
-            FIELD = C01PacketChatMessage.class.getDeclaredField("a");
+            FIELD = C01PacketChatMessage.class.getDeclaredField("message");
             FIELD.setAccessible(true);
         } catch (NoSuchFieldException exception) {
-            throw new Error(exception);
+            try {
+                FIELD = C01PacketChatMessage.class.getDeclaredField("a");
+                FIELD.setAccessible(true);
+            } catch (NoSuchFieldException exception1) {
+                throw new Error(exception1);
+            }
         }
     }
 
