@@ -208,14 +208,21 @@ public class EmoteChatRenderer {
 
         GlStateManager.pushMatrix();
         DrawUtils draw = LabyMod.getInstance().getDrawUtils();
+
         int fontHeight = (LabyModCore.getMinecraft().getFontRenderer()).FONT_HEIGHT;
+
         float scale = this.renderer.getChatScale();
         int chatLineCount = this.renderer.getLineCount();
         boolean chatOpen = this.renderer.isChatOpen();
         float opacity = this.renderer.getChatOpacity() * 0.9F + 0.1F;
         int width = this.renderer.getVisualWidth() + 1;
+
         int visibleMessages = 0;
         double totalMessages = 0.0D;
+
+        double totalHeight = 0.0D;
+        double visibleHeight = 0.0D;
+
         double animationSpeed = 20.0D;
         float lineHeight = 10.0F * scale;
         double shift = 0.0D;
@@ -232,7 +239,9 @@ public class EmoteChatRenderer {
         if (!this.renderer.isChatOpen()) {
             SCROLL_POS_FIELD.setInt(this.renderer, 0);
         }
+
         int pos = -this.renderer.getScrollPos();
+        int displayPos = pos;
 
         for (ChatLine chatline : chatLines) {
             if (chatline == null) {
@@ -241,14 +250,21 @@ public class EmoteChatRenderer {
             if (!chatline.getRoom().equals(this.manager.getSelectedRoom())) {
                 continue;
             }
+
+            Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatline.getMessage());
+            boolean hasEmote = entries.stream().anyMatch(entry -> entry.isEmote() && this.isTextureDownloaded(entry.getEmoteTexture()));
+
             boolean firstLine = (pos == -this.renderer.getScrollPos());
-            boolean lastLine = (pos == chatLineCount);
+            boolean lastLine = (displayPos == chatLineCount);
 
             pos++;
+            displayPos++;
+
             totalMessages++;
+            totalHeight += hasEmote ? Constants.CHAT_EMOTE_SIZE : fontHeight;
 
             if (!lastLine || shift == 0.0D) {
-                if (pos > chatLineCount || pos <= 0) {
+                if (displayPos > chatLineCount || pos <= 0) {
                     continue;
                 }
             }
@@ -256,7 +272,10 @@ public class EmoteChatRenderer {
             if (updateCounterDifference >= 200 && !chatOpen) {
                 continue;
             }
+
             visibleMessages++;
+            visibleHeight += hasEmote ? Constants.CHAT_EMOTE_SIZE : fontHeight;
+
             int alpha = 255;
             if (!chatOpen) {
                 double percent = updateCounterDifference / 200.0D;
@@ -281,14 +300,12 @@ public class EmoteChatRenderer {
             int x = 0;
             int y = (pos - 1) * -9;
 
-            int modifier = this.drawLine(Minecraft.getMinecraft().fontRendererObj, chatline, x, y, width, fontHeight, alpha);
+            int modifier = this.drawLine(Minecraft.getMinecraft().fontRendererObj, chatline, entries, hasEmote, x, y, width, alpha);
             pos += modifier;
 
             LAST_RENDERED_LINES_COUNT_FIELD.setInt(this.renderer, visibleMessages);
         }
         if (chatOpen) {
-            double totalHeight = totalMessages * fontHeight;
-            double visibleHeight = (visibleMessages * fontHeight);
             double yStart = this.renderer.getScrollPos() * visibleHeight / totalMessages;
             double yEnd = visibleHeight * visibleHeight / totalHeight;
             double xStart = this.renderer.isRightBound() ? width : -1.0D;
@@ -359,11 +376,8 @@ public class EmoteChatRenderer {
         }
     }
 
-    private int drawLine(FontRenderer font, ChatLine chatLine, float x, float y, int width, int fontHeight, int alpha) {
+    private int drawLine(FontRenderer font, ChatLine chatLine, Collection<ChatLineEntry> entries, boolean hasEmote, float x, float y, int width, int alpha) {
         int rgb = 16777215 + (alpha << 24);
-
-        Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatLine.getMessage());
-        boolean hasEmote = entries.stream().anyMatch(entry -> entry.isEmote() && this.isTextureDownloaded(entry.getEmoteTexture()));
 
         if (!(LabyMod.getSettings()).fastChat || chatLine.getHighlightColor() != null) {
             DrawUtils.drawRect(
