@@ -2,6 +2,7 @@ package com.github.derrop.labymod.addons.emotechat.gui.chatrender;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
+import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.gui.ChatLineEntry;
 import net.labymod.core.LabyModCore;
 import net.labymod.ingamechat.IngameChatManager;
@@ -123,7 +124,7 @@ public class EmoteChatRenderer {
             ChatLine chatLine = this.renderer.getChatLines().get(totalLinesCount - i - 1);
 
             Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatLine.getMessage());
-            boolean hasEmote = entries.stream().anyMatch(entry -> entry.isEmote() && this.isTextureDownloaded(entry.getEmoteTexture()));
+            boolean hasEmote = entries.stream().anyMatch(entry -> entry.isEmote() && this.isTextureDownloaded(entry.getAsEmote().getTextureLocation()));
 
             if (hasEmote) {
                 emoteLinesCount++;
@@ -252,7 +253,7 @@ public class EmoteChatRenderer {
             }
 
             Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatline.getMessage());
-            boolean hasEmote = entries.stream().anyMatch(entry -> entry.isEmote() && this.isTextureDownloaded(entry.getEmoteTexture()));
+            boolean hasEmote = entries.stream().anyMatch(entry -> entry.isEmote() && this.isTextureDownloaded(entry.getAsEmote().getTextureLocation()));
 
             boolean firstLine = (pos == -this.renderer.getScrollPos());
             boolean lastLine = (displayPos == chatLineCount);
@@ -399,7 +400,19 @@ public class EmoteChatRenderer {
         }
 
         for (ChatLineEntry entry : entries) {
-            if (entry.isEmote() && !entry.getContent().contains(" ") && this.drawImage(entry, x, y, alpha)) {
+            BTTVEmote emote = entry.getAsEmote();
+
+            if (entry.isEmote() && !entry.getContent().contains(" ") && this.drawImage(emote, x, y, alpha)) {
+                if (emote.isComplete()) {
+                    int mouseX = this.renderer.lastMouseX;
+                    int mouseY = this.renderer.lastMouseY;
+
+                    if (mouseX > x && mouseX < x + Constants.CHAT_EMOTE_SIZE
+                            && mouseY > y && mouseY < y + Constants.CHAT_EMOTE_SIZE) {
+                        LabyMod.getInstance().getDrawUtils().drawHoveringText(mouseX, mouseY, emote.getName());
+                    }
+                }
+
                 x += Constants.CHAT_EMOTE_SIZE;
             } else {
                 String content = entry.getContent();
@@ -423,8 +436,8 @@ public class EmoteChatRenderer {
         LabyMod.getInstance().getDrawUtils().drawStringWithShadow(text, x, y, rgb);
     }
 
-    private boolean drawImage(ChatLineEntry entry, float x, float y, int alpha) {
-        ResourceLocation emoteTexture = entry.getEmoteTexture();
+    private boolean drawImage(BTTVEmote emote, float x, float y, int alpha) {
+        ResourceLocation emoteTexture = emote.getTextureLocation();
 
         if (!this.isTextureDownloaded(emoteTexture)) {
             return false;

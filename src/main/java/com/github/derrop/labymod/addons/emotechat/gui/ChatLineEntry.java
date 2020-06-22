@@ -2,8 +2,6 @@ package com.github.derrop.labymod.addons.emotechat.gui;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
-import net.labymod.main.LabyMod;
-import net.minecraft.util.ResourceLocation;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,10 +24,8 @@ public class ChatLineEntry {
         this.rawContent = rawContent;
     }
 
-    public ResourceLocation getEmoteTexture() {
-        BTTVEmote emote = new BTTVEmote(this.content, "");
-
-        return LabyMod.getInstance().getDynamicTextureManager().getTexture(emote.getId(), emote.getImageURL(3));
+    public BTTVEmote getAsEmote() {
+        return BTTVEmote.getById(this.content);
     }
 
     public boolean isEmote() {

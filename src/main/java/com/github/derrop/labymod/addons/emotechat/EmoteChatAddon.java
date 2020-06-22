@@ -9,7 +9,6 @@ import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteListContainerEl
 import com.github.derrop.labymod.addons.emotechat.listener.ChatInjectListener;
 import com.github.derrop.labymod.addons.emotechat.listener.ChatSendListener;
 import com.github.derrop.labymod.addons.emotechat.listener.MinecraftTickExecutor;
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import net.labymod.api.LabyModAddon;
 import net.labymod.settings.elements.*;
@@ -18,19 +17,13 @@ import net.labymod.utils.Material;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 // TODO: Line width is calculated with the text, but an emote is only Constants.CHAT_EMOTE_SIZE in width
 public class EmoteChatAddon extends LabyModAddon {
 
-    public static final Gson GSON = new Gson();
-
     public static final Type SAVED_EMOTES_TYPE_TOKEN = new TypeToken<Map<String, BTTVEmote>>() {
     }.getType();
-
-    private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(1);
 
     private final MinecraftTickExecutor minecraftTickExecutor = new MinecraftTickExecutor();
 
@@ -58,7 +51,7 @@ public class EmoteChatAddon extends LabyModAddon {
         this.enabled = !super.getConfig().has("enabled") || super.getConfig().get("enabled").getAsBoolean();
 
         this.savedEmotes = super.getConfig().has("savedEmotes")
-                ? GSON.fromJson(super.getConfig().get("savedEmotes"), SAVED_EMOTES_TYPE_TOKEN)
+                ? Constants.GSON.fromJson(super.getConfig().get("savedEmotes"), SAVED_EMOTES_TYPE_TOKEN)
                 : new HashMap<>();
     }
 
@@ -85,7 +78,7 @@ public class EmoteChatAddon extends LabyModAddon {
 
         StringElement searchBarElement = new StringElement("Search for emotes on BTTV", new ControlElement.IconData(Material.ITEM_FRAME), "", input -> {
             if (input.length() > 2) {
-                EXECUTOR_SERVICE.execute(() -> {
+                Constants.EXECUTOR_SERVICE.execute(() -> {
                     try {
                         List<BTTVEmote> results = new BTTVSearch.Builder(input).build().execute();
                         this.minecraftTickExecutor.setTask(() -> searchResultList.update(results));
@@ -128,7 +121,7 @@ public class EmoteChatAddon extends LabyModAddon {
 
             emoteAddButton.setText("Override");
 
-            super.getConfig().add("savedEmotes", GSON.toJsonTree(this.savedEmotes));
+            super.getConfig().add("savedEmotes", Constants.GSON.toJsonTree(this.savedEmotes));
             super.saveConfig();
         });
 

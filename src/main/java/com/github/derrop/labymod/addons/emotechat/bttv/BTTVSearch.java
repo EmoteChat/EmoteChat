@@ -1,7 +1,7 @@
 package com.github.derrop.labymod.addons.emotechat.bttv;
 
 
-import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
+import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class BTTVSearch {
         urlConnection.connect();
 
         try (InputStream inputStream = urlConnection.getInputStream(); InputStreamReader reader = new InputStreamReader(inputStream)) {
-            return EmoteChatAddon.GSON.fromJson(reader, EMOTES_TYPE_TOKEN);
+            return Constants.GSON.fromJson(reader, EMOTES_TYPE_TOKEN);
         }
     }
 
