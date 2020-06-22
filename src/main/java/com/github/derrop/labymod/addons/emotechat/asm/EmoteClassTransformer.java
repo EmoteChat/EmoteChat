@@ -48,11 +48,8 @@ public class EmoteClassTransformer implements IClassTransformer {
         InsnList list = new InsnList();
         list.add(new VarInsnNode(Opcodes.ALOAD, 1));
         list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/github/derrop/labymod/addons/emotechat/asm/PacketHandler", "handlePacket", desc, false));
-        //LabelNode label = new LabelNode();
-        //list.add(new JumpInsnNode(153, label));
 
         method.instructions.insert(method.instructions.getFirst(), list);
-        //method.instructions.insert(method.instructions.);
     }
 
 }
