@@ -21,7 +21,7 @@ public class EmoteListContainerElement extends ListContainerElement {
         super.subSettings.addAll(new ArrayList<>(
                 emotes.values().stream()
                         .map(emote -> {
-                            ButtonElement emoteButton = new ButtonElement(emote.getName(), new DynamicIconData(emote.getId(), emote.getURL(3)), "Remove");
+                            ButtonElement emoteButton = new ButtonElement(emote.getName(), new DynamicIconData(emote.getId(), emote.getImageURL(3)), "Remove");
 
                             emoteButton.setClickListener(() -> {
                                 emotes.remove(emote.getName().toLowerCase());

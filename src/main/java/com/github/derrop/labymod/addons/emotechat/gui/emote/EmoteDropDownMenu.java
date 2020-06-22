@@ -16,7 +16,7 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
             BTTVEmote emote = (BTTVEmote) object;
 
             LabyMod.getInstance().getDrawUtils().drawImageUrl(
-                    emote.getURL(3),
+                    emote.getImageURL(3),
                     entityX - (double) (Constants.SETTINGS_EMOTE_SIZE / 4), entityY - (double) (Constants.SETTINGS_EMOTE_SIZE / 4),
                     256, 256,
                     Constants.SETTINGS_EMOTE_SIZE, Constants.SETTINGS_EMOTE_SIZE

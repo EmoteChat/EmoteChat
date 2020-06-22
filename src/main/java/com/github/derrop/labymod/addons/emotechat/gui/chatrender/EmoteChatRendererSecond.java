@@ -22,4 +22,20 @@ public class EmoteChatRendererSecond extends ChatRendererSecond implements Emote
     public void renderDefault(int updateCounter) {
         super.renderChat(updateCounter);
     }
+
+    @Override
+    public float getChatPositionY() {
+        return this.renderer.getChatPositionY();
+    }
+
+    @Override
+    public boolean renderHoveringResizeX(boolean forceRender) {
+        return this.renderer.renderHoveringResizeX(forceRender);
+    }
+
+    @Override
+    public boolean renderHoveringResizeY(boolean forceRender) {
+        return this.renderer.renderHoveringResizeY(forceRender);
+    }
+
 }
