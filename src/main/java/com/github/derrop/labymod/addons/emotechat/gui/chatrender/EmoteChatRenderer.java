@@ -403,7 +403,7 @@ public class EmoteChatRenderer {
             BTTVEmote emote = entry.getAsEmote();
 
             if (entry.isEmote() && !entry.getContent().contains(" ") && this.drawImage(emote, x, y, alpha)) {
-                if (emote.isComplete()) {
+                if (this.renderer.isChatOpen() && emote.isComplete()) {
                     int mouseX = this.renderer.lastMouseX;
                     int mouseY = this.renderer.lastMouseY;
 
