@@ -41,6 +41,7 @@ public class ChatLineEntry {
     }
 
     // TODO: still wrong colors
+    // TODO: spaces are not displayed with fat (§l) strings
     public static Collection<ChatLineEntry> parseEntries(String line) {
         if (line.endsWith("§r")) {
             line = line.substring(0, line.length() - 2);

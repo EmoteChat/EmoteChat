@@ -15,9 +15,12 @@ import net.labymod.utils.ModColor;
 import net.labymod.utils.texture.ThreadDownloadTextureImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.ITextureObject;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.input.Mouse;
 
 import java.awt.*;
 import java.lang.reflect.Field;
@@ -81,6 +84,9 @@ public class EmoteChatRenderer {
     private final ChatRenderer renderer;
     private final EmoteChatRendererType type;
 
+    private int mouseX;
+    private int mouseY;
+    
     public EmoteChatRenderer(EmoteChatRendererType renderer, IngameChatManager manager, EmoteChatAddon addon) {
         this.renderer = (ChatRenderer) renderer;
         this.type = renderer;
@@ -145,17 +151,17 @@ public class EmoteChatRenderer {
             float width = (float) this.renderer.getVisualWidth() * scale;
             float height = this.getRenderedChatHeight();
             float thickness = 2.0F;
-            boolean hoverY = (float) this.renderer.lastMouseY < y && (float) this.renderer.lastMouseY > y - height;
+            boolean hoverY = (float) this.mouseY < y && (float) this.mouseY > y - height;
             boolean hover;
             if (this.renderer.isRightBound()) {
-                hover = (float) this.renderer.lastMouseX < x - width + thickness && (float) this.renderer.lastMouseX > x - width - thickness && hoverY;
+                hover = (float) this.mouseX < x - width + thickness && (float) this.mouseX > x - width - thickness && hoverY;
             } else {
-                hover = (float) this.renderer.lastMouseX > x + width - thickness && (float) this.renderer.lastMouseX < x + width + thickness && hoverY;
+                hover = (float) this.mouseX > x + width - thickness && (float) this.mouseX < x + width + thickness && hoverY;
             }
 
             if (hover || forceRender) {
                 DrawUtils draw = LabyMod.getInstance().getDrawUtils();
-                draw.drawString("|||", this.renderer.lastMouseX - 2, this.renderer.lastMouseY - 2);
+                draw.drawString("|||", this.mouseX - 2, this.mouseY - 2);
                 if (this.renderer.isRightBound()) {
                     LabyMod.getInstance().getDrawUtils().drawRect(x - width - 1.0F, y, x - width, y - height, 2147483647);
                 } else {
@@ -177,16 +183,16 @@ public class EmoteChatRenderer {
             float width = (float) this.renderer.getVisualWidth() * scale;
             float height = forceRender ? this.renderer.getLineCount() * LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT * scale : this.getRenderedChatHeight();
             float thickness = 2.0F;
-            boolean hoverY = (float) this.renderer.lastMouseY > y - height - thickness && (float) this.renderer.lastMouseY < y - height;
+            boolean hoverY = (float) this.mouseY > y - height - thickness && (float) this.mouseY < y - height;
             boolean hover;
             if (this.renderer.isRightBound()) {
-                hover = (float) this.renderer.lastMouseX < x && (float) this.renderer.lastMouseX > x - width && hoverY;
+                hover = (float) this.mouseX < x && (float) this.mouseX > x - width && hoverY;
             } else {
-                hover = (float) this.renderer.lastMouseX > x && (float) this.renderer.lastMouseX < x + width && hoverY;
+                hover = (float) this.mouseX > x && (float) this.mouseX < x + width && hoverY;
             }
             if (hover || forceRender) {
                 DrawUtils draw = LabyMod.getInstance().getDrawUtils();
-                draw.drawString("==", this.renderer.lastMouseX - 5, this.renderer.lastMouseY - 3);
+                draw.drawString("==", this.mouseX - 5, this.mouseY - 3);
                 if (this.renderer.isRightBound()) {
                     LabyMod.getInstance().getDrawUtils().drawRect(x - width, y - height - 1.0F, x, y - height, 2147483647);
                 } else {
@@ -201,6 +207,11 @@ public class EmoteChatRenderer {
     }
 
     private void renderChat() throws IllegalAccessException {
+        DrawUtils draw = LabyMod.getInstance().getDrawUtils();
+
+        this.mouseX = this.renderer.lastMouseX;
+        this.mouseY = this.renderer.lastMouseY;
+
         List<ChatLine> chatLines = this.renderer.getChatLines();
 
         if (chatLines.size() == 0 || !this.renderer.isVisible()) {
@@ -208,9 +219,8 @@ public class EmoteChatRenderer {
         }
 
         GlStateManager.pushMatrix();
-        DrawUtils draw = LabyMod.getInstance().getDrawUtils();
 
-        int fontHeight = (LabyModCore.getMinecraft().getFontRenderer()).FONT_HEIGHT;
+        int fontHeight = LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT;
 
         float scale = this.renderer.getChatScale();
         int chatLineCount = this.renderer.getLineCount();
@@ -364,7 +374,7 @@ public class EmoteChatRenderer {
                 String string = (unread > 0) ? (roomName + ModColor.cl("a") + " [" + unread + "]") : roomName;
                 double roomWidth = draw.getStringWidth(string) * 0.7D + 2.0D;
                 double roomHeight = 8.0D;
-                boolean hover = ((this.renderer.lastMouseX - 2) >= roomX && (this.renderer.lastMouseX - 2) < roomX + roomWidth && posY - this.renderer.lastMouseY < 0.0D && posY - this.renderer.lastMouseY > -roomHeight);
+                boolean hover = ((this.mouseX - 2) >= roomX && (this.mouseX - 2) < roomX + roomWidth && posY - this.mouseY < 0.0D && posY - this.mouseY > -roomHeight);
                 if (!(LabyMod.getSettings()).fastChat) {
                     draw.drawRect(roomX, roomY - (double) (selected ? 1 : -1), roomX + roomWidth, roomY + roomHeight, notificationColor);
                 }
@@ -373,6 +383,14 @@ public class EmoteChatRenderer {
                 if (hover) {
                     HOVERING_ROOM_FIELD.set(this.renderer, roomName);
                 }
+            }
+        }
+
+        ChatLineEntry hovered = this.getHoveredEmote();
+        if (hovered != null) {
+            BTTVEmote emote = hovered.getAsEmote();
+            if (emote.isComplete()) {
+                LabyMod.getInstance().getDrawUtils().drawHoveringText(mouseX, mouseY, emote.getName());
             }
         }
     }
@@ -403,16 +421,6 @@ public class EmoteChatRenderer {
             BTTVEmote emote = entry.getAsEmote();
 
             if (entry.isEmote() && !entry.getContent().contains(" ") && this.drawImage(emote, x, y, alpha)) {
-                if (this.renderer.isChatOpen() && emote.isComplete()) {
-                    int mouseX = this.renderer.lastMouseX;
-                    int mouseY = this.renderer.lastMouseY;
-
-                    if (mouseX > x && mouseX < x + Constants.CHAT_EMOTE_SIZE
-                            && mouseY > y && mouseY < y + Constants.CHAT_EMOTE_SIZE) {
-                        LabyMod.getInstance().getDrawUtils().drawHoveringText(mouseX, mouseY, emote.getName());
-                    }
-                }
-
                 x += Constants.CHAT_EMOTE_SIZE;
             } else {
                 String content = entry.getContent();
@@ -467,6 +475,60 @@ public class EmoteChatRenderer {
         }
 
         return true;
+    }
+
+    public ChatLineEntry getHoveredEmote() {
+        if (!this.renderer.isChatOpen()) {
+            return null;
+        }
+        ScaledResolution scaledresolution = new ScaledResolution(Minecraft.getMinecraft());
+        int i = scaledresolution.getScaleFactor();
+        float f = this.renderer.getChatScale();
+        int mouseX = Mouse.getX() / i - 3;
+        int mouseY = Mouse.getY() / i - 27;
+        mouseX = MathHelper.floor_float((float) mouseX / f);
+        mouseY = MathHelper.floor_float((float) mouseY / f);
+
+        if (mouseX >= 0 && mouseY >= 0) {
+            int lineCount = Math.min(this.renderer.getLineCount(), this.renderer.getChatLines().size());
+
+            if (mouseX <= MathHelper.floor_float(this.renderer.getChatWidth() / this.renderer.getChatScale()) && mouseY < Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT * lineCount + lineCount) {
+                int pos = mouseY / Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT + this.renderer.getScrollPos();
+
+                if (pos >= 0 && pos < this.renderer.getChatLines().size()) {
+                    ChatLine[] chatLines = new ChatLine[] {
+                            this.renderer.getChatLines().get(pos),
+                            pos > 0 ? this.renderer.getChatLines().get(pos - 1) : null
+                    };
+
+                    for (ChatLine chatLine : chatLines) {
+                        if (chatLine == null) {
+                            continue;
+                        }
+
+                        int currentX = 0;
+
+                        Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatLine.getMessage());
+                        for (ChatLineEntry entry : entries) {
+                            if (!entry.isEmote()) {
+                                currentX += Minecraft.getMinecraft().fontRendererObj.getStringWidth(entry.getContent()) + SPACE_LENGTH;
+                                continue;
+                            }
+
+                            currentX += Constants.CHAT_EMOTE_SIZE;
+
+                            if (mouseX >= currentX - Constants.CHAT_EMOTE_SIZE && mouseX <= currentX) {
+                                return entry;
+                            }
+
+                            currentX += SPACE_LENGTH;
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
 }
