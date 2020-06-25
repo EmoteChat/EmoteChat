@@ -6,6 +6,7 @@ import net.minecraft.network.play.client.C01PacketChatMessage;
 
 import java.lang.reflect.Field;
 
+// TODO not working for forge labymod
 public class PacketHandler {
 
     private static Field FIELD;

@@ -86,8 +86,8 @@ public class ChatInjectListener {
 
             IngameChatManager ingameChatManager = LabyMod.getInstance().getIngameChatManager();
 
-            ChatRenderer main = new EmoteChatRendererMain(ingameChatManager, this.addon);
-            ChatRenderer second = new EmoteChatRendererSecond(ingameChatManager, this.addon);
+            ChatRenderer main = new EmoteChatRendererMain(ingameChatManager, this.addon, ingameChatManager.getMain().getChatLines());
+            ChatRenderer second = new EmoteChatRendererSecond(ingameChatManager, this.addon, ingameChatManager.getSecond().getChatLines());
 
             ChatRenderer[] chatRenderers = new ChatRenderer[]{main, second};
 

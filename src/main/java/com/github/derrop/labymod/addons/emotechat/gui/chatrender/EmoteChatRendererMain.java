@@ -2,14 +2,18 @@ package com.github.derrop.labymod.addons.emotechat.gui.chatrender;
 
 import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
 import net.labymod.ingamechat.IngameChatManager;
+import net.labymod.ingamechat.renderer.ChatLine;
 import net.labymod.ingamechat.renderer.types.ChatRendererMain;
+
+import java.util.List;
 
 public class EmoteChatRendererMain extends ChatRendererMain implements EmoteChatRendererType {
 
     private final EmoteChatRenderer renderer;
 
-    public EmoteChatRendererMain(IngameChatManager manager, EmoteChatAddon addon) {
+    public EmoteChatRendererMain(IngameChatManager manager, EmoteChatAddon addon, List<ChatLine> lines) {
         super(manager);
+        super.getChatLines().addAll(lines);
         this.renderer = new EmoteChatRenderer(this, manager, addon);
     }
 
