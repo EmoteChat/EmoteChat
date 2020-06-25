@@ -4,11 +4,28 @@ package com.github.derrop.labymod.addons.emotechat.gui.emote;
 import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import net.labymod.gui.elements.DropDownMenu;
+import net.labymod.gui.elements.Scrollbar;
 import net.labymod.main.LabyMod;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 
 public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
+
+    private static final Field SCROLLBAR_FIELD;
+
+    static {
+        Field scrollbarField = null;
+
+        try {
+            scrollbarField = DropDownMenu.class.getDeclaredField("scrollbar");
+            scrollbarField.setAccessible(true);
+        } catch (NoSuchFieldException exception) {
+            exception.printStackTrace();
+        }
+
+        SCROLLBAR_FIELD = scrollbarField;
+    }
 
     public EmoteDropDownMenu(String title, int x, int y, int width, int height) {
         super(title, x, y, width, height);
@@ -31,6 +48,12 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
 
     public void update(Collection<BTTVEmote> emotes) {
         super.clear();
+
+        Scrollbar scrollbar = this.getScrollbar();
+        if (scrollbar != null) {
+            scrollbar.update(emotes.size());
+        }
+
         if (emotes.isEmpty()) {
             return;
         }
@@ -39,6 +62,15 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
         super.fill(emoteArray);
 
         super.setSelected(emoteArray[0]);
+    }
+
+    private Scrollbar getScrollbar() {
+        try {
+            return (Scrollbar) SCROLLBAR_FIELD.get(this);
+        } catch (IllegalAccessException exception) {
+            exception.printStackTrace();
+            return null;
+        }
     }
 
 }
