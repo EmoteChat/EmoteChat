@@ -390,7 +390,7 @@ public class EmoteChatRenderer {
         if (hovered != null) {
             BTTVEmote emote = hovered.getAsEmote();
             if (emote.isComplete()) {
-                LabyMod.getInstance().getDrawUtils().drawHoveringText(mouseX, mouseY, emote.getName());
+                LabyMod.getInstance().getDrawUtils().drawHoveringText(this.mouseX, this.mouseY, emote.getName());
             }
         }
     }
@@ -481,13 +481,16 @@ public class EmoteChatRenderer {
         if (!this.renderer.isChatOpen()) {
             return null;
         }
-        ScaledResolution scaledresolution = new ScaledResolution(Minecraft.getMinecraft());
-        int i = scaledresolution.getScaleFactor();
-        float f = this.renderer.getChatScale();
-        int mouseX = Mouse.getX() / i - 3;
-        int mouseY = Mouse.getY() / i - 27;
-        mouseX = MathHelper.floor_float((float) mouseX / f);
-        mouseY = MathHelper.floor_float((float) mouseY / f);
+
+        ScaledResolution scaledResolution = LabyMod.getInstance().getDrawUtils().getScaledResolution();
+        int scaleFactor = scaledResolution.getScaleFactor();
+        float chatScale = this.renderer.getChatScale();
+
+        int mouseX = Mouse.getX() / scaleFactor - 3;
+        int mouseY = Mouse.getY() / scaleFactor - 27;
+
+        mouseX = MathHelper.floor_float((float) mouseX / chatScale);
+        mouseY = MathHelper.floor_float((float) mouseY / chatScale);
 
         if (mouseX >= 0 && mouseY >= 0) {
             int lineCount = Math.min(this.renderer.getLineCount(), this.renderer.getChatLines().size());
@@ -496,7 +499,7 @@ public class EmoteChatRenderer {
                 int pos = mouseY / Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT + this.renderer.getScrollPos();
 
                 if (pos >= 0 && pos < this.renderer.getChatLines().size()) {
-                    ChatLine[] chatLines = new ChatLine[] {
+                    ChatLine[] chatLines = new ChatLine[]{
                             this.renderer.getChatLines().get(pos),
                             pos > 0 ? this.renderer.getChatLines().get(pos - 1) : null
                     };
