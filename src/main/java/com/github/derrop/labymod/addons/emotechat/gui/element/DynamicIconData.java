@@ -6,8 +6,8 @@ import net.minecraft.util.ResourceLocation;
 
 public class DynamicIconData extends ControlElement.IconData {
 
-    private final String identifier;
-    private final String url;
+    protected final String identifier;
+    protected final String url;
 
     public DynamicIconData(String identifier, String url) {
         this.identifier = identifier;

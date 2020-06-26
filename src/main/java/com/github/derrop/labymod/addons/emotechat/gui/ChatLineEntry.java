@@ -2,6 +2,7 @@ package com.github.derrop.labymod.addons.emotechat.gui;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
+import net.labymod.settings.elements.ControlElement;
 
 import java.util.Arrays;
 import java.util.Collection;

@@ -1,8 +1,11 @@
 package com.github.derrop.labymod.addons.emotechat.bttv;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
+import com.github.derrop.labymod.addons.emotechat.gui.element.AnimatedIconData;
+import com.github.derrop.labymod.addons.emotechat.gui.element.DynamicIconData;
 import com.google.gson.annotations.SerializedName;
 import net.labymod.main.LabyMod;
+import net.labymod.settings.elements.ControlElement;
 import net.minecraft.util.ResourceLocation;
 
 import java.io.IOException;
@@ -55,6 +58,8 @@ public class BTTVEmote {
     @SerializedName("code")
     private String name;
 
+    private String imageType;
+
     public BTTVEmote(String id, String code) {
         this.id = id;
         this.name = code;
@@ -65,7 +70,7 @@ public class BTTVEmote {
     }
 
     public ResourceLocation getTextureLocation() {
-        return LabyMod.getInstance().getDynamicTextureManager().getTexture(this.id, this.getImageURL(3));
+        return this.asIconData().getTextureIcon();
     }
 
     public boolean isComplete() {
@@ -80,12 +85,23 @@ public class BTTVEmote {
         this.id = id;
     }
 
+    public String getImageType() {
+        return imageType;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public ControlElement.IconData asIconData() {
+        if ("gif".equals(this.imageType)) {
+            return AnimatedIconData.create(this.id, this.getImageURL(3));
+        }
+        return new DynamicIconData(this.id, this.getImageURL(3));
     }
 
 }

@@ -477,7 +477,7 @@ public class EmoteChatRenderer {
         return true;
     }
 
-    public ChatLineEntry getHoveredEmote() {
+    public ChatLineEntry getHoveredEmote() { // TODO open a GUI on click to add the emote to the own list
         if (!this.renderer.isChatOpen()) {
             return null;
         }
@@ -494,6 +494,7 @@ public class EmoteChatRenderer {
 
             if (mouseX <= MathHelper.floor_float(this.renderer.getChatWidth() / this.renderer.getChatScale()) && mouseY < Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT * lineCount + lineCount) {
                 int pos = mouseY / Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT + this.renderer.getScrollPos();
+                // TODO not working with multiple emotes in the chat because not every line has the same height, with emotes a line has twice the normal height
 
                 if (pos >= 0 && pos < this.renderer.getChatLines().size()) {
                     ChatLine[] chatLines = new ChatLine[] {
