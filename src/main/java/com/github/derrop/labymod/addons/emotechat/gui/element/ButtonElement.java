@@ -46,6 +46,7 @@ public class ButtonElement extends ControlElement {
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         if (this.clickListener != null && this.button.mousePressed(this.mc, mouseX, mouseY)) {
+            this.button.playPressSound(super.mc.getSoundHandler());
             this.clickListener.run();
         }
     }
