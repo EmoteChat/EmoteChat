@@ -2,7 +2,6 @@ package com.github.derrop.labymod.addons.emotechat.gui.element;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.madgag.gif.fmsware.GifDecoder;
-import net.labymod.main.LabyMod;
 import net.labymod.main.ModTextures;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -12,50 +11,44 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class AnimatedIconData extends DynamicIconData {
 
     private static final Map<String, AnimatedIconData> CACHED_ICONS = new ConcurrentHashMap<>();
-    private static final ExecutorService EXECUTOR_SERVICE = Executors.newFixedThreadPool(3);
+
+    private static final ScheduledExecutorService EXECUTOR_SERVICE = Executors.newScheduledThreadPool(3);
 
     static {
-        EXECUTOR_SERVICE.execute(() -> {
-            while (!Thread.interrupted()) {
-                try {
-                    Thread.sleep(Constants.ANIMATED_ICON_TICK_MILLIS);
-                } catch (InterruptedException exception) {
-                    exception.printStackTrace();
-                }
-
-                if (CACHED_ICONS.isEmpty()) {
+        EXECUTOR_SERVICE.scheduleAtFixedRate(() -> {
+            if (CACHED_ICONS.isEmpty()) {
+                return;
+            }
+            for (AnimatedIconData value : CACHED_ICONS.values()) {
+                if (value.images == null) {
                     continue;
                 }
-                for (AnimatedIconData value : CACHED_ICONS.values()) {
-                    if (value.images == null) {
-                        continue;
-                    }
 
-                    if (value.index >= value.images.length - 1) {
-                        value.index = 0;
-                    } else {
-                        ++value.index;
-                    }
+                if (value.index >= value.images.length - 1) {
+                    value.index = 0;
+                } else {
+                    ++value.index;
                 }
             }
-        });
+        }, 0, Constants.ANIMATED_ICON_TICK_MILLIS, TimeUnit.MILLISECONDS);
     }
 
     private BufferedImage[] images;
+
     private ResourceLocation[] resourceLocations;
+
     private int index;
 
     private AnimatedIconData(String identifier, String url) {
@@ -66,11 +59,11 @@ public class AnimatedIconData extends DynamicIconData {
         if (CACHED_ICONS.containsKey(identifier)) {
             return CACHED_ICONS.get(identifier);
         }
+
         AnimatedIconData data = new AnimatedIconData(identifier, url);
         CACHED_ICONS.put(identifier, data);
 
         EXECUTOR_SERVICE.execute(() -> {
-
             Collection<BufferedImage> output = new ArrayList<>();
 
             try {
@@ -117,6 +110,7 @@ public class AnimatedIconData extends DynamicIconData {
         if (this.images == null) {
             return ModTextures.MISC_HEAD_QUESTION;
         }
+
         if (this.resourceLocations[this.index] != null) {
             return this.resourceLocations[this.index];
         }
@@ -128,6 +122,7 @@ public class AnimatedIconData extends DynamicIconData {
 
         ResourceLocation location = Minecraft.getMinecraft().getTextureManager().getDynamicTextureLocation(super.identifier + "_" + this.index, new DynamicTexture(image));
         this.resourceLocations[this.index] = location;
+
         return location;
     }
 }
