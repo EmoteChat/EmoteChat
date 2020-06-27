@@ -114,7 +114,7 @@ public class EmoteChatAddon extends LabyModAddon {
                 return;
             }
 
-            BTTVEmote userEmote = new BTTVEmote(selectedEmote.getId(), emoteName);
+            BTTVEmote userEmote = new BTTVEmote(selectedEmote.getId(), emoteName, selectedEmote.getImageType());
 
             this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
             emoteList.update(this.savedEmotes);

@@ -2,7 +2,6 @@ package com.github.derrop.labymod.addons.emotechat.gui.element;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.madgag.gif.fmsware.GifDecoder;
-import net.labymod.main.LabyMod;
 import net.labymod.main.ModTextures;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -12,8 +11,6 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -114,7 +111,7 @@ public class AnimatedIconData extends DynamicIconData {
 
     @Override
     public ResourceLocation getTextureIcon() {
-        if (this.images == null) {
+        if (this.images == null || this.images.length == 0) {
             return ModTextures.MISC_HEAD_QUESTION;
         }
         if (this.resourceLocations[this.index] != null) {

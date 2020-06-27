@@ -6,6 +6,8 @@ import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import net.labymod.gui.elements.DropDownMenu;
 import net.labymod.gui.elements.Scrollbar;
 import net.labymod.main.LabyMod;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -32,8 +34,9 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
         super.setEntryDrawer((Object object, int entityX, int entityY, String trimmedEntry) -> {
             BTTVEmote emote = (BTTVEmote) object;
 
-            LabyMod.getInstance().getDrawUtils().drawImageUrl(
-                    emote.getImageURL(3),
+            Minecraft.getMinecraft().getTextureManager().bindTexture(emote.asIconData().getTextureIcon());
+
+            LabyMod.getInstance().getDrawUtils().drawTexture(
                     entityX - (double) (Constants.SETTINGS_EMOTE_SIZE / 4), entityY - (double) (Constants.SETTINGS_EMOTE_SIZE / 4),
                     256, 256,
                     Constants.SETTINGS_EMOTE_SIZE, Constants.SETTINGS_EMOTE_SIZE

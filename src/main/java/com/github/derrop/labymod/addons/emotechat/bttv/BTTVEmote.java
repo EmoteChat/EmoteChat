@@ -26,8 +26,8 @@ public class BTTVEmote {
 
     public static BTTVEmote getById(String id) {
         if (!EMOTE_CACHE.containsKey(id)) {
+            EMOTE_CACHE.put(id, new BTTVEmote(id, "", ""));
             cacheEmoteAsync(id);
-            EMOTE_CACHE.put(id, new BTTVEmote(id, ""));
         }
         return EMOTE_CACHE.get(id);
     }
@@ -60,9 +60,10 @@ public class BTTVEmote {
 
     private String imageType;
 
-    public BTTVEmote(String id, String code) {
+    public BTTVEmote(String id, String name, String imageType) {
         this.id = id;
-        this.name = code;
+        this.name = name;
+        this.imageType = imageType;
     }
 
     public String getImageURL(int size) {
