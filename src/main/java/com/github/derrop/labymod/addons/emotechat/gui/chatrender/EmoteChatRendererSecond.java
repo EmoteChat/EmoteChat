@@ -4,12 +4,14 @@ import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
 import net.labymod.ingamechat.IngameChatManager;
 import net.labymod.ingamechat.renderer.ChatLine;
 import net.labymod.ingamechat.renderer.types.ChatRendererSecond;
+import net.minecraft.client.gui.GuiChat;
 
 import java.util.List;
 
 public class EmoteChatRendererSecond extends ChatRendererSecond implements EmoteChatRendererType {
 
     private final EmoteChatRenderer renderer;
+    private GuiChat lastGuiChat;
 
     public EmoteChatRendererSecond(IngameChatManager manager, EmoteChatAddon addon, List<ChatLine> lines) {
         super(manager);
@@ -40,6 +42,16 @@ public class EmoteChatRendererSecond extends ChatRendererSecond implements Emote
     @Override
     public boolean renderHoveringResizeY(boolean forceRender) {
         return this.renderer.renderHoveringResizeY(forceRender);
+    }
+
+    @Override
+    public String selectHoveredTab() {
+        this.renderer.handleClicked(this.lastGuiChat);
+        return super.selectHoveredTab();
+    }
+
+    public void setLastGuiChat(GuiChat lastGuiChat) {
+        this.lastGuiChat = lastGuiChat;
     }
 
 }

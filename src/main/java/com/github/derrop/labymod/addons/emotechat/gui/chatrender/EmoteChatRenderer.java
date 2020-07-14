@@ -4,6 +4,7 @@ import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.gui.ChatLineEntry;
+import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteGuiYesNo;
 import net.labymod.core.LabyModCore;
 import net.labymod.ingamechat.IngameChatManager;
 import net.labymod.ingamechat.renderer.ChatLine;
@@ -15,6 +16,8 @@ import net.labymod.utils.ModColor;
 import net.labymod.utils.texture.ThreadDownloadTextureImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.ITextureObject;
@@ -390,7 +393,22 @@ public class EmoteChatRenderer {
         if (hovered != null) {
             BTTVEmote emote = hovered.getAsEmote();
             if (emote.isComplete()) {
-                LabyMod.getInstance().getDrawUtils().drawHoveringText(this.mouseX, this.mouseY, emote.getName());
+                // TODO hover y not working
+                ScaledResolution scaledResolution = LabyMod.getInstance().getDrawUtils().getScaledResolution();
+                int scaleFactor = scaledResolution.getScaleFactor();
+                float chatScale = this.renderer.getChatScale();
+
+                int mouseX = Mouse.getX() / scaleFactor - 3;
+                int mouseY = Mouse.getY() / scaleFactor - 27;
+
+                mouseX = MathHelper.floor_float((float) mouseX / chatScale);
+                mouseY = MathHelper.floor_float((float) mouseY / chatScale);
+
+                String hoverText = emote.getName();
+                if (!this.addon.isEmoteSaved(emote)) {
+                    hoverText += " (Click to add)";
+                }
+                LabyMod.getInstance().getDrawUtils().drawHoveringText(mouseX, mouseY, hoverText);
             }
         }
     }
@@ -477,11 +495,7 @@ public class EmoteChatRenderer {
         return true;
     }
 
-    public ChatLineEntry getHoveredEmote() { // TODO open a GUI on click to add the emote to the own list
-        if (!this.renderer.isChatOpen()) {
-            return null;
-        }
-
+    public ChatLineEntry getHoveredEmote() {
         ScaledResolution scaledResolution = LabyMod.getInstance().getDrawUtils().getScaledResolution();
         int scaleFactor = scaledResolution.getScaleFactor();
         float chatScale = this.renderer.getChatScale();
@@ -491,6 +505,14 @@ public class EmoteChatRenderer {
 
         mouseX = MathHelper.floor_float((float) mouseX / chatScale);
         mouseY = MathHelper.floor_float((float) mouseY / chatScale);
+
+        return this.getHoveredEmote(mouseX, mouseY);
+    }
+
+    public ChatLineEntry getHoveredEmote(int mouseX, int mouseY) {
+        if (!this.renderer.isChatOpen()) {
+            return null;
+        }
 
         if (mouseX >= 0 && mouseY >= 0) {
             int lineCount = Math.min(this.renderer.getLineCount(), this.renderer.getChatLines().size());
@@ -533,6 +555,24 @@ public class EmoteChatRenderer {
         }
 
         return null;
+    }
+
+    public void handleClicked(GuiChat lastGuiChat) {
+        ChatLineEntry entry = this.getHoveredEmote();
+        if (entry != null) {
+            BTTVEmote emote = entry.getAsEmote();
+            if (this.addon.isEmoteSaved(emote)) {
+                return;
+            }
+            GuiScreen gui = new EmoteGuiYesNo(emote, (accepted, id) -> {
+                if (accepted) {
+                    this.addon.addEmote(emote, emote.getName());
+                    LabyMod.getInstance().displayMessageInChat("§7The emote was successfully added to your local emotes");
+                }
+                Minecraft.getMinecraft().displayGuiScreen(lastGuiChat);
+            }, 0);
+            Minecraft.getMinecraft().displayGuiScreen(gui);
+        }
     }
 
 }

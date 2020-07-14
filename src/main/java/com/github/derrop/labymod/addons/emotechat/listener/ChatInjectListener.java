@@ -9,7 +9,9 @@ import net.labymod.ingamechat.IngameChatManager;
 import net.labymod.ingamechat.renderer.ChatRenderer;
 import net.labymod.main.LabyMod;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiIngame;
+import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -68,6 +70,9 @@ public class ChatInjectListener {
 
     private final EmoteChatAddon addon;
 
+    private EmoteChatRendererMain main;
+    private EmoteChatRendererSecond second;
+
     private boolean injected;
 
     public ChatInjectListener(EmoteChatAddon addon) {
@@ -86,18 +91,18 @@ public class ChatInjectListener {
 
             IngameChatManager ingameChatManager = LabyMod.getInstance().getIngameChatManager();
 
-            ChatRenderer main = new EmoteChatRendererMain(ingameChatManager, this.addon, ingameChatManager.getMain().getChatLines());
-            ChatRenderer second = new EmoteChatRendererSecond(ingameChatManager, this.addon, ingameChatManager.getSecond().getChatLines());
+            this.main = new EmoteChatRendererMain(ingameChatManager, this.addon, ingameChatManager.getMain().getChatLines());
+            this.second = new EmoteChatRendererSecond(ingameChatManager, this.addon, ingameChatManager.getSecond().getChatLines());
 
-            ChatRenderer[] chatRenderers = new ChatRenderer[]{main, second};
+            ChatRenderer[] chatRenderers = new ChatRenderer[]{this.main, this.second};
 
             try {
-                MAIN_CHAT_FIELD.set(adapter, main);
-                SECOND_CHAT_FIELD.set(adapter, second);
+                MAIN_CHAT_FIELD.set(adapter, this.main);
+                SECOND_CHAT_FIELD.set(adapter, this.second);
                 CHAT_RENDERERS_FIELD.set(adapter, chatRenderers);
 
-                CHAT_MANAGER_MAIN_CHAT_FIELD.set(ingameChatManager, main);
-                CHAT_MANAGER_SECOND_CHAT_FIELD.set(ingameChatManager, second);
+                CHAT_MANAGER_MAIN_CHAT_FIELD.set(ingameChatManager, this.main);
+                CHAT_MANAGER_SECOND_CHAT_FIELD.set(ingameChatManager, this.second);
                 CHAT_MANAGER_CHAT_RENDERERS_FIELD.set(ingameChatManager, chatRenderers);
             } catch (IllegalAccessException exception) {
                 exception.printStackTrace();
@@ -105,6 +110,18 @@ public class ChatInjectListener {
 
             this.injected = true;
         }
+    }
+
+    @SubscribeEvent
+    public void handleChatOpen(GuiOpenEvent event) {
+        if (this.main == null) {
+            return;
+        }
+        if (!(event.gui instanceof GuiChat)) {
+            return;
+        }
+        this.main.setLastGuiChat((GuiChat) event.gui);
+        this.second.setLastGuiChat((GuiChat) event.gui);
     }
 
 }

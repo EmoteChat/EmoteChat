@@ -31,6 +31,8 @@ public class EmoteChatAddon extends LabyModAddon {
 
     private Map<String, BTTVEmote> savedEmotes = new HashMap<>();
 
+    private final Collection<EmoteListContainerElement> emoteLists = new ArrayList<>();
+
     @Override
     public void onEnable() {
         super.getApi().registerForgeListener(this.minecraftTickExecutor);
@@ -44,6 +46,10 @@ public class EmoteChatAddon extends LabyModAddon {
 
     public BTTVEmote getEmoteByName(String name) {
         return this.savedEmotes.get(name.toLowerCase());
+    }
+
+    public boolean isEmoteSaved(BTTVEmote emote) {
+        return this.savedEmotes.values().stream().anyMatch(saved -> saved.getId().equals(emote.getId()));
     }
 
     @Override
@@ -69,10 +75,31 @@ public class EmoteChatAddon extends LabyModAddon {
         emoteList.update(this.savedEmotes);
 
         list.add(emoteList);
-        list.add(this.createEmoteAddMenu(emoteList));
+        list.add(this.createEmoteAddMenu());
+
+        this.emoteLists.add(emoteList);
     }
 
-    private ListContainerElement createEmoteAddMenu(EmoteListContainerElement emoteList) {
+    public boolean addEmote(BTTVEmote emote, String name) {
+        if (emote == null || name.isEmpty() || name.contains(" ")) {
+            return false;
+        }
+
+        BTTVEmote userEmote = new BTTVEmote(emote.getId(), name, emote.getImageType());
+
+        this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
+
+        for (EmoteListContainerElement emoteList : this.emoteLists) {
+            emoteList.update(this.savedEmotes);
+        }
+
+        super.getConfig().add("savedEmotes", Constants.GSON.toJsonTree(this.savedEmotes));
+        super.saveConfig();
+
+        return true;
+    }
+
+    private ListContainerElement createEmoteAddMenu() {
         ListContainerElement emoteAddMenu = new ListContainerElement("Add emote", new ControlElement.IconData(Material.NETHER_STAR));
         EmoteDropDownMenu searchResultList = new EmoteDropDownMenu("Results");
 
@@ -110,19 +137,11 @@ public class EmoteChatAddon extends LabyModAddon {
             String emoteName = emoteNameReference.get();
             BTTVEmote selectedEmote = searchResultList.getSelected();
 
-            if (selectedEmote == null || emoteName.isEmpty() || emoteName.contains(" ")) {
+            if (!this.addEmote(selectedEmote, emoteName)) {
                 return;
             }
 
-            BTTVEmote userEmote = new BTTVEmote(selectedEmote.getId(), emoteName, selectedEmote.getImageType());
-
-            this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
-            emoteList.update(this.savedEmotes);
-
             emoteAddButton.setText("Override");
-
-            super.getConfig().add("savedEmotes", Constants.GSON.toJsonTree(this.savedEmotes));
-            super.saveConfig();
         });
 
         StringElement emoteNameInput = new StringElement("Set emote name", new ControlElement.IconData(Material.PAPER), "", emoteName -> {
