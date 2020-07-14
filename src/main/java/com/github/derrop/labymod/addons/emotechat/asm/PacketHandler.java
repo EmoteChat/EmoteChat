@@ -6,7 +6,6 @@ import net.minecraft.network.play.client.C01PacketChatMessage;
 
 import java.lang.reflect.Field;
 
-// TODO not working for forge labymod
 public class PacketHandler {
 
     private static Field FIELD;
@@ -20,7 +19,12 @@ public class PacketHandler {
                 FIELD = C01PacketChatMessage.class.getDeclaredField("a");
                 FIELD.setAccessible(true);
             } catch (NoSuchFieldException exception1) {
-                throw new Error(exception1);
+                try {
+                    FIELD = C01PacketChatMessage.class.getDeclaredField("field_149440_a");
+                    FIELD.setAccessible(true);
+                } catch (NoSuchFieldException exception2) {
+                    throw new Error(exception2);
+                }
             }
         }
     }
