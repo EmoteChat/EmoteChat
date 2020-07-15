@@ -33,7 +33,7 @@ import java.util.List;
 public class EmoteChatRenderer {
 
     private static final Field SCROLL_POS_FIELD;
-    private static final Field ANIMATION_SHIFT_FIELD;
+    protected static final Field ANIMATION_SHIFT_FIELD;
     private static final Field TAB_MENU_FIELD;
     private static final Field HOVERING_ROOM_FIELD;
     private static final Field LAST_RENDERED_LINES_COUNT_FIELD;
@@ -120,6 +120,32 @@ public class EmoteChatRenderer {
         }
     }
 
+    public boolean addChatLine(String message, boolean secondChat, String room, Object component, int updateCounter, int chatLineId, Integer highlightColor, boolean refresh) {
+        Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(message);
+        if (entries.stream().noneMatch(ChatLineEntry::isEmote)) {
+            return true;
+        }
+
+        ChatLine[] lines = new ChatLine[]{
+                new EmoteChatLine(entries, false, message, secondChat, room, component, updateCounter, chatLineId, highlightColor),
+                new EmoteChatLine(entries, true, message, secondChat, room, component, updateCounter, chatLineId, highlightColor)
+        };
+
+        for (int i = 0; i < lines.length; i++) {
+            this.renderer.getChatLines().add(i, lines[i]);
+        }
+
+        if (!refresh) {
+            try {
+                EmoteChatRenderer.ANIMATION_SHIFT_FIELD.set(this.renderer, System.currentTimeMillis());
+            } catch (IllegalAccessException exception) {
+                exception.printStackTrace();
+            }
+        }
+
+        return false;
+    }
+
     public float getRenderedChatHeight() {
         int totalLinesCount = 0;
         try {
@@ -128,22 +154,9 @@ public class EmoteChatRenderer {
             exception.printStackTrace();
         }
 
-        int emoteLinesCount = 0;
-        for (int i = 0; i < totalLinesCount; i++) {
-            ChatLine chatLine = this.renderer.getChatLines().get(totalLinesCount - i - 1);
+        float textLineHeight = totalLinesCount * LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT;
 
-            Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatLine.getMessage());
-            boolean hasEmote = entries.stream().anyMatch(entry -> entry.isEmote() && this.isTextureDownloaded(entry.getAsEmote().getTextureLocation()));
-
-            if (hasEmote) {
-                emoteLinesCount++;
-            }
-        }
-
-        float textLineHeight = (totalLinesCount - emoteLinesCount) * LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT;
-        float emoteLineHeight = emoteLinesCount * Constants.CHAT_EMOTE_SIZE;
-
-        return (textLineHeight + emoteLineHeight) * this.renderer.getChatScale();
+        return (textLineHeight) * this.renderer.getChatScale();
     }
 
     public boolean renderHoveringResizeX(boolean forceRender) {
@@ -240,7 +253,7 @@ public class EmoteChatRenderer {
         double animationSpeed = 20.0D;
         float lineHeight = 10.0F * scale;
         double shift = 0.0D;
-        if ((LabyMod.getSettings()).chatAnimation) {
+        if (LabyMod.getSettings().chatAnimation) {
             shift = (System.currentTimeMillis() - lineHeight * animationSpeed - ANIMATION_SHIFT_FIELD.getLong(this.renderer)) / animationSpeed;
             if (shift > 0.0D) {
                 shift = 0.0D;
@@ -255,7 +268,6 @@ public class EmoteChatRenderer {
         }
 
         int pos = -this.renderer.getScrollPos();
-        int displayPos = pos;
 
         for (ChatLine chatline : chatLines) {
             if (chatline == null) {
@@ -265,30 +277,25 @@ public class EmoteChatRenderer {
                 continue;
             }
 
-            Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatline.getMessage());
-            boolean hasEmote = entries.stream().anyMatch(entry -> entry.isEmote() && this.isTextureDownloaded(entry.getAsEmote().getTextureLocation()));
-
             boolean firstLine = (pos == -this.renderer.getScrollPos());
-            boolean lastLine = (displayPos == chatLineCount);
+            boolean lastLine = (pos == chatLineCount);
 
             pos++;
-            displayPos++;
-
             totalMessages++;
-            totalHeight += hasEmote ? Constants.CHAT_EMOTE_SIZE : fontHeight;
+            totalHeight += fontHeight;
 
             if (!lastLine || shift == 0.0D) {
-                if (displayPos > chatLineCount || pos <= 0) {
+                if (pos > chatLineCount || pos <= 0) {
                     continue;
                 }
             }
-            int updateCounterDifference = (Minecraft.getMinecraft()).ingameGUI.getUpdateCounter() - chatline.getUpdateCounter();
+            int updateCounterDifference = Minecraft.getMinecraft().ingameGUI.getUpdateCounter() - chatline.getUpdateCounter();
             if (updateCounterDifference >= 200 && !chatOpen) {
                 continue;
             }
 
             visibleMessages++;
-            visibleHeight += hasEmote ? Constants.CHAT_EMOTE_SIZE : fontHeight;
+            visibleHeight += fontHeight;
 
             int alpha = 255;
             if (!chatOpen) {
@@ -314,8 +321,7 @@ public class EmoteChatRenderer {
             int x = 0;
             int y = (pos - 1) * -9;
 
-            int modifier = this.drawLine(Minecraft.getMinecraft().fontRendererObj, chatline, entries, hasEmote, x, y, width, alpha);
-            pos += modifier;
+            this.drawLine(Minecraft.getMinecraft().fontRendererObj, chatline, x, y, width, alpha);
 
             LAST_RENDERED_LINES_COUNT_FIELD.setInt(this.renderer, visibleMessages);
         }
@@ -402,49 +408,49 @@ public class EmoteChatRenderer {
         }
     }
 
-    private int drawLine(FontRenderer font, ChatLine chatLine, Collection<ChatLineEntry> entries, boolean hasEmote, float x, float y, int width, int alpha) {
+    private void drawLine(FontRenderer font, ChatLine chatLine, float x, float y, int width, int alpha) {
         int rgb = 16777215 + (alpha << 24);
 
         if (!(LabyMod.getSettings()).fastChat || chatLine.getHighlightColor() != null) {
             DrawUtils.drawRect(
                     (int) x,
-                    (int) y - Constants.LINE_HEIGHT * (hasEmote ? 2 : 1),
+                    (int) y - Constants.LINE_HEIGHT,
                     (int) x + width,
                     (int) y,
-                    (chatLine.getHighlightColor() != null) ? chatLine.getHighlightColor() : (alpha / 2 << 24)
+                    chatLine.getHighlightColor() != null ? chatLine.getHighlightColor() : (alpha / 2 << 24)
             );
         }
 
         GlStateManager.enableBlend();
 
-        y -= 8;
         x += 1;
+        y -= 8;
 
-        if (hasEmote) {
-            y -= Constants.LINE_HEIGHT;
-        }
+        if (chatLine instanceof EmoteChatLine) {
+            if (((EmoteChatLine) chatLine).shouldRender()) {
+                for (ChatLineEntry entry : ((EmoteChatLine) chatLine).getEntries()) {
+                    BTTVEmote emote = entry.getAsEmote();
 
-        for (ChatLineEntry entry : entries) {
-            BTTVEmote emote = entry.getAsEmote();
-
-            if (entry.isEmote() && !entry.getContent().contains(" ") && this.drawImage(emote, x, y, alpha)) {
-                x += Constants.CHAT_EMOTE_SIZE;
-            } else {
-                String content = entry.getContent();
-                if (entry.isEmote()) {
-                    content = Constants.EMOTE_WRAPPER + content + Constants.EMOTE_WRAPPER;
+                    if (entry.isEmote() && !entry.getContent().contains(" ") && this.drawImage(emote, x, y, alpha)) {
+                        x += Constants.CHAT_EMOTE_SIZE;
+                    } else {
+                        String content = entry.getContent();
+                        if (entry.isEmote()) {
+                            content = Constants.EMOTE_WRAPPER + content + Constants.EMOTE_WRAPPER;
+                        }
+                        content = entry.getColors() + content;
+                        this.drawLineComponent(content, x, y + ((float) Constants.LINE_HEIGHT / 2F), rgb);
+                        x += font.getStringWidth(entry.getContent());
+                    }
+                    x += SPACE_LENGTH;
                 }
-                content = entry.getColors() + content;
-                this.drawLineComponent(content, x, hasEmote ? y + (Constants.LINE_HEIGHT / 2f) : y, rgb);
-                x += font.getStringWidth(entry.getContent());
             }
-            x += SPACE_LENGTH;
+        } else {
+            this.drawLineComponent(chatLine.getMessage(), x + 1, y, rgb);
         }
 
         GlStateManager.disableAlpha();
         GlStateManager.disableBlend();
-
-        return hasEmote ? 1 : 0;
     }
 
     private void drawLineComponent(String text, float x, float y, int rgb) {
@@ -508,36 +514,31 @@ public class EmoteChatRenderer {
 
             if (mouseX <= MathHelper.floor_float(this.renderer.getChatWidth() / this.renderer.getChatScale()) && mouseY < Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT * lineCount + lineCount) {
                 int pos = mouseY / Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT + this.renderer.getScrollPos();
-                // TODO not working with multiple emotes in the chat because not every line has the same height, with emotes a line has twice the normal height
 
                 if (pos >= 0 && pos < this.renderer.getChatLines().size()) {
-                    ChatLine[] chatLines = new ChatLine[]{
-                            this.renderer.getChatLines().get(pos),
-                            pos > 0 ? this.renderer.getChatLines().get(pos - 1) : null
-                    };
+                    ChatLine chatLine = this.renderer.getChatLines().get(pos);
 
-                    for (ChatLine chatLine : chatLines) {
-                        if (chatLine == null) {
+                    if (!(chatLine instanceof EmoteChatLine)) {
+                        return null;
+                    }
+
+                    int currentX = 0;
+
+                    Collection<ChatLineEntry> entries = ((EmoteChatLine) chatLine).getEntries();
+
+                    for (ChatLineEntry entry : entries) {
+                        if (!entry.isEmote()) {
+                            currentX += Minecraft.getMinecraft().fontRendererObj.getStringWidth(entry.getContent()) + SPACE_LENGTH;
                             continue;
                         }
 
-                        int currentX = 0;
+                        currentX += Constants.CHAT_EMOTE_SIZE;
 
-                        Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(chatLine.getMessage());
-                        for (ChatLineEntry entry : entries) {
-                            if (!entry.isEmote()) {
-                                currentX += Minecraft.getMinecraft().fontRendererObj.getStringWidth(entry.getContent()) + SPACE_LENGTH;
-                                continue;
-                            }
-
-                            currentX += Constants.CHAT_EMOTE_SIZE;
-
-                            if (mouseX >= currentX - Constants.CHAT_EMOTE_SIZE && mouseX <= currentX) {
-                                return entry;
-                            }
-
-                            currentX += SPACE_LENGTH;
+                        if (mouseX >= currentX - Constants.CHAT_EMOTE_SIZE && mouseX <= currentX) {
+                            return entry;
                         }
+
+                        currentX += SPACE_LENGTH;
                     }
                 }
             }

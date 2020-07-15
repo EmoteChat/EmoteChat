@@ -20,6 +20,13 @@ public class EmoteChatRendererMain extends ChatRendererMain implements EmoteChat
     }
 
     @Override
+    public void addChatLine(String message, boolean secondChat, String room, Object component, int updateCounter, int chatLineId, Integer highlightColor, boolean refresh) {
+        if (this.renderer.addChatLine(message, secondChat, room, component, updateCounter, chatLineId, highlightColor, refresh)) {
+            super.addChatLine(message, secondChat, room, component, updateCounter, chatLineId, highlightColor, refresh);
+        }
+    }
+
+    @Override
     public void renderChat(int updateCounter) {
         this.renderer.renderChat(updateCounter);
     }

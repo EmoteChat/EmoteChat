@@ -14,7 +14,7 @@ public interface Constants {
     String EMOTE_WRAPPER = ":";
     int CHAT_EMOTE_SIZE = 17;
     int SETTINGS_EMOTE_SIZE = 10;
-    int LINE_HEIGHT = 9; // TODO in labymod this can be dynamic
+    int LINE_HEIGHT = 9;
 
     int ANIMATED_ICON_TICK_MILLIS = 50;
 

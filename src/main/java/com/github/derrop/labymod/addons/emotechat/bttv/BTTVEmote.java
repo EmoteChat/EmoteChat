@@ -11,6 +11,7 @@ import net.minecraft.util.ResourceLocation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Map;
@@ -44,7 +45,7 @@ public class BTTVEmote {
 
                 urlConnection.connect();
 
-                try (InputStream inputStream = urlConnection.getInputStream(); InputStreamReader reader = new InputStreamReader(inputStream)) {
+                try (InputStream inputStream = urlConnection.getInputStream(); Reader reader = new InputStreamReader(inputStream)) {
                     BTTVEmote emote = Constants.GSON.fromJson(reader, BTTVEmote.class);
                     EMOTE_CACHE.put(id, emote);
                 }
@@ -59,6 +60,8 @@ public class BTTVEmote {
     private String name;
 
     private String imageType;
+
+    private transient ControlElement.IconData iconData;
 
     public BTTVEmote(String id, String name, String imageType) {
         this.id = id;
@@ -99,10 +102,14 @@ public class BTTVEmote {
     }
 
     public ControlElement.IconData asIconData() {
-        if ("gif".equals(this.imageType)) {
-            return AnimatedIconData.create(this.id, this.getImageURL(3));
+        if (this.iconData != null) {
+            return this.iconData;
         }
-        return new DynamicIconData(this.id, this.getImageURL(3));
+
+        if ("gif".equals(this.imageType)) {
+            return this.iconData = AnimatedIconData.create(this.id, this.getImageURL(3));
+        }
+        return this.iconData = new DynamicIconData(this.id, this.getImageURL(3));
     }
 
 }
