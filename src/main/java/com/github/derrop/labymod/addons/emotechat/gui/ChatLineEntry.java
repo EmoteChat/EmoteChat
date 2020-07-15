@@ -53,7 +53,7 @@ public class ChatLineEntry {
             boolean emote = strippedWord.length() > (Constants.EMOTE_WRAPPER.length() * 2)
                     && strippedWord.startsWith(Constants.EMOTE_WRAPPER) && strippedWord.endsWith(Constants.EMOTE_WRAPPER);
 
-            return new ChatLineEntry(emote, (emote ? strippedWord.substring(1, strippedWord.length() - 1) : word), word);
+            return new ChatLineEntry(emote, (emote ? strippedWord.substring(Constants.EMOTE_WRAPPER.length(), strippedWord.length() - Constants.EMOTE_WRAPPER.length()) : word), word);
         }).toArray(ChatLineEntry[]::new);
 
         for (int i = 0; i < entries.length; i++) {
