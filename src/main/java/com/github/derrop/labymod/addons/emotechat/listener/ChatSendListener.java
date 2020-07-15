@@ -2,7 +2,7 @@ package com.github.derrop.labymod.addons.emotechat.listener;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
-import com.github.derrop.labymod.addons.emotechat.asm.ChatModifier;
+import com.github.derrop.labymod.addons.emotechat.asm.packet.ChatModifier;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import net.minecraft.client.Minecraft;
 

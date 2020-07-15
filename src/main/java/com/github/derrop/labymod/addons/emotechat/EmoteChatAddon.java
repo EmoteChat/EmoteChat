@@ -1,6 +1,6 @@
 package com.github.derrop.labymod.addons.emotechat;
 
-import com.github.derrop.labymod.addons.emotechat.asm.PacketHandler;
+import com.github.derrop.labymod.addons.emotechat.asm.packet.PacketHandler;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVSearch;
 import com.github.derrop.labymod.addons.emotechat.gui.element.ButtonElement;

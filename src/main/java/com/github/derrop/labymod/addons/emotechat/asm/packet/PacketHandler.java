@@ -1,4 +1,4 @@
-package com.github.derrop.labymod.addons.emotechat.asm;
+package com.github.derrop.labymod.addons.emotechat.asm.packet;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.network.Packet;
