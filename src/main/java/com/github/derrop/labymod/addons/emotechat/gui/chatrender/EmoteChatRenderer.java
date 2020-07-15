@@ -393,22 +393,11 @@ public class EmoteChatRenderer {
         if (hovered != null) {
             BTTVEmote emote = hovered.getAsEmote();
             if (emote.isComplete()) {
-                // TODO hover y not working
-                ScaledResolution scaledResolution = LabyMod.getInstance().getDrawUtils().getScaledResolution();
-                int scaleFactor = scaledResolution.getScaleFactor();
-                float chatScale = this.renderer.getChatScale();
-
-                int mouseX = Mouse.getX() / scaleFactor - 3;
-                int mouseY = Mouse.getY() / scaleFactor - 27;
-
-                mouseX = MathHelper.floor_float((float) mouseX / chatScale);
-                mouseY = MathHelper.floor_float((float) mouseY / chatScale);
-
                 String hoverText = emote.getName();
                 if (!this.addon.isEmoteSaved(emote)) {
                     hoverText += " (Click to add)";
                 }
-                LabyMod.getInstance().getDrawUtils().drawHoveringText(mouseX, mouseY, hoverText);
+                LabyMod.getInstance().getDrawUtils().drawHoveringText(this.mouseX, this.mouseY, hoverText);
             }
         }
     }
