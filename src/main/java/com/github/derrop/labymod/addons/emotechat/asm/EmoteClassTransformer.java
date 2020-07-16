@@ -3,18 +3,17 @@ package com.github.derrop.labymod.addons.emotechat.asm;
 import com.github.derrop.labymod.addons.emotechat.asm.packet.PacketHandlerClassTransformer;
 import net.minecraft.launchwrapper.IClassTransformer;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 
 public class EmoteClassTransformer implements IClassTransformer {
 
-    private static final List<PredicateClassTransformer> CLASS_TRANSFORMERS = Collections.singletonList(
+    private static final PredicateClassTransformer[] CLASS_TRANSFORMERS = new PredicateClassTransformer[]{
             new PacketHandlerClassTransformer()
-    );
+    };
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
-        return CLASS_TRANSFORMERS.stream()
+        return Arrays.stream(CLASS_TRANSFORMERS)
                 .filter(transformer -> transformer.transforms(name, transformedName, basicClass))
                 .findFirst()
                 .map(transformer -> transformer.transform(name, transformedName, basicClass))

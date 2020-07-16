@@ -1,13 +1,10 @@
 package com.github.derrop.labymod.addons.emotechat.asm.packet;
 
-
-import com.github.derrop.labymod.addons.emotechat.asm.PredicateClassTransformer;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
+import com.github.derrop.labymod.addons.emotechat.asm.PredicateClassNodeTransformer;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
-public class PacketHandlerClassTransformer implements PredicateClassTransformer {
+public class PacketHandlerClassTransformer extends PredicateClassNodeTransformer {
 
     @Override
     public boolean transforms(String name, String transformedName, byte[] basicClass) {
@@ -15,20 +12,15 @@ public class PacketHandlerClassTransformer implements PredicateClassTransformer 
     }
 
     @Override
-    public byte[] transform(String name, String transformedName, byte[] basicClass) {
+    public void transform(String name, String transformedName, ClassNode node) {
         try {
-            return this.transform(basicClass, name.equals("bcy"));
+            this.transform(node, name.equals("bcy"));
         } catch (Exception exception) {
             exception.printStackTrace();
-            return basicClass;
         }
     }
 
-    private byte[] transform(byte[] basicClass, boolean obfuscated) {
-        ClassNode node = new ClassNode();
-        ClassReader reader = new ClassReader(basicClass);
-        reader.accept(node, 0);
-
+    private void transform(ClassNode node, boolean obfuscated) {
         String name = obfuscated ? "a" : "addToSendQueue";
         String desc = obfuscated ? "(Lff;)V" : "(Lnet/minecraft/network/Packet;)V";
 
@@ -37,11 +29,6 @@ public class PacketHandlerClassTransformer implements PredicateClassTransformer 
                 this.transformAddToSendQueue(method, obfuscated);
             }
         }
-
-
-        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-        node.accept(writer);
-        return writer.toByteArray();
     }
 
     private void transformAddToSendQueue(MethodNode method, boolean obfuscated) {
