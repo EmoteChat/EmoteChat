@@ -3,6 +3,7 @@ package com.github.derrop.labymod.addons.emotechat;
 import com.github.derrop.labymod.addons.emotechat.asm.packet.PacketHandler;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVSearch;
+import com.github.derrop.labymod.addons.emotechat.gui.chat.settings.ChatShortcut;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.tabcomplete.TabCompleteConsumer;
 import com.github.derrop.labymod.addons.emotechat.gui.element.ButtonElement;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteDropDownMenu;
@@ -41,6 +42,7 @@ public class EmoteChatAddon extends LabyModAddon {
         super.getApi().registerForgeListener(new TabCompleteConsumer(this));
 
         PacketHandler.setChatModifier(new ChatSendListener(this));
+        ChatShortcut.initListener(this);
     }
 
     public boolean isEnabled() {

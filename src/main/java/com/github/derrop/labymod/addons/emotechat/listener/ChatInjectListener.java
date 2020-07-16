@@ -1,10 +1,12 @@
 package com.github.derrop.labymod.addons.emotechat.listener;
 
 import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
+import com.github.derrop.labymod.addons.emotechat.gui.chat.settings.ChatShortcut;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.render.EmoteChatRendererMain;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.render.EmoteChatRendererSecond;
 import net.labymod.core_implementation.mc18.gui.GuiChatAdapter;
 import net.labymod.core_implementation.mc18.gui.GuiIngameCustom;
+import net.labymod.ingamechat.GuiChatCustom;
 import net.labymod.ingamechat.IngameChatManager;
 import net.labymod.ingamechat.renderer.ChatRenderer;
 import net.labymod.main.LabyMod;
@@ -13,9 +15,11 @@ import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 public class ChatInjectListener {
 
@@ -81,6 +85,17 @@ public class ChatInjectListener {
 
     @SubscribeEvent
     public void handleGameOverlayRender(RenderGameOverlayEvent event) {
+        if (Minecraft.getMinecraft().currentScreen instanceof GuiChatCustom) {
+            GuiChatCustom customChat = (GuiChatCustom) Minecraft.getMinecraft().currentScreen;
+            try {
+                if (ChatShortcut.shouldInitialize(customChat)) {
+                    ChatShortcut.init(customChat);
+                }
+            } catch (IllegalAccessException | InvocationTargetException | InstantiationException exception) {
+                exception.printStackTrace();
+            }
+        }
+
         GuiIngame ingameGUI = Minecraft.getMinecraft().ingameGUI;
         if (this.injected) {
             return;
@@ -112,7 +127,7 @@ public class ChatInjectListener {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGH)
     public void handleChatOpen(GuiOpenEvent event) {
         if (this.main == null) {
             return;
@@ -120,8 +135,14 @@ public class ChatInjectListener {
         if (!(event.gui instanceof GuiChat)) {
             return;
         }
-        this.main.setLastGuiChat((GuiChat) event.gui);
-        this.second.setLastGuiChat((GuiChat) event.gui);
+
+        GuiChat chat = (GuiChat) event.gui;
+
+        System.out.println(chat.getClass());
+
+        this.main.setLastGuiChat(chat);
+        this.second.setLastGuiChat(chat);
+
     }
 
 }
