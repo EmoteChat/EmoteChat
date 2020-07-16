@@ -8,6 +8,7 @@ import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteDropDownMenu;
 import net.labymod.ingamechat.GuiChatCustom;
 import net.labymod.ingamegui.ModuleGui;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
@@ -15,29 +16,28 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TabCompleteConsumer implements ModuleGui.KeyConsumer {
 
     private final EmoteChatAddon addon;
 
-    private final EmoteDropDownMenu dropDownMenu = new EmoteDropDownMenu(null, 0, 0, 100, 60);
-
-    private boolean drawDropDown = false;
+    private final EmoteDropDownMenu dropDownMenu = new EmoteDropDownMenu(null, 0, 0, 0, 13);
 
     private GuiTextField textField;
 
+    private String lastQuery;
+
+    private GuiScreen lastGui;
+
     public TabCompleteConsumer(EmoteChatAddon addon) {
         this.addon = addon;
-        this.dropDownMenu.setOpen(true);
     }
 
     @Override
     public void accept(char typedChar, int keyCode) {
-        if (this.drawDropDown) {
+        if (this.dropDownMenu.getEmoteList().size() > 0) {
             if (keyCode == 200 || keyCode == 208) {
                 BTTVEmote selected = this.dropDownMenu.getSelected();
 
@@ -49,87 +49,105 @@ public class TabCompleteConsumer implements ModuleGui.KeyConsumer {
 
                     if (newIndex > 0 && newIndex < emoteList.size()) {
                         this.dropDownMenu.setSelected(emoteList.get(newIndex));
+                        return;
                     }
                 }
             }
         }
 
-        String chatText = this.getChatText();
+        String chatText = this.textField.getText();
 
         if (chatText != null && !chatText.isEmpty()) {
             String[] words = chatText.split(" ");
 
-            String currentWord = words[words.length - 1];
+            if (words.length > 0) {
+                String currentWord = words[words.length - 1];
 
-            if (currentWord.startsWith(Constants.EMOTE_WRAPPER) && !currentWord.endsWith(Constants.EMOTE_WRAPPER)) {
-                String query = currentWord.replaceFirst(Constants.EMOTE_WRAPPER, "").toLowerCase();
+                if (currentWord.startsWith(Constants.EMOTE_WRAPPER) && !currentWord.endsWith(Constants.EMOTE_WRAPPER)) {
+                    if (keyCode == 205) {
+                        BTTVEmote selected = this.dropDownMenu.getSelected();
 
-                List<BTTVEmote> emotes = this.addon.getSavedEmotes().values().stream()
-                        .filter(emote -> emote.getName().toLowerCase().contains(query))
-                        .sorted(Comparator.comparingInt(emote -> emote.getName().length() - query.length()))
-                        .collect(Collectors.toList());
+                        if (selected != null) {
+                            this.textField.setText(chatText.replace(currentWord, Constants.EMOTE_WRAPPER + selected.getName() + Constants.EMOTE_WRAPPER));
+                            this.dropDownMenu.update(new ArrayList<>());
 
-                if (emotes.size() > 0) {
-                    this.drawDropDown = true;
+                            return;
+                        }
+                    }
+
+                    String query = currentWord.replaceFirst(Constants.EMOTE_WRAPPER, "").toLowerCase();
+
+                    if (!Objects.equals(query, this.lastQuery)) {
+                        List<BTTVEmote> emotes = this.addon.getSavedEmotes().values().stream()
+                                .filter(emote -> emote.getName().toLowerCase().contains(query))
+                                .sorted(Comparator.comparingInt(emote -> emote.getName().length() - query.length()))
+                                .collect(Collectors.toList());
+
+                        this.dropDownMenu.update(emotes);
+
+                        this.lastQuery = query;
+                    }
+
+                    return;
                 }
-
-                this.dropDownMenu.update(emotes);
-            } else {
-                this.drawDropDown = false;
             }
         }
+
+        this.dropDownMenu.update(new ArrayList<>());
     }
 
     @SubscribeEvent
     public void handleScreenRender(RenderGameOverlayEvent event) {
-        if (Minecraft.getMinecraft().currentScreen instanceof GuiChat) {
-            List<ModuleGui.KeyConsumer> keyConsumers = GuiChatCustom.getModuleGui().getKeyTypeListeners();
+        GuiScreen currentGui = Minecraft.getMinecraft().currentScreen;
 
-            if (!keyConsumers.contains(this)) {
-                keyConsumers.add(this);
+        if (!Objects.equals(currentGui, this.lastGui)) {
+            if (this.lastGui instanceof GuiChat) {
+                this.dropDownMenu.clear();
             }
-        } else {
-            this.drawDropDown = false;
+
+            if (currentGui instanceof GuiChat) {
+                try {
+                    Field textFieldField = Arrays.stream(GuiChat.class.getDeclaredFields())
+                            .filter(field -> field.getType().equals(GuiTextField.class))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (textFieldField != null) {
+                        textFieldField.setAccessible(true);
+
+                        this.textField = (GuiTextField) textFieldField.get(currentGui);
+                    }
+                } catch (IllegalAccessException exception) {
+                    exception.printStackTrace();
+                }
+            }
+
+            this.lastGui = currentGui;
         }
 
-        if (this.drawDropDown) {
-            this.dropDownMenu.setX(this.textField.xPosition);
-            this.dropDownMenu.setY(this.textField.yPosition - this.dropDownMenu.getHeight());
+        if (this.dropDownMenu.getEmoteList().size() > 0) {
+            this.dropDownMenu.setOpen(true);
+
+            FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
+
+            int queryStart = fontRenderer.getStringWidth(this.textField.getText()) - fontRenderer.getStringWidth(this.lastQuery);
+
+            this.dropDownMenu.setX(this.textField.xPosition + queryStart);
+            this.dropDownMenu.setY(this.textField.yPosition - (this.dropDownMenu.getHeight() * (this.dropDownMenu.getEmoteList().size() + 1)) - 3);
+
+            this.dropDownMenu.getEmoteList()
+                    .stream()
+                    .max(Comparator.comparingInt(emote -> emote.getName().length()))
+                    .ifPresent(emote ->
+                            this.dropDownMenu.setWidth(
+                                    (int) (fontRenderer.getStringWidth(emote.getName()) + (Constants.SETTINGS_EMOTE_SIZE * 1.5) + 30)
+                            )
+                    );
 
             ModuleGui moduleGui = GuiChatCustom.getModuleGui();
 
             this.dropDownMenu.draw((int) moduleGui.getMouseX(), (int) moduleGui.getMouseY());
         }
-    }
-
-    private String getChatText() {
-        if (this.textField != null) {
-            return this.textField.getText();
-        }
-
-        GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
-
-        if (currentScreen instanceof GuiChat) {
-            GuiChat guiChat = (GuiChat) Minecraft.getMinecraft().currentScreen;
-
-            try {
-                Field textFieldField = Arrays.stream(GuiChat.class.getDeclaredFields())
-                        .filter(field -> field.getType().equals(GuiTextField.class))
-                        .findFirst()
-                        .orElse(null);
-
-                if (textFieldField != null) {
-                    textFieldField.setAccessible(true);
-
-                    this.textField = (GuiTextField) textFieldField.get(guiChat);
-                    return this.textField.getText();
-                }
-            } catch (IllegalAccessException exception) {
-                exception.printStackTrace();
-            }
-        }
-
-        return null;
     }
 
 }
