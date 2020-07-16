@@ -1,4 +1,4 @@
-package com.github.derrop.labymod.addons.emotechat.gui.chatrender;
+package com.github.derrop.labymod.addons.emotechat.gui.chat.render;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;

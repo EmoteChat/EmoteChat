@@ -7,10 +7,10 @@ import net.labymod.gui.elements.DropDownMenu;
 import net.labymod.gui.elements.Scrollbar;
 import net.labymod.main.LabyMod;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GlStateManager;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.List;
 
 public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
 
@@ -29,6 +29,8 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
         SCROLLBAR_FIELD = scrollbarField;
     }
 
+    private List<BTTVEmote> emoteList;
+
     public EmoteDropDownMenu(String title, int x, int y, int width, int height) {
         super(title, x, y, width, height);
         super.setEntryDrawer((Object object, int entityX, int entityY, String trimmedEntry) -> {
@@ -43,6 +45,15 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
             );
             LabyMod.getInstance().getDrawUtils().drawString(emote.getName(), entityX + (Constants.SETTINGS_EMOTE_SIZE * 1.5), entityY);
         });
+
+        try {
+            Field listField = DropDownMenu.class.getDeclaredField("list");
+            listField.setAccessible(true);
+
+            this.emoteList = (List<BTTVEmote>) listField.get(this);
+        } catch (IllegalAccessException | NoSuchFieldException exception) {
+            exception.printStackTrace();
+        }
     }
 
     public EmoteDropDownMenu(String title) {
@@ -74,6 +85,10 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
             exception.printStackTrace();
             return null;
         }
+    }
+
+    public List<BTTVEmote> getEmoteList() {
+        return emoteList;
     }
 
 }

@@ -1,4 +1,4 @@
-package com.github.derrop.labymod.addons.emotechat.gui.chatrender;
+package com.github.derrop.labymod.addons.emotechat.gui.chat.render;
 
 public interface EmoteChatRendererType {
 

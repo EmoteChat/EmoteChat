@@ -1,19 +1,19 @@
-package com.github.derrop.labymod.addons.emotechat.gui.chatrender;
+package com.github.derrop.labymod.addons.emotechat.gui.chat.render;
 
 import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
 import net.labymod.ingamechat.IngameChatManager;
 import net.labymod.ingamechat.renderer.ChatLine;
-import net.labymod.ingamechat.renderer.types.ChatRendererMain;
+import net.labymod.ingamechat.renderer.types.ChatRendererSecond;
 import net.minecraft.client.gui.GuiChat;
 
 import java.util.List;
 
-public class EmoteChatRendererMain extends ChatRendererMain implements EmoteChatRendererType {
+public class EmoteChatRendererSecond extends ChatRendererSecond implements EmoteChatRendererType {
 
     private final EmoteChatRenderer renderer;
     private GuiChat lastGuiChat;
 
-    public EmoteChatRendererMain(IngameChatManager manager, EmoteChatAddon addon, List<ChatLine> lines) {
+    public EmoteChatRendererSecond(IngameChatManager manager, EmoteChatAddon addon, List<ChatLine> lines) {
         super(manager);
         super.getChatLines().addAll(lines);
         this.renderer = new EmoteChatRenderer(this, manager, addon);
@@ -47,6 +47,11 @@ public class EmoteChatRendererMain extends ChatRendererMain implements EmoteChat
     }
 
     @Override
+    public boolean renderHoveringResizeY(boolean forceRender) {
+        return this.renderer.renderHoveringResizeY(forceRender);
+    }
+
+    @Override
     public String selectHoveredTab() {
         this.renderer.handleClicked(this.lastGuiChat);
         return super.selectHoveredTab();
@@ -54,11 +59,6 @@ public class EmoteChatRendererMain extends ChatRendererMain implements EmoteChat
 
     public void setLastGuiChat(GuiChat lastGuiChat) {
         this.lastGuiChat = lastGuiChat;
-    }
-
-    @Override
-    public boolean renderHoveringResizeY(boolean forceRender) {
-        return this.renderer.renderHoveringResizeY(forceRender);
     }
 
 }
