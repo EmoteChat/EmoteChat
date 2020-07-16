@@ -20,4 +20,5 @@ public abstract class PredicateClassNodeTransformer implements PredicateClassTra
         node.accept(writer);
         return writer.toByteArray();
     }
+
 }

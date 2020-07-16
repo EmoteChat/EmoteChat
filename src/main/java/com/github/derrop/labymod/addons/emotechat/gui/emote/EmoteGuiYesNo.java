@@ -33,4 +33,5 @@ public class EmoteGuiYesNo extends GuiYesNo {
 
         LabyMod.getInstance().getDrawUtils().drawTexture(x, y, 256, 256, Constants.CHAT_EMOTE_SIZE, Constants.CHAT_EMOTE_SIZE, 1F);
     }
+
 }

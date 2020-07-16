@@ -11,4 +11,5 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
         super(defaultText);
         this.addon = addon;
     }
+
 }

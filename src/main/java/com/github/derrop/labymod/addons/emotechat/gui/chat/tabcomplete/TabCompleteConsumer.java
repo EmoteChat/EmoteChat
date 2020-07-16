@@ -167,7 +167,7 @@ public class TabCompleteConsumer implements ModuleGui.KeyConsumer, ModuleGui.Coo
                     .max(Comparator.comparingInt(emote -> emote.getName().length()))
                     .ifPresent(emote ->
                             this.dropDownMenu.setWidth(
-                                    (int) (fontRenderer.getStringWidth(emote.getName()) + (Constants.SETTINGS_EMOTE_SIZE * 1.5) + 30)
+                                    (int) (fontRenderer.getStringWidth(emote.getName()) + (Constants.SETTINGS_EMOTE_SIZE * 2.5))
                             )
                     );
 
