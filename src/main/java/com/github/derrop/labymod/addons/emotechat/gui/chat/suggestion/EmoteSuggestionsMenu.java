@@ -1,4 +1,4 @@
-package com.github.derrop.labymod.addons.emotechat.gui.chat.tabcomplete;
+package com.github.derrop.labymod.addons.emotechat.gui.chat.suggestion;
 
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
@@ -20,11 +20,11 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TabCompleteConsumer implements ModuleGui.KeyConsumer, ModuleGui.CoordinatesConsumer {
+public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.CoordinatesConsumer {
 
     private final EmoteChatAddon addon;
 
-    private final EmoteDropDownMenu dropDownMenu = new EmoteDropDownMenu(null, 0, 0, 0, 13);
+    private final EmoteDropDownMenu suggestionMenu = new EmoteDropDownMenu(null, 0, 0, 0, 13);
 
     private GuiTextField textField;
 
@@ -32,24 +32,24 @@ public class TabCompleteConsumer implements ModuleGui.KeyConsumer, ModuleGui.Coo
 
     private GuiScreen lastGui;
 
-    public TabCompleteConsumer(EmoteChatAddon addon) {
+    public EmoteSuggestionsMenu(EmoteChatAddon addon) {
         this.addon = addon;
     }
 
     @Override
     public void accept(char typedChar, int keyCode) {
-        if (this.dropDownMenu.getEmoteList().size() > 0) {
+        if (this.suggestionMenu.getEmoteList().size() > 0) {
             if (keyCode == 200 || keyCode == 208) {
-                BTTVEmote selected = this.dropDownMenu.getSelected();
+                BTTVEmote selected = this.suggestionMenu.getSelected();
 
                 if (selected != null) {
-                    List<BTTVEmote> emoteList = this.dropDownMenu.getEmoteList();
+                    List<BTTVEmote> emoteList = this.suggestionMenu.getEmoteList();
 
                     int currentIndex = emoteList.indexOf(selected);
                     int newIndex = currentIndex + (keyCode == 200 ? -1 : 1);
 
                     if (newIndex >= 0 && newIndex < emoteList.size()) {
-                        this.dropDownMenu.setSelected(emoteList.get(newIndex));
+                        this.suggestionMenu.setSelected(emoteList.get(newIndex));
                         return;
                     }
                 }
@@ -74,21 +74,21 @@ public class TabCompleteConsumer implements ModuleGui.KeyConsumer, ModuleGui.Coo
                         .sorted(Comparator.comparingInt(emote -> emote.getName().length() - query.length()))
                         .collect(Collectors.toList());
 
-                this.dropDownMenu.update(emotes);
+                this.suggestionMenu.update(emotes);
 
                 this.lastQuery = query;
             }
         } else {
-            this.dropDownMenu.update(new ArrayList<>());
+            this.suggestionMenu.update(new ArrayList<>());
         }
     }
 
     @Override
     public void accept(int mouseX, int mouseY, int state, EnumDisplayType displayType) {
-        BTTVEmote hoverSelected = this.dropDownMenu.getHoverSelected();
+        BTTVEmote hoverSelected = this.suggestionMenu.getHoverSelected();
 
         if (hoverSelected != null) {
-            this.dropDownMenu.setSelected(hoverSelected);
+            this.suggestionMenu.setSelected(hoverSelected);
             this.getCurrentEmoteWord().ifPresent(this::replaceCurrentEmoteWord);
         }
     }
@@ -112,13 +112,13 @@ public class TabCompleteConsumer implements ModuleGui.KeyConsumer, ModuleGui.Coo
     }
 
     private void replaceCurrentEmoteWord(String currentEmoteWord) {
-        BTTVEmote selected = this.dropDownMenu.getSelected();
+        BTTVEmote selected = this.suggestionMenu.getSelected();
 
         if (selected != null) {
             this.textField.setText(this.textField.getText().replace(
                     currentEmoteWord, Constants.EMOTE_WRAPPER + selected.getName() + Constants.EMOTE_WRAPPER
             ));
-            this.dropDownMenu.update(new ArrayList<>());
+            this.suggestionMenu.update(new ArrayList<>());
         }
     }
 
@@ -128,53 +128,63 @@ public class TabCompleteConsumer implements ModuleGui.KeyConsumer, ModuleGui.Coo
 
         if (!Objects.equals(currentGui, this.lastGui)) {
             if (this.lastGui instanceof GuiChat) {
-                this.dropDownMenu.clear();
+                this.suggestionMenu.clear();
             }
 
-            if (currentGui instanceof GuiChat) {
-                try {
-                    Field textFieldField = Arrays.stream(GuiChat.class.getDeclaredFields())
-                            .filter(field -> field.getType().equals(GuiTextField.class))
-                            .findFirst()
-                            .orElse(null);
-
-                    if (textFieldField != null) {
-                        textFieldField.setAccessible(true);
-
-                        this.textField = (GuiTextField) textFieldField.get(currentGui);
-                    }
-                } catch (IllegalAccessException exception) {
-                    exception.printStackTrace();
-                }
-            }
+            this.textField = this.getTextField(currentGui);
 
             this.lastGui = currentGui;
         }
 
-        if (this.dropDownMenu.getEmoteList().size() > 0) {
-            this.dropDownMenu.setEnabled(false);
-            this.dropDownMenu.setOpen(true);
-
-            FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
-
-            int queryStart = fontRenderer.getStringWidth(this.textField.getText()) - fontRenderer.getStringWidth(this.lastQuery);
-
-            this.dropDownMenu.setX(this.textField.xPosition + queryStart - 1);
-            this.dropDownMenu.setY(this.textField.yPosition - (this.dropDownMenu.getHeight() * (this.dropDownMenu.getEmoteList().size() + 1)) - 3);
-
-            this.dropDownMenu.getEmoteList()
-                    .stream()
-                    .max(Comparator.comparingInt(emote -> emote.getName().length()))
-                    .ifPresent(emote ->
-                            this.dropDownMenu.setWidth(
-                                    (int) (fontRenderer.getStringWidth(emote.getName()) + (Constants.SETTINGS_EMOTE_SIZE * 2.5))
-                            )
-                    );
-
-            ModuleGui moduleGui = GuiChatCustom.getModuleGui();
-
-            this.dropDownMenu.draw((int) moduleGui.getMouseX(), (int) moduleGui.getMouseY());
+        if (this.suggestionMenu.getEmoteList().size() > 0) {
+            this.drawSuggestionMenu();
         }
+    }
+
+    private GuiTextField getTextField(GuiScreen gui) {
+        if (gui instanceof GuiChat) {
+            try {
+                Field textFieldField = Arrays.stream(GuiChat.class.getDeclaredFields())
+                        .filter(field -> field.getType().equals(GuiTextField.class))
+                        .findFirst()
+                        .orElse(null);
+
+                if (textFieldField != null) {
+                    textFieldField.setAccessible(true);
+
+                    return (GuiTextField) textFieldField.get(gui);
+                }
+            } catch (IllegalAccessException exception) {
+                exception.printStackTrace();
+            }
+        }
+
+        return null;
+    }
+
+    private void drawSuggestionMenu() {
+        this.suggestionMenu.setEnabled(false);
+        this.suggestionMenu.setOpen(true);
+
+        FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
+
+        int queryWidth = fontRenderer.getStringWidth(this.textField.getText()) - fontRenderer.getStringWidth(this.lastQuery);
+
+        this.suggestionMenu.setX(this.textField.xPosition + queryWidth - 1);
+        this.suggestionMenu.setY(this.textField.yPosition - (this.suggestionMenu.getHeight() * (this.suggestionMenu.getEmoteList().size() + 1)) - 3);
+
+        this.suggestionMenu.getEmoteList()
+                .stream()
+                .max(Comparator.comparingInt(emote -> emote.getName().length()))
+                .ifPresent(emote ->
+                        this.suggestionMenu.setWidth(
+                                (int) (fontRenderer.getStringWidth(emote.getName()) + (Constants.SETTINGS_EMOTE_SIZE * 2.5))
+                        )
+                );
+
+        ModuleGui moduleGui = GuiChatCustom.getModuleGui();
+
+        this.suggestionMenu.draw((int) moduleGui.getMouseX(), (int) moduleGui.getMouseY());
     }
 
 }

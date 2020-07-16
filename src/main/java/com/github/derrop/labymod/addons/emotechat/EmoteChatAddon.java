@@ -4,7 +4,7 @@ import com.github.derrop.labymod.addons.emotechat.asm.packet.PacketHandler;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVSearch;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.settings.ChatShortcut;
-import com.github.derrop.labymod.addons.emotechat.gui.chat.tabcomplete.TabCompleteConsumer;
+import com.github.derrop.labymod.addons.emotechat.gui.chat.suggestion.EmoteSuggestionsMenu;
 import com.github.derrop.labymod.addons.emotechat.gui.element.ButtonElement;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteDropDownMenu;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteListContainerElement;
@@ -41,10 +41,10 @@ public class EmoteChatAddon extends LabyModAddon {
         super.getApi().registerForgeListener(this.minecraftTickExecutor);
         super.getApi().registerForgeListener(new ChatInjectListener(this));
 
-        TabCompleteConsumer tabCompleteConsumer = new TabCompleteConsumer(this);
-        super.getApi().registerForgeListener(tabCompleteConsumer);
-        GuiChatCustom.getModuleGui().getKeyTypeListeners().add(tabCompleteConsumer);
-        GuiChatCustom.getModuleGui().getMouseClickListeners().add(tabCompleteConsumer);
+        EmoteSuggestionsMenu emoteSuggestionsMenu = new EmoteSuggestionsMenu(this);
+        super.getApi().registerForgeListener(emoteSuggestionsMenu);
+        GuiChatCustom.getModuleGui().getKeyTypeListeners().add(emoteSuggestionsMenu);
+        GuiChatCustom.getModuleGui().getMouseClickListeners().add(emoteSuggestionsMenu);
 
         PacketHandler.setChatModifier(new ChatSendListener(this));
         ChatShortcut.initListener(this);
