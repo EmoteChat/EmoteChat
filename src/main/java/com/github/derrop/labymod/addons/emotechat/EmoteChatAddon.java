@@ -13,6 +13,7 @@ import com.github.derrop.labymod.addons.emotechat.listener.ChatSendListener;
 import com.github.derrop.labymod.addons.emotechat.listener.MinecraftTickExecutor;
 import com.google.gson.reflect.TypeToken;
 import net.labymod.api.LabyModAddon;
+import net.labymod.ingamechat.GuiChatCustom;
 import net.labymod.settings.elements.*;
 import net.labymod.utils.Material;
 
@@ -39,7 +40,11 @@ public class EmoteChatAddon extends LabyModAddon {
     public void onEnable() {
         super.getApi().registerForgeListener(this.minecraftTickExecutor);
         super.getApi().registerForgeListener(new ChatInjectListener(this));
-        super.getApi().registerForgeListener(new TabCompleteConsumer(this));
+
+        TabCompleteConsumer tabCompleteConsumer = new TabCompleteConsumer(this);
+        super.getApi().registerForgeListener(tabCompleteConsumer);
+        GuiChatCustom.getModuleGui().getKeyTypeListeners().add(tabCompleteConsumer);
+        GuiChatCustom.getModuleGui().getMouseClickListeners().add(tabCompleteConsumer);
 
         PacketHandler.setChatModifier(new ChatSendListener(this));
         ChatShortcut.initListener(this);
