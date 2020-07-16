@@ -7,6 +7,7 @@ import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteDropDownMenu;
 import net.labymod.ingamechat.GuiChatCustom;
 import net.labymod.ingamegui.ModuleGui;
+import net.labymod.ingamegui.enums.EnumDisplayType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiChat;
@@ -19,7 +20,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TabCompleteConsumer implements ModuleGui.KeyConsumer {
+public class TabCompleteConsumer implements ModuleGui.KeyConsumer, ModuleGui.CoordinatesConsumer {
 
     private final EmoteChatAddon addon;
 
@@ -47,7 +48,7 @@ public class TabCompleteConsumer implements ModuleGui.KeyConsumer {
                     int currentIndex = emoteList.indexOf(selected);
                     int newIndex = currentIndex + (keyCode == 200 ? -1 : 1);
 
-                    if (newIndex > 0 && newIndex < emoteList.size()) {
+                    if (newIndex >= 0 && newIndex < emoteList.size()) {
                         this.dropDownMenu.setSelected(emoteList.get(newIndex));
                         return;
                     }
@@ -55,6 +56,44 @@ public class TabCompleteConsumer implements ModuleGui.KeyConsumer {
             }
         }
 
+        Optional<String> currentWordOptional = this.getCurrentEmoteWord();
+
+        if (currentWordOptional.isPresent()) {
+            String currentEmoteWord = currentWordOptional.get();
+
+            if (keyCode == 205) {
+                this.replaceCurrentEmoteWord(currentEmoteWord);
+                return;
+            }
+
+            String query = currentEmoteWord.replaceFirst(Constants.EMOTE_WRAPPER, "").toLowerCase();
+
+            if (!Objects.equals(query, this.lastQuery)) {
+                List<BTTVEmote> emotes = this.addon.getSavedEmotes().values().stream()
+                        .filter(emote -> emote.getName().toLowerCase().contains(query))
+                        .sorted(Comparator.comparingInt(emote -> emote.getName().length() - query.length()))
+                        .collect(Collectors.toList());
+
+                this.dropDownMenu.update(emotes);
+
+                this.lastQuery = query;
+            }
+        } else {
+            this.dropDownMenu.update(new ArrayList<>());
+        }
+    }
+
+    @Override
+    public void accept(int mouseX, int mouseY, int state, EnumDisplayType displayType) {
+        BTTVEmote hoverSelected = this.dropDownMenu.getHoverSelected();
+
+        if (hoverSelected != null) {
+            this.dropDownMenu.setSelected(hoverSelected);
+            this.getCurrentEmoteWord().ifPresent(this::replaceCurrentEmoteWord);
+        }
+    }
+
+    private Optional<String> getCurrentEmoteWord() {
         String chatText = this.textField.getText();
 
         if (chatText != null && !chatText.isEmpty()) {
@@ -64,36 +103,23 @@ public class TabCompleteConsumer implements ModuleGui.KeyConsumer {
                 String currentWord = words[words.length - 1];
 
                 if (currentWord.startsWith(Constants.EMOTE_WRAPPER) && !currentWord.endsWith(Constants.EMOTE_WRAPPER)) {
-                    if (keyCode == 205) {
-                        BTTVEmote selected = this.dropDownMenu.getSelected();
-
-                        if (selected != null) {
-                            this.textField.setText(chatText.replace(currentWord, Constants.EMOTE_WRAPPER + selected.getName() + Constants.EMOTE_WRAPPER));
-                            this.dropDownMenu.update(new ArrayList<>());
-
-                            return;
-                        }
-                    }
-
-                    String query = currentWord.replaceFirst(Constants.EMOTE_WRAPPER, "").toLowerCase();
-
-                    if (!Objects.equals(query, this.lastQuery)) {
-                        List<BTTVEmote> emotes = this.addon.getSavedEmotes().values().stream()
-                                .filter(emote -> emote.getName().toLowerCase().contains(query))
-                                .sorted(Comparator.comparingInt(emote -> emote.getName().length() - query.length()))
-                                .collect(Collectors.toList());
-
-                        this.dropDownMenu.update(emotes);
-
-                        this.lastQuery = query;
-                    }
-
-                    return;
+                    return Optional.of(currentWord);
                 }
             }
         }
 
-        this.dropDownMenu.update(new ArrayList<>());
+        return Optional.empty();
+    }
+
+    private void replaceCurrentEmoteWord(String currentEmoteWord) {
+        BTTVEmote selected = this.dropDownMenu.getSelected();
+
+        if (selected != null) {
+            this.textField.setText(this.textField.getText().replace(
+                    currentEmoteWord, Constants.EMOTE_WRAPPER + selected.getName() + Constants.EMOTE_WRAPPER
+            ));
+            this.dropDownMenu.update(new ArrayList<>());
+        }
     }
 
     @SubscribeEvent
@@ -126,13 +152,14 @@ public class TabCompleteConsumer implements ModuleGui.KeyConsumer {
         }
 
         if (this.dropDownMenu.getEmoteList().size() > 0) {
+            this.dropDownMenu.setEnabled(false);
             this.dropDownMenu.setOpen(true);
 
             FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
 
             int queryStart = fontRenderer.getStringWidth(this.textField.getText()) - fontRenderer.getStringWidth(this.lastQuery);
 
-            this.dropDownMenu.setX(this.textField.xPosition + queryStart);
+            this.dropDownMenu.setX(this.textField.xPosition + queryStart - 1);
             this.dropDownMenu.setY(this.textField.yPosition - (this.dropDownMenu.getHeight() * (this.dropDownMenu.getEmoteList().size() + 1)) - 3);
 
             this.dropDownMenu.getEmoteList()

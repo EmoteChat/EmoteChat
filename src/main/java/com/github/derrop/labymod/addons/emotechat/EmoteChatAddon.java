@@ -43,6 +43,7 @@ public class EmoteChatAddon extends LabyModAddon {
         TabCompleteConsumer tabCompleteConsumer = new TabCompleteConsumer(this);
         super.getApi().registerForgeListener(tabCompleteConsumer);
         GuiChatCustom.getModuleGui().getKeyTypeListeners().add(tabCompleteConsumer);
+        GuiChatCustom.getModuleGui().getMouseClickListeners().add(tabCompleteConsumer);
 
         PacketHandler.setChatModifier(new ChatSendListener(this));
     }
