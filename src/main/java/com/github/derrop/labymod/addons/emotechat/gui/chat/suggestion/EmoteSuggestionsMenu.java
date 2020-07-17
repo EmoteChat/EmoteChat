@@ -39,14 +39,17 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
     @Override
     public void accept(char typedChar, int keyCode) {
         if (this.suggestionMenu.getEmoteList().size() > 0) {
-            if (keyCode == 200 || keyCode == 208) {
+            boolean down = keyCode == 208;
+            boolean up = keyCode == 200;
+
+            if (down || up) {
                 BTTVEmote selected = this.suggestionMenu.getSelected();
 
                 if (selected != null) {
                     List<BTTVEmote> emoteList = this.suggestionMenu.getEmoteList();
 
                     int currentIndex = emoteList.indexOf(selected);
-                    int newIndex = currentIndex + (keyCode == 200 ? -1 : 1);
+                    int newIndex = up && currentIndex == 0 ? emoteList.size() - 1 : down && currentIndex == emoteList.size() - 1 ? 0 : currentIndex + (up ? -1 : 1);
 
                     if (newIndex >= 0 && newIndex < emoteList.size()) {
                         this.suggestionMenu.setSelected(emoteList.get(newIndex));

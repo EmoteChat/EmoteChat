@@ -138,8 +138,6 @@ public class ChatInjectListener {
 
         GuiChat chat = (GuiChat) event.gui;
 
-        System.out.println(chat.getClass());
-
         this.main.setLastGuiChat(chat);
         this.second.setLastGuiChat(chat);
 
