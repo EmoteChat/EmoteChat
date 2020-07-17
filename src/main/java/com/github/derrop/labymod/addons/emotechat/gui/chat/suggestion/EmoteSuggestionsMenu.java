@@ -24,7 +24,7 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
 
     private final EmoteChatAddon addon;
 
-    private final EmoteDropDownMenu suggestionMenu = new EmoteDropDownMenu(null, 0, 0, 0, 13);
+    private final EmoteDropDownMenu suggestionMenu = new EmoteDropDownMenu(true, null, 0, 0, 0, 13);
 
     private GuiTextField textField;
 
@@ -176,7 +176,7 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
 
         int queryWidth = fontRenderer.getStringWidth(this.textField.getText()) - fontRenderer.getStringWidth(this.lastQuery);
 
-        this.suggestionMenu.setX(this.textField.xPosition + queryWidth - 1);
+        this.suggestionMenu.setX(this.textField.xPosition + queryWidth - 1); // TODO this is not updated when resizing the window
         this.suggestionMenu.setY(this.textField.yPosition - (this.suggestionMenu.getHeight() * (this.suggestionMenu.getEmoteList().size() + 1)) - 3);
 
         this.suggestionMenu.getEmoteList()

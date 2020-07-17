@@ -114,7 +114,7 @@ public class EmoteChatAddon extends LabyModAddon {
 
     private ListContainerElement createEmoteAddMenu() {
         ListContainerElement emoteAddMenu = new ListContainerElement("Add emote", new ControlElement.IconData(Material.NETHER_STAR));
-        EmoteDropDownMenu searchResultList = new EmoteDropDownMenu("Results");
+        EmoteDropDownMenu searchResultList = new EmoteDropDownMenu(false, "Results");
 
         StringElement searchBarElement = new StringElement("Search for emotes on BTTV", new ControlElement.IconData(Material.ITEM_FRAME), "", input -> {
             if (input.length() > 2) {

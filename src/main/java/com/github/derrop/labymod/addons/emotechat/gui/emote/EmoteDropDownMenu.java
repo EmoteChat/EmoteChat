@@ -30,11 +30,16 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
     }
 
     private List<BTTVEmote> emoteList;
+    private final boolean highlightSelected;
 
-    public EmoteDropDownMenu(String title, int x, int y, int width, int height) {
+    public EmoteDropDownMenu(boolean highlightSelected, String title, int x, int y, int width, int height) {
         super(title, x, y, width, height);
+        this.highlightSelected = highlightSelected;
         super.setEntryDrawer((Object object, int entityX, int entityY, String trimmedEntry) -> {
             BTTVEmote emote = (BTTVEmote) object;
+
+            BTTVEmote selected = getSelected();
+            boolean highlight = this.highlightSelected && selected != null && selected.getId().equals(emote.getId());
 
             Minecraft.getMinecraft().getTextureManager().bindTexture(emote.asIconData().getTextureIcon());
 
@@ -43,7 +48,8 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
                     256, 256,
                     Constants.SETTINGS_EMOTE_SIZE, Constants.SETTINGS_EMOTE_SIZE
             );
-            LabyMod.getInstance().getDrawUtils().drawString(emote.getName(), entityX + (Constants.SETTINGS_EMOTE_SIZE * 1.5), entityY);
+            LabyMod.getInstance().getDrawUtils().fontRenderer
+                    .drawString(emote.getName(), (float) (entityX + (Constants.SETTINGS_EMOTE_SIZE * 1.5)), (float) entityY, highlight ? 16777120 : 16777215, true);
         });
 
         try {
@@ -56,8 +62,8 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
         }
     }
 
-    public EmoteDropDownMenu(String title) {
-        this(title, 0, 0, 0, 0);
+    public EmoteDropDownMenu(boolean highlightSelected, String title) {
+        this(highlightSelected, title, 0, 0, 0, 0);
     }
 
     public void update(Collection<BTTVEmote> emotes) {
