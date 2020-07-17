@@ -5,6 +5,7 @@ import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVSearch;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.settings.ChatShortcut;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.suggestion.EmoteSuggestionsMenu;
+import com.github.derrop.labymod.addons.emotechat.gui.chat.suggestion.KeyTypedHandler;
 import com.github.derrop.labymod.addons.emotechat.gui.element.ButtonElement;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteDropDownMenu;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteListContainerElement;
@@ -45,6 +46,8 @@ public class EmoteChatAddon extends LabyModAddon {
         super.getApi().registerForgeListener(emoteSuggestionsMenu);
         GuiChatCustom.getModuleGui().getKeyTypeListeners().add(emoteSuggestionsMenu);
         GuiChatCustom.getModuleGui().getMouseClickListeners().add(emoteSuggestionsMenu);
+
+        KeyTypedHandler.setEmoteSuggestionsMenu(emoteSuggestionsMenu);
 
         PacketHandler.setChatModifier(new ChatSendListener(this));
         ChatShortcut.initListener(this);

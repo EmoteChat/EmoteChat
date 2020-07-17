@@ -53,6 +53,9 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
                         return;
                     }
                 }
+            } else if (keyCode == 1) {
+                this.suggestionMenu.clear();
+                return;
             }
         }
 
@@ -61,7 +64,7 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
         if (currentWordOptional.isPresent()) {
             String currentEmoteWord = currentWordOptional.get();
 
-            if (keyCode == 205) {
+            if (keyCode == 28) {
                 this.replaceCurrentEmoteWord(currentEmoteWord);
                 return;
             }
@@ -79,7 +82,7 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
                 this.lastQuery = query;
             }
         } else {
-            this.suggestionMenu.update(new ArrayList<>());
+            this.suggestionMenu.clear();
         }
     }
 
@@ -185,6 +188,10 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
         ModuleGui moduleGui = GuiChatCustom.getModuleGui();
 
         this.suggestionMenu.draw((int) moduleGui.getMouseX(), (int) moduleGui.getMouseY());
+    }
+
+    public EmoteDropDownMenu getSuggestionMenu() {
+        return suggestionMenu;
     }
 
 }
