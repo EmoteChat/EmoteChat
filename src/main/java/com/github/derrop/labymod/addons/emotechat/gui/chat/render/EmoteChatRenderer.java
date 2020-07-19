@@ -40,7 +40,7 @@ public class EmoteChatRenderer {
 
     private static final Field DOWNLOADED_IMAGE_CONTENT_FIELD;
 
-    private static final int SPACE_LENGTH = Minecraft.getMinecraft().fontRendererObj.getStringWidth(" ");
+    private static final int SPACE_LENGTH = Minecraft.getMinecraft().fontRendererObj.getCharWidth(' ');
 
     static {
         Field scrollPos = null;

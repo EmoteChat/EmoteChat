@@ -19,7 +19,7 @@ public class ChatWidthCalculator {
         return !useColors && !Minecraft.getMinecraft().gameSettings.chatColours ? EnumChatFormatting.getTextWithoutFormattingCodes(text) : text;
     }
 
-    public static List<IChatComponent> calculateLines(IChatComponent component, int chatWidth, FontRenderer renderer, boolean unused, boolean useColors) {
+    public static List<IChatComponent> calculateLines(IChatComponent component, int chatWidth, FontRenderer renderer, boolean unknown, boolean useColors) {
         int fullLength = 0;
         IChatComponent fullComponent = new ChatComponentText("");
         List<IChatComponent> output = Lists.newArrayList();
@@ -29,34 +29,35 @@ public class ChatWidthCalculator {
             IChatComponent currentComponent = input.get(j);
             String inputText = currentComponent.getUnformattedTextForChat();
             boolean flag = false;
-            String finalText;
-            if (inputText.contains("\n")) {
-                int k = inputText.indexOf(10);
-                finalText = inputText.substring(k + 1);
-                inputText = inputText.substring(0, k + 1);
-                ChatComponentText chatcomponenttext = new ChatComponentText(finalText);
+            int newLine = inputText.indexOf('\n');
+            if (newLine != -1) {
+                String nextText = inputText.substring(newLine + 1);
+                inputText = inputText.substring(0, newLine + 1);
+                ChatComponentText chatcomponenttext = new ChatComponentText(nextText);
                 chatcomponenttext.setChatStyle(currentComponent.getChatStyle().createShallowCopy());
                 input.add(j + 1, chatcomponenttext);
                 flag = true;
             }
 
             String formattedText = format(currentComponent.getChatStyle().getFormattingCode() + inputText, useColors);
-            finalText = formattedText.endsWith("\n") ? formattedText.substring(0, formattedText.length() - 1) : formattedText;
+            String finalText = formattedText.endsWith("\n") ? formattedText.substring(0, formattedText.length() - 1) : formattedText;
             int currentWidth = getStringWidth(renderer, finalText);
+
             ChatComponentText finalComponent = new ChatComponentText(finalText);
             finalComponent.setChatStyle(currentComponent.getChatStyle().createShallowCopy());
+
             if (fullLength + currentWidth > chatWidth) {
                 String trimmedText = trimStringToWidth(renderer, formattedText, chatWidth - fullLength, false);
                 String overflowText = trimmedText.length() < formattedText.length() ? formattedText.substring(trimmedText.length()) : null;
                 if (overflowText != null) {
-                    int l = trimmedText.lastIndexOf(" ");
-                    if (l >= 0 && getStringWidth(renderer, formattedText.substring(0, l)) > 0) {
-                        trimmedText = formattedText.substring(0, l);
-                        if (unused) {
-                            ++l;
+                    int lastSpace = trimmedText.lastIndexOf(' ');
+                    if (lastSpace >= 0 && getStringWidth(renderer, formattedText.substring(0, lastSpace)) > 0) {
+                        trimmedText = formattedText.substring(0, lastSpace);
+                        if (unknown) {
+                            ++lastSpace;
                         }
 
-                        overflowText = formattedText.substring(l);
+                        overflowText = formattedText.substring(lastSpace);
                     } else if (fullLength > 0 && !formattedText.contains(" ")) {
                         trimmedText = "";
                         overflowText = formattedText;
@@ -98,7 +99,7 @@ public class ChatWidthCalculator {
             return 0;
         }
 
-        int spaceWidth = renderer.getStringWidth(" ");
+        int spaceWidth = renderer.getCharWidth(' ');
         int finalWidth = 0;
 
         for (ChatLineEntry entry : entries) {
@@ -130,23 +131,26 @@ public class ChatWidthCalculator {
 
             emote = checkEmote(text, c, i);
 
-            int cWidth = emote ? Constants.CHAT_EMOTE_SIZE : renderer.getCharWidth(c);
-
-            if (isColor) {
-                isColor = false;
-                if (c != 'l' && c != 'L') {
-                    if (c == 'r' || c == 'R') {
-                        ignoreColor = false;
-                    }
-                } else {
-                    ignoreColor = true;
-                }
-            } else if (cWidth < 0) {
-                isColor = true;
+            if (emote) {
+                currentWidth += Constants.CHAT_EMOTE_SIZE;
             } else {
-                currentWidth += cWidth;
-                if (ignoreColor) {
-                    ++currentWidth;
+                int cWidth = renderer.getCharWidth(c);
+                if (isColor) {
+                    isColor = false;
+                    if (c != 'l' && c != 'L') {
+                        if (c == 'r' || c == 'R') {
+                            ignoreColor = false;
+                        }
+                    } else {
+                        ignoreColor = true;
+                    }
+                } else if (cWidth < 0) {
+                    isColor = true;
+                } else {
+                    currentWidth += cWidth;
+                    if (ignoreColor) {
+                        ++currentWidth;
+                    }
                 }
             }
 
