@@ -1,6 +1,7 @@
 package com.github.derrop.labymod.addons.emotechat.asm;
 
-import com.github.derrop.labymod.addons.emotechat.asm.chatinput.ChatKeyTypedClassTransformer;
+import com.github.derrop.labymod.addons.emotechat.asm.chat.ChatKeyTypedClassTransformer;
+import com.github.derrop.labymod.addons.emotechat.asm.chat.ChatWidthCalculateClassTransformer;
 import com.github.derrop.labymod.addons.emotechat.asm.packet.PacketHandlerClassTransformer;
 import net.minecraft.launchwrapper.IClassTransformer;
 
@@ -10,7 +11,8 @@ public class EmoteClassTransformer implements IClassTransformer {
 
     private static final PredicateClassTransformer[] CLASS_TRANSFORMERS = new PredicateClassTransformer[]{
             new PacketHandlerClassTransformer(),
-            new ChatKeyTypedClassTransformer()
+            new ChatKeyTypedClassTransformer(),
+            new ChatWidthCalculateClassTransformer()
     };
 
     @Override

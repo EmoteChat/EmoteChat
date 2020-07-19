@@ -20,6 +20,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// TODO add a limit for emotes displayed at the same time and a scrollbar
 public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.CoordinatesConsumer {
 
     private final EmoteChatAddon addon;
@@ -72,7 +73,7 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
                 return;
             }
 
-            String query = currentEmoteWord.replaceFirst(Constants.EMOTE_WRAPPER, "").toLowerCase();
+            String query = currentEmoteWord.substring(1).toLowerCase();
 
             if (!Objects.equals(query, this.lastQuery)) {
                 List<BTTVEmote> emotes = this.addon.getSavedEmotes().values().stream()
@@ -108,7 +109,7 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
             if (words.length > 0) {
                 String currentWord = words[words.length - 1];
 
-                if (currentWord.startsWith(Constants.EMOTE_WRAPPER) && !currentWord.endsWith(Constants.EMOTE_WRAPPER)) {
+                if (currentWord.length() != 0 && currentWord.charAt(0) == Constants.EMOTE_WRAPPER && (currentWord.length() == 1 || currentWord.charAt(currentWord.length() - 1) != Constants.EMOTE_WRAPPER)) {
                     return Optional.of(currentWord);
                 }
             }

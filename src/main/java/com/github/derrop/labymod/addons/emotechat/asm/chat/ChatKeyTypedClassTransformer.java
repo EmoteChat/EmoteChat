@@ -1,4 +1,4 @@
-package com.github.derrop.labymod.addons.emotechat.asm.chatinput;
+package com.github.derrop.labymod.addons.emotechat.asm.chat;
 
 
 import com.github.derrop.labymod.addons.emotechat.asm.PredicateClassNodeTransformer;

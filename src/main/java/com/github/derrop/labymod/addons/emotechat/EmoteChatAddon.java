@@ -23,7 +23,6 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
-// TODO: Line width is calculated with the text, but an emote is only Constants.CHAT_EMOTE_SIZE in width
 public class EmoteChatAddon extends LabyModAddon {
 
     public static final Type SAVED_EMOTES_TYPE_TOKEN = new TypeToken<Map<String, BTTVEmote>>() {
