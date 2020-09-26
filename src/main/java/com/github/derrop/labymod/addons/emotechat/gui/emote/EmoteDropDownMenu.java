@@ -30,6 +30,7 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
     }
 
     private List<BTTVEmote> emoteList;
+
     private final boolean highlightSelected;
 
     public EmoteDropDownMenu(boolean highlightSelected, String title, int x, int y, int width, int height) {
@@ -38,7 +39,7 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
         super.setEntryDrawer((Object object, int entityX, int entityY, String trimmedEntry) -> {
             BTTVEmote emote = (BTTVEmote) object;
 
-            BTTVEmote selected = getSelected();
+            BTTVEmote selected = super.getSelected();
             boolean highlight = this.highlightSelected && selected != null && selected.getId().equals(emote.getId());
 
             Minecraft.getMinecraft().getTextureManager().bindTexture(emote.asIconData().getTextureIcon());
