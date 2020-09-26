@@ -2,11 +2,12 @@ package com.github.derrop.labymod.addons.emotechat.gui;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
-import net.labymod.settings.elements.ControlElement;
+import net.minecraft.client.gui.FontRenderer;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ChatLineEntry {
 
@@ -17,12 +18,13 @@ public class ChatLineEntry {
 
     private final String content;
     private final String rawContent;
-    private String colors = "";
+    private String colors;
 
-    public ChatLineEntry(boolean emote, String content, String rawContent) {
+    public ChatLineEntry(boolean emote, String content, String rawContent, String colors) {
         this.emote = emote;
         this.content = content;
         this.rawContent = rawContent;
+        this.colors = colors;
     }
 
     public BTTVEmote getAsEmote() {
@@ -41,56 +43,20 @@ public class ChatLineEntry {
         return this.colors;
     }
 
-    // TODO: still wrong colors
     // TODO: spaces are not displayed with fat (§l) strings
     public static Collection<ChatLineEntry> parseEntries(String line) {
-        if (line.endsWith("§r")) {
-            line = line.substring(0, line.length() - 2);
-        }
+        StringBuilder currentLine = new StringBuilder();
 
-        ChatLineEntry[] entries = Arrays.stream(line.split(" ")).map(word -> {
+        return Arrays.stream(line.split(" ")).map(word -> {
             String strippedWord = STRIP_COLOR_PATTERN.matcher(word).replaceAll("");
-            boolean emote = strippedWord.length() > (Constants.EMOTE_WRAPPER.length() * 2)
-                    && strippedWord.startsWith(Constants.EMOTE_WRAPPER) && strippedWord.endsWith(Constants.EMOTE_WRAPPER);
+            boolean emote = strippedWord.length() > 2
+                    && strippedWord.charAt(0) == Constants.EMOTE_WRAPPER && strippedWord.charAt(strippedWord.length() - 1) == Constants.EMOTE_WRAPPER;
 
-            return new ChatLineEntry(emote, (emote ? strippedWord.substring(Constants.EMOTE_WRAPPER.length(), strippedWord.length() - Constants.EMOTE_WRAPPER.length()) : word), word);
-        }).toArray(ChatLineEntry[]::new);
+            String colors = FontRenderer.getFormatFromString(currentLine.toString());
+            currentLine.append(word);
 
-        for (int i = 0; i < entries.length; i++) {
-            if (i != 0) {
-                for (int j = i; j >= 0; j--) {
-                    String colors = getLastColors(entries[j].rawContent);
-                    if (!colors.isEmpty()) {
-                        entries[i].colors = colors;
-                        break;
-                    }
-                }
-
-            }
-        }
-
-        return Arrays.asList(entries);
-    }
-
-    public static String getLastColors(String input) {
-        StringBuilder result = new StringBuilder();
-        int length = input.length();
-
-        for (int index = length - 1; index >= 0; index--) {
-            char section = input.charAt(index);
-            if (section == COLOR_CHAR && index < length - 1) {
-                char c = input.charAt(index + 1);
-
-                if ((c >= 48 && c <= 57) || (c >= 97 && c <= 102) || c == 114) { // color/reset
-                    result.insert(0, COLOR_CHAR + "" + c);
-                    break;
-                } else if (c >= 107 && c <= 111) { // formatting
-                    result.insert(0, COLOR_CHAR + "" + c);
-                }
-            }
-        }
-
-        return result.toString();
+            return new ChatLineEntry(emote, (emote ? strippedWord.substring(1, strippedWord.length() - 1) : word), word, colors);
+        }).collect(Collectors.toList());
     }
 
     @Override

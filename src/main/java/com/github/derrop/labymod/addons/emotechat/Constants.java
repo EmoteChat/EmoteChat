@@ -11,7 +11,7 @@ public interface Constants {
 
     ExecutorService EXECUTOR_SERVICE = Executors.newCachedThreadPool();
 
-    String EMOTE_WRAPPER = ":";
+    char EMOTE_WRAPPER = ':';
     int CHAT_EMOTE_SIZE = 17;
     int SETTINGS_EMOTE_SIZE = 10;
     int LINE_HEIGHT = 9;

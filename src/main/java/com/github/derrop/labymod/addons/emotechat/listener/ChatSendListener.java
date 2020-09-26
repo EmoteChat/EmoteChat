@@ -21,8 +21,8 @@ public class ChatSendListener implements ChatModifier {
     public String replaceMessage(String message) {
         return Arrays.stream(message.split(" "))
                 .map(word -> {
-                    if (word.startsWith(Constants.EMOTE_WRAPPER) && word.endsWith(Constants.EMOTE_WRAPPER)) {
-                        String emoteName = word.substring(Constants.EMOTE_WRAPPER.length(), word.length() - Constants.EMOTE_WRAPPER.length());
+                    if (word.length() > 2 && word.charAt(0) == Constants.EMOTE_WRAPPER && word.charAt(word.length() - 1) == Constants.EMOTE_WRAPPER) {
+                        String emoteName = word.substring(1, word.length() - 1);
 
                         BTTVEmote emote = this.addon.getEmoteByName(emoteName);
                         String emoteId = emote == null ? emoteName : emote.getId();

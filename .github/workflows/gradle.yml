@@ -24,5 +24,5 @@ jobs:
 
       - uses: actions/upload-artifact@master
         with:
-          name: emote-chat.jar
+          name: emote-chat-1.8
           path: build/libs/emote-chat-*-all.jar
