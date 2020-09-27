@@ -24,7 +24,7 @@ public class ChatKeyTypedClassTransformer extends PredicateClassNodeTransformer 
 
                     methodNode.instructions.insert(methodNode.instructions.getFirst(), list);
                     methodNode.instructions.insertBefore(methodNode.instructions.getLast().getPrevious(), labelNode);
-                    methodNode.instructions.insertBefore(labelNode, new FrameNode(Opcodes.F_SAME, 1, new Object[]{"com/github/derrop/labymod/addons/emotechat/gui/chat/suggestion/KeyTypedHandler"}, 0, null));
+                    methodNode.instructions.insertBefore(labelNode, new FrameNode(Opcodes.F_SAME, 0, null, 1, null));
                 });
     }
 

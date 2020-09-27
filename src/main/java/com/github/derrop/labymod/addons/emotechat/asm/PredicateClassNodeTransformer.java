@@ -16,8 +16,11 @@ public abstract class PredicateClassNodeTransformer implements PredicateClassTra
 
         this.transform(name, transformedName, node);
 
-        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        int flags = name.contains("GuiChatSymbols") ? ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS;
+        ClassWriter writer = new ClassWriter(flags);
+
         node.accept(writer);
+
         return writer.toByteArray();
     }
 
