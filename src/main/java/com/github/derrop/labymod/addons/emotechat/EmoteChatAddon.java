@@ -83,7 +83,7 @@ public class EmoteChatAddon extends LabyModAddon {
         toggleEnabledElement.addCallback(enabled -> this.enabled = enabled);
         list.add(toggleEnabledElement);
 
-        EmoteListContainerElement emoteList = new EmoteListContainerElement("Saved emotes", new ControlElement.IconData(Material.CHEST));
+        EmoteListContainerElement emoteList = new EmoteListContainerElement("Saved emotes", new ControlElement.IconData(Material.CHEST), this);
         emoteList.update(this.savedEmotes);
 
         list.add(emoteList);
@@ -100,15 +100,22 @@ public class EmoteChatAddon extends LabyModAddon {
         BTTVEmote userEmote = new BTTVEmote(emote.getId(), name, emote.getImageType());
 
         this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
+        this.updateEmotes();
+        return true;
+    }
 
+    public void removeEmote(BTTVEmote emote) {
+        this.savedEmotes.remove(emote.getName().toLowerCase());
+        this.updateEmotes();
+    }
+
+    public void updateEmotes() {
         for (EmoteListContainerElement emoteList : this.emoteLists) {
             emoteList.update(this.savedEmotes);
         }
 
         super.getConfig().add("savedEmotes", Constants.GSON.toJsonTree(this.savedEmotes));
         super.saveConfig();
-
-        return true;
     }
 
     private ListContainerElement createEmoteAddMenu() {

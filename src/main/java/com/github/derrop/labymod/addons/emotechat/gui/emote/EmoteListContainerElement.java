@@ -1,5 +1,6 @@
 package com.github.derrop.labymod.addons.emotechat.gui.emote;
 
+import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.gui.element.ButtonElement;
 import net.labymod.settings.elements.ListContainerElement;
@@ -11,8 +12,11 @@ import java.util.stream.Collectors;
 
 public class EmoteListContainerElement extends ListContainerElement {
 
-    public EmoteListContainerElement(String displayName, IconData iconData) {
+    private final EmoteChatAddon addon;
+
+    public EmoteListContainerElement(String displayName, IconData iconData, EmoteChatAddon addon) {
         super(displayName, iconData);
+        this.addon = addon;
     }
 
     public void update(Map<String, BTTVEmote> emotes) {
@@ -24,9 +28,7 @@ public class EmoteListContainerElement extends ListContainerElement {
                             ButtonElement emoteButton = new ButtonElement(emote.getName(), emote.asIconData(), "Remove");
 
                             emoteButton.setClickListener(() -> {
-                                emotes.remove(emote.getName().toLowerCase());
-                                super.subSettings.getElements().remove(emoteButton);
-
+                                this.addon.removeEmote(emote);
                                 Minecraft.getMinecraft().currentScreen.initGui();
                             });
 

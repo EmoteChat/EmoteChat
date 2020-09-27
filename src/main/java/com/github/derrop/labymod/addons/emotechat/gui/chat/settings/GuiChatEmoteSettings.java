@@ -18,9 +18,13 @@ import java.util.List;
 
 public class GuiChatEmoteSettings extends GuiChatCustom {
 
+    private final int EMOTE_SIZE = 15;
+
+    private final int MAX_ROW_AMOUNT = 5;
+
     private final EmoteChatAddon addon;
 
-    private final Scrollbar scrollbar = new Scrollbar(15);
+    private final Scrollbar scrollbar = new Scrollbar(EMOTE_SIZE);
 
     private boolean canScroll;
 
@@ -32,9 +36,8 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
     public void initGui() {
         super.initGui();
         this.scrollbar.setPosition(this.width - 8, this.height - 145, this.width - 3, this.height - 20);
-        this.scrollbar.update(this.addon.getSavedEmotes().size() / 9);
-        this.scrollbar.setSpeed(10);
-        this.scrollbar.setEntryHeight(15);
+        this.scrollbar.update(this.addon.getSavedEmotes().size() / (MAX_ROW_AMOUNT + 1) + 1);
+        this.scrollbar.setSpeed(EMOTE_SIZE);
     }
 
     public void handleMouseInput() throws IOException {
@@ -63,32 +66,32 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
         List<BTTVEmote> emotes = new ArrayList<>(this.addon.getSavedEmotes().values());
 
         for (BTTVEmote emote : emotes) {
-            if ((double) (column * 10) + this.scrollbar.getScrollY() > -5.0D && (double) (column * 10) + this.scrollbar.getScrollY() < 125.0D) {
-                if (this.isEmoteHovered(mouseX, mouseY, row, column)) {
-                    LabyMod.getInstance().getDrawUtils().drawHoveringText(mouseX, mouseY, emote.getName());
-                }
-
+            if (this.isEmoteShown(column)) {
                 ResourceLocation emoteTexture = emote.getTextureLocation();
                 Minecraft.getMinecraft().getTextureManager().bindTexture(emoteTexture);
 
                 LabyMod.getInstance().getDrawUtils().drawTexture(
-                        this.width - 93 + row * 10,
-                        (int) ((double) (this.height - 147 + column * 10) + this.scrollbar.getScrollY()),
+                        this.width - 98 + row * EMOTE_SIZE,
+                        (int) ((double) (this.height - 152 + column * EMOTE_SIZE) + this.scrollbar.getScrollY()),
                         256,
                         256,
-                        10,
-                        10
+                        EMOTE_SIZE - 1,
+                        EMOTE_SIZE - 1
                 );
+
+                if (this.isEmoteHovered(mouseX, mouseY, row, column)) {
+                    LabyMod.getInstance().getDrawUtils().drawHoveringText(mouseX, mouseY, emote.getName());
+                }
             }
 
             ++row;
-            if (row > 8) {
+            if (row > MAX_ROW_AMOUNT) {
                 row = 0;
                 ++column;
             }
         }
 
-        this.drawString(LabyModCore.getMinecraft().getFontRenderer(), "Emotes", this.width - 100, this.height - 160, -1);
+        this.drawString(LabyModCore.getMinecraft().getFontRenderer(), "Emotes", this.width - 100, this.height - 165, -1);
     }
 
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
@@ -97,21 +100,21 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
         int row = 0;
         int column = 0;
 
-        List<String> emoteNames = new ArrayList<>(this.addon.getSavedEmotes().keySet());
+        List<BTTVEmote> emotes = new ArrayList<>(this.addon.getSavedEmotes().values());
 
-        for (String emoteName : emoteNames) {
-            if ((double) (column * 10) + this.scrollbar.getScrollY() > -5.0D && (double) (column * 10) + this.scrollbar.getScrollY() < 125.0D) {
+        for (BTTVEmote emote : emotes) {
+            if (this.isEmoteShown(column)) {
                 if (this.isEmoteHovered(mouseX, mouseY, row, column)) {
                     String text = this.inputField.getText();
 
-                    this.inputField.setText(text + (text.endsWith(" ") || text.isEmpty() ? "" : " ") + Constants.EMOTE_WRAPPER + emoteName + Constants.EMOTE_WRAPPER + " ");
+                    this.inputField.setText(text + (text.endsWith(" ") || text.isEmpty() ? "" : " ") + Constants.EMOTE_WRAPPER + emote.getName() + Constants.EMOTE_WRAPPER + " ");
                     LabyModCore.getMinecraft().playSound(SettingsElement.BUTTON_PRESS_SOUND, 2.0F);
                     break;
                 }
             }
 
             ++row;
-            if (row > 8) {
+            if (row > MAX_ROW_AMOUNT) {
                 row = 0;
                 ++column;
             }
@@ -128,10 +131,21 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
         super.mouseReleased(mouseX, mouseY, state);
     }
 
+    private boolean isEmoteShown(int column) {
+        double emoteHeight = column * EMOTE_SIZE + this.scrollbar.getScrollY();
+
+        return emoteHeight > -10.0D
+                && emoteHeight < 125.0D;
+    }
+
     private boolean isEmoteHovered(int mouseX, int mouseY, int row, int column) {
-        return mouseX > this.width - 93 + row * 10 - 5 && mouseX < this.width - 93 + row * 10 + 6
-                && (double) mouseY > (double) (this.height - 147 + column * 10) + this.scrollbar.getScrollY() - 5.0D
-                && (double) mouseY < (double) (this.height - 147 + column * 10) + this.scrollbar.getScrollY() + 6.0D;
+        int emoteX = this.width - 98 + row * EMOTE_SIZE;
+        int emoteY = (int) ((double) (this.height - 152 + column * EMOTE_SIZE) + this.scrollbar.getScrollY());
+
+        return mouseX > emoteX
+                && mouseX < emoteX + EMOTE_SIZE
+                && mouseY > emoteY
+                && mouseY < emoteY + EMOTE_SIZE;
     }
 
 }

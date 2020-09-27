@@ -4,7 +4,6 @@ import com.github.derrop.labymod.addons.emotechat.Constants;
 import com.github.derrop.labymod.addons.emotechat.gui.element.AnimatedIconData;
 import com.github.derrop.labymod.addons.emotechat.gui.element.DynamicIconData;
 import com.google.gson.annotations.SerializedName;
-import net.labymod.main.LabyMod;
 import net.labymod.settings.elements.ControlElement;
 import net.minecraft.util.ResourceLocation;
 
@@ -91,6 +90,10 @@ public class BTTVEmote {
 
     public String getImageType() {
         return imageType;
+    }
+
+    public void setImageType(String imageType) {
+        this.imageType = imageType;
     }
 
     public String getName() {
