@@ -35,7 +35,7 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
 
     public void initGui() {
         super.initGui();
-        this.scrollbar.setPosition(this.width - 8, this.height - 145, this.width - 3, this.height - 20);
+        this.scrollbar.setPosition(this.width - 8, this.height - 155, this.width - 3, this.height - 20);
         this.scrollbar.update(this.addon.getSavedEmotes().size() / (MAX_ROW_AMOUNT + 1) + 1);
         this.scrollbar.setSpeed(EMOTE_SIZE);
     }
@@ -55,7 +55,7 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
         super.drawScreen(mouseX, mouseY, partialTicks);
         this.scrollbar.calc();
 
-        drawRect(this.width - 100, this.height - 150, this.width - 2, this.height - 16, -2147483648);
+        drawRect(this.width - 100, this.height - 155, this.width - 2, this.height - 16, -2147483648);
         drawRect(this.width - 6, this.height - 145, this.width - 5, this.height - 20, -2147483648);
         drawRect(this.width - 7, (int) this.scrollbar.getTop(), this.width - 4, (int) (this.scrollbar.getTop() + this.scrollbar.getBarLength()), 2147483647);
 
@@ -64,6 +64,9 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
         int column = 0;
 
         List<BTTVEmote> emotes = new ArrayList<>(this.addon.getSavedEmotes().values());
+
+        Runnable tooltipDrawRunnable = () -> {
+        };
 
         for (BTTVEmote emote : emotes) {
             if (this.isEmoteShown(column)) {
@@ -80,7 +83,7 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
                 );
 
                 if (this.isEmoteHovered(mouseX, mouseY, row, column)) {
-                    LabyMod.getInstance().getDrawUtils().drawHoveringText(mouseX, mouseY, emote.getName());
+                    tooltipDrawRunnable = () -> LabyMod.getInstance().getDrawUtils().drawHoveringText(mouseX, mouseY, emote.getName());
                 }
             }
 
@@ -90,6 +93,8 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
                 ++column;
             }
         }
+
+        tooltipDrawRunnable.run();
 
         this.drawString(LabyModCore.getMinecraft().getFontRenderer(), "Emotes", this.width - 100, this.height - 165, -1);
     }
@@ -134,8 +139,8 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
     private boolean isEmoteShown(int column) {
         double emoteHeight = column * EMOTE_SIZE + this.scrollbar.getScrollY();
 
-        return emoteHeight > -10.0D
-                && emoteHeight < 125.0D;
+        return emoteHeight > -3.0D
+                && emoteHeight < 123.0D;
     }
 
     private boolean isEmoteHovered(int mouseX, int mouseY, int row, int column) {
