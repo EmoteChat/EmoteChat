@@ -28,6 +28,8 @@ public class EmoteChatAddon extends LabyModAddon {
     public static final Type SAVED_EMOTES_TYPE_TOKEN = new TypeToken<Map<String, BTTVEmote>>() {
     }.getType();
 
+    public static String BACKEND_SERVER_URL = "";
+
     private final MinecraftTickExecutor minecraftTickExecutor = new MinecraftTickExecutor();
 
     private boolean enabled;
@@ -67,6 +69,10 @@ public class EmoteChatAddon extends LabyModAddon {
     @Override
     public void loadConfig() {
         this.enabled = !super.getConfig().has("enabled") || super.getConfig().get("enabled").getAsBoolean();
+
+        BACKEND_SERVER_URL = super.getConfig().has("backendServerURL")
+                ? super.getConfig().get("backendServerURL").getAsString()
+                : "";
 
         this.savedEmotes = super.getConfig().has("savedEmotes")
                 ? Constants.GSON.fromJson(super.getConfig().get("savedEmotes"), SAVED_EMOTES_TYPE_TOKEN)

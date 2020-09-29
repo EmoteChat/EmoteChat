@@ -7,12 +7,6 @@ import com.google.gson.annotations.SerializedName;
 import net.labymod.settings.elements.ControlElement;
 import net.minecraft.util.ResourceLocation;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,35 +14,27 @@ public class BTTVEmote {
 
     private static final String EMOTE_IMAGE_ENDPOINT = "https://cdn.betterttv.net/emote/%s/%dx";
 
-    private static final String EMOTE_INFO_ENDPOINT = "https://api.betterttv.net/3/emotes/%s";
-
     private static final Map<String, BTTVEmote> EMOTE_CACHE = new ConcurrentHashMap<>();
 
-    public static BTTVEmote getById(String id) {
-        if (!EMOTE_CACHE.containsKey(id)) {
-            EMOTE_CACHE.put(id, new BTTVEmote(id, "", ""));
-            cacheEmoteAsync(id);
+    public static BTTVEmote getByGlobalIdentifier(String globalIdentifier) {
+        if (!EMOTE_CACHE.containsKey(globalIdentifier)) {
+            BTTVEmote toFill = new BTTVEmote("", "", "");
+
+            EMOTE_CACHE.put(globalIdentifier, toFill);
+            fillEmoteAsync(toFill, globalIdentifier);
         }
-        return EMOTE_CACHE.get(id);
+        return EMOTE_CACHE.get(globalIdentifier);
     }
 
-    private static void cacheEmoteAsync(String id) {
+    private static void fillEmoteAsync(BTTVEmote toFill, String globalIdentifier) {
         Constants.EXECUTOR_SERVICE.execute(() -> {
-            try {
-                URLConnection urlConnection = new URL(String.format(EMOTE_INFO_ENDPOINT, id)).openConnection();
+            BackendEmoteInfo emoteInfo = BackendEmoteInfo.retrieveInfoByGlobalIdentifier(globalIdentifier);
 
-                urlConnection.setUseCaches(true);
-                urlConnection.setConnectTimeout(5000);
-                urlConnection.setReadTimeout(5000);
-                urlConnection.setRequestProperty("User-Agent", "LabyMod Emote addon");
-
-                urlConnection.connect();
-
-                try (InputStream inputStream = urlConnection.getInputStream(); Reader reader = new InputStreamReader(inputStream)) {
-                    BTTVEmote emote = Constants.GSON.fromJson(reader, BTTVEmote.class);
-                    EMOTE_CACHE.put(id, emote);
-                }
-            } catch (IOException ignored) {
+            if (emoteInfo != null) {
+                toFill.id = emoteInfo.getBttvId();
+                toFill.name = emoteInfo.getName();
+                toFill.imageType = emoteInfo.getImageType();
+                toFill.iconData = null;
             }
         });
     }
@@ -70,6 +56,17 @@ public class BTTVEmote {
 
     public String getImageURL(int size) {
         return String.format(EMOTE_IMAGE_ENDPOINT, this.id, size);
+    }
+
+    public ControlElement.IconData asIconData() {
+        if (this.iconData != null) {
+            return this.iconData;
+        }
+
+        if ("gif".equals(this.imageType)) {
+            return this.iconData = AnimatedIconData.create(this.id, this.getImageURL(3));
+        }
+        return this.iconData = new DynamicIconData(this.id, this.getImageURL(3));
     }
 
     public ResourceLocation getTextureLocation() {
@@ -102,17 +99,6 @@ public class BTTVEmote {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public ControlElement.IconData asIconData() {
-        if (this.iconData != null) {
-            return this.iconData;
-        }
-
-        if ("gif".equals(this.imageType)) {
-            return this.iconData = AnimatedIconData.create(this.id, this.getImageURL(3));
-        }
-        return this.iconData = new DynamicIconData(this.id, this.getImageURL(3));
     }
 
 }

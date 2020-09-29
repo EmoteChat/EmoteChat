@@ -12,12 +12,15 @@ import java.util.stream.Collectors;
 public class ChatLineEntry {
 
     private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)§[0-9A-FK-OR]");
+
     private static final char COLOR_CHAR = 167;
 
     private final boolean emote;
 
     private final String content;
+
     private final String rawContent;
+
     private String colors;
 
     public ChatLineEntry(boolean emote, String content, String rawContent, String colors) {
@@ -28,7 +31,7 @@ public class ChatLineEntry {
     }
 
     public BTTVEmote getAsEmote() {
-        return BTTVEmote.getById(this.content);
+        return BTTVEmote.getByGlobalIdentifier(this.content);
     }
 
     public boolean isEmote() {
