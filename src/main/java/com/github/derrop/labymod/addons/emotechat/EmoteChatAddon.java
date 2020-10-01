@@ -8,6 +8,7 @@ import com.github.derrop.labymod.addons.emotechat.gui.chat.settings.ChatShortcut
 import com.github.derrop.labymod.addons.emotechat.gui.chat.suggestion.EmoteSuggestionsMenu;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.suggestion.KeyTypedHandler;
 import com.github.derrop.labymod.addons.emotechat.gui.element.ButtonElement;
+import com.github.derrop.labymod.addons.emotechat.gui.element.PreviewedDropDownElement;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteDropDownMenu;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteListContainerElement;
 import com.github.derrop.labymod.addons.emotechat.listener.ChatInjectListener;
@@ -182,7 +183,7 @@ public class EmoteChatAddon extends LabyModAddon {
 
         emoteAddMenu.getSubSettings().addAll(new ArrayList<>(Arrays.asList(
                 searchBarElement,
-                new DropDownElement<BTTVEmote>("Results", searchResultList),
+                new PreviewedDropDownElement("Results", searchResultList, searchResultList::getHoverSelected),
                 emoteNameInput,
                 emoteAddButton
         )));

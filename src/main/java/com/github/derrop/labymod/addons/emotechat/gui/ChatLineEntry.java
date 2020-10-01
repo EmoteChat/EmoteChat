@@ -47,6 +47,7 @@ public class ChatLineEntry {
     }
 
     // TODO: spaces are not displayed with fat (§l) strings
+    // TODO: spaces are missing after an emote that doesn't exist
     public static Collection<ChatLineEntry> parseEntries(String line) {
         StringBuilder currentLine = new StringBuilder();
 
