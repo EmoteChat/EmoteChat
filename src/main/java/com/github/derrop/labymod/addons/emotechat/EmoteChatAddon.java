@@ -3,6 +3,7 @@ package com.github.derrop.labymod.addons.emotechat;
 import com.github.derrop.labymod.addons.emotechat.asm.packet.PacketHandler;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVSearch;
+import com.github.derrop.labymod.addons.emotechat.bttv.BackendEmoteInfo;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.settings.ChatShortcut;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.suggestion.EmoteSuggestionsMenu;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.suggestion.KeyTypedHandler;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class EmoteChatAddon extends LabyModAddon {
 
@@ -77,6 +79,8 @@ public class EmoteChatAddon extends LabyModAddon {
         this.savedEmotes = super.getConfig().has("savedEmotes")
                 ? Constants.GSON.fromJson(super.getConfig().get("savedEmotes"), SAVED_EMOTES_TYPE_TOKEN)
                 : new HashMap<>();
+
+        BackendEmoteInfo.sendEmotesToServer(this.savedEmotes.values().stream().map(BTTVEmote::getId).collect(Collectors.toList()));
     }
 
     @Override
@@ -103,7 +107,9 @@ public class EmoteChatAddon extends LabyModAddon {
             return false;
         }
 
-        BTTVEmote userEmote = new BTTVEmote(emote.getId(), name, emote.getImageType());
+        BackendEmoteInfo.sendEmotesToServer(Collections.singletonList(emote.getId()));
+
+        BTTVEmote userEmote = new BTTVEmote(emote.getId(), name, emote.getName(), emote.getImageType());
 
         this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
         this.updateEmotes();

@@ -16,27 +16,13 @@ public class BTTVEmote {
 
     private static final Map<String, BTTVEmote> EMOTE_CACHE = new ConcurrentHashMap<>();
 
-    public static BTTVEmote getByGlobalIdentifier(String globalIdentifier) {
-        if (!EMOTE_CACHE.containsKey(globalIdentifier)) {
-            BTTVEmote toFill = new BTTVEmote("", "", "");
+    private String originalName;
 
-            EMOTE_CACHE.put(globalIdentifier, toFill);
-            fillEmoteAsync(toFill, globalIdentifier);
-        }
-        return EMOTE_CACHE.get(globalIdentifier);
-    }
-
-    private static void fillEmoteAsync(BTTVEmote toFill, String globalIdentifier) {
-        Constants.EXECUTOR_SERVICE.execute(() -> {
-            BackendEmoteInfo emoteInfo = BackendEmoteInfo.retrieveInfoByGlobalIdentifier(globalIdentifier);
-
-            if (emoteInfo != null) {
-                toFill.id = emoteInfo.getBttvId();
-                toFill.name = emoteInfo.getName();
-                toFill.imageType = emoteInfo.getImageType();
-                toFill.iconData = null;
-            }
-        });
+    public BTTVEmote(String id, String name, String originalName, String imageType) {
+        this.id = id;
+        this.name = name;
+        this.originalName = originalName;
+        this.imageType = imageType;
     }
 
     private String id;
@@ -46,12 +32,30 @@ public class BTTVEmote {
 
     private String imageType;
 
+    public static BTTVEmote getByGlobalIdentifier(String globalIdentifier) {
+        if (!EMOTE_CACHE.containsKey(globalIdentifier)) {
+            BTTVEmote toFill = new BTTVEmote("", "", "", "");
+
+            EMOTE_CACHE.put(globalIdentifier, toFill);
+            fillEmoteAsync(toFill, globalIdentifier);
+        }
+        return EMOTE_CACHE.get(globalIdentifier);
+    }
+
     private transient ControlElement.IconData iconData;
 
-    public BTTVEmote(String id, String name, String imageType) {
-        this.id = id;
-        this.name = name;
-        this.imageType = imageType;
+    private static void fillEmoteAsync(BTTVEmote toFill, String globalIdentifier) {
+        Constants.EXECUTOR_SERVICE.execute(() -> {
+            BackendEmoteInfo emoteInfo = BackendEmoteInfo.retrieveInfoByGlobalIdentifier(globalIdentifier);
+
+            if (emoteInfo != null) {
+                toFill.id = emoteInfo.getBttvId();
+                toFill.name = emoteInfo.getName();
+                toFill.originalName = emoteInfo.getName();
+                toFill.imageType = emoteInfo.getImageType();
+                toFill.iconData = null;
+            }
+        });
     }
 
     public String getImageURL(int size) {
@@ -85,6 +89,14 @@ public class BTTVEmote {
         this.id = id;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getImageType() {
         return imageType;
     }
@@ -93,12 +105,12 @@ public class BTTVEmote {
         this.imageType = imageType;
     }
 
-    public String getName() {
-        return name;
+    public String getOriginalName() {
+        return originalName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setOriginalName(String originalName) {
+        this.originalName = originalName;
     }
 
 }
