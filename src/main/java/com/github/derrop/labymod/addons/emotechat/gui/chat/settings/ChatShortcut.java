@@ -124,6 +124,7 @@ public class ChatShortcut {
             if (hoverSymbols) {
                 try {
                     int clickedButtonId = BUTTON_ID_FIELD.getInt(buttons[slot]);
+
                     if (clickedButtonId == BUTTON_ID) {
                         GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
                         GuiTextField textField = (GuiTextField) TEXT_INPUT_FIELD.get(chat);

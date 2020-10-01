@@ -1,4 +1,4 @@
-package com.github.derrop.labymod.addons.emotechat.gui.element;
+package com.github.derrop.labymod.addons.emotechat.gui.element.button;
 
 import net.labymod.core.LabyModCore;
 import net.labymod.main.LabyMod;
@@ -9,8 +9,10 @@ import java.awt.*;
 
 public class ButtonElement extends ControlElement {
 
-    private final GuiButton button = new GuiButton(-2, 0, 0, 0, 20, "");
-    private boolean enabled = true;
+    protected final GuiButton button = new GuiButton(-2, 0, 0, 0, 20, "");
+
+    protected boolean enabled = true;
+
     private Runnable clickListener;
 
     public ButtonElement(String text) {

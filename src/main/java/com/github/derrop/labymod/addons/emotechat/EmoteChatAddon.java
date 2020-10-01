@@ -3,11 +3,12 @@ package com.github.derrop.labymod.addons.emotechat;
 import com.github.derrop.labymod.addons.emotechat.asm.packet.PacketHandler;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import com.github.derrop.labymod.addons.emotechat.bttv.BTTVSearch;
-import com.github.derrop.labymod.addons.emotechat.bttv.BackendEmoteInfo;
+import com.github.derrop.labymod.addons.emotechat.bttv.EmoteProvider;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.settings.ChatShortcut;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.suggestion.EmoteSuggestionsMenu;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.suggestion.KeyTypedHandler;
-import com.github.derrop.labymod.addons.emotechat.gui.element.ButtonElement;
+import com.github.derrop.labymod.addons.emotechat.gui.element.button.ButtonElement;
+import com.github.derrop.labymod.addons.emotechat.gui.element.button.TimedButtonElement;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteDropDownMenu;
 import com.github.derrop.labymod.addons.emotechat.gui.emote.EmoteListContainerElement;
 import com.github.derrop.labymod.addons.emotechat.listener.ChatInjectListener;
@@ -22,6 +23,7 @@ import net.labymod.utils.Material;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -30,9 +32,9 @@ public class EmoteChatAddon extends LabyModAddon {
     public static final Type SAVED_EMOTES_TYPE_TOKEN = new TypeToken<Map<String, BTTVEmote>>() {
     }.getType();
 
-    public static String BACKEND_SERVER_URL = "";
-
     private final MinecraftTickExecutor minecraftTickExecutor = new MinecraftTickExecutor();
+
+    private EmoteProvider emoteProvider;
 
     private boolean enabled;
 
@@ -72,7 +74,7 @@ public class EmoteChatAddon extends LabyModAddon {
     public void loadConfig() {
         this.enabled = !super.getConfig().has("enabled") || super.getConfig().get("enabled").getAsBoolean();
 
-        BACKEND_SERVER_URL = super.getConfig().has("backendServerURL")
+        String backendServerURL = super.getConfig().has("backendServerURL")
                 ? super.getConfig().get("backendServerURL").getAsString()
                 : "";
 
@@ -80,7 +82,9 @@ public class EmoteChatAddon extends LabyModAddon {
                 ? Constants.GSON.fromJson(super.getConfig().get("savedEmotes"), SAVED_EMOTES_TYPE_TOKEN)
                 : new HashMap<>();
 
-        BackendEmoteInfo.sendEmotesToServer(this.savedEmotes.values().stream().map(BTTVEmote::getId).collect(Collectors.toList()));
+        this.emoteProvider = new EmoteProvider(backendServerURL, this.savedEmotes);
+
+        this.emoteProvider.sendEmotesToServer(this.savedEmotes.values().stream().map(BTTVEmote::getId).collect(Collectors.toList()));
     }
 
     @Override
@@ -99,6 +103,13 @@ public class EmoteChatAddon extends LabyModAddon {
         list.add(emoteList);
         list.add(this.createEmoteAddMenu());
 
+        ButtonElement reloadButton = new TimedButtonElement("Reload emotes", TimeUnit.MINUTES.toMillis(2));
+        reloadButton.setClickListener(() -> {
+            this.emoteProvider.cleanupCache();
+            this.emoteProvider.sendEmotesToServer();
+        });
+        list.add(reloadButton);
+
         this.emoteLists.add(emoteList);
     }
 
@@ -107,7 +118,7 @@ public class EmoteChatAddon extends LabyModAddon {
             return false;
         }
 
-        BackendEmoteInfo.sendEmotesToServer(Collections.singletonList(emote.getId()));
+        this.emoteProvider.sendEmotesToServer(Collections.singletonList(emote.getId()));
 
         BTTVEmote userEmote = new BTTVEmote(emote.getId(), name, emote.getName(), emote.getImageType());
 
@@ -158,7 +169,6 @@ public class EmoteChatAddon extends LabyModAddon {
                 super.draw(x, y, maxX, maxY, mouseX, mouseY);
 
                 String emoteName = emoteNameReference.get();
-
                 super.setEnabled(!(searchResultList.getSelected() == null || emoteName.isEmpty() || emoteName.contains(" ")));
             }
 
@@ -188,6 +198,14 @@ public class EmoteChatAddon extends LabyModAddon {
         )));
 
         return emoteAddMenu;
+    }
+
+    public EmoteProvider getEmoteProvider() {
+        return emoteProvider;
+    }
+
+    public Collection<EmoteListContainerElement> getEmoteLists() {
+        return emoteLists;
     }
 
     public Map<String, BTTVEmote> getSavedEmotes() {

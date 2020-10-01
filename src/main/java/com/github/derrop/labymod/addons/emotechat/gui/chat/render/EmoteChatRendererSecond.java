@@ -11,6 +11,7 @@ import java.util.List;
 public class EmoteChatRendererSecond extends ChatRendererSecond implements EmoteChatRendererType {
 
     private final EmoteChatRenderer renderer;
+
     private GuiChat lastGuiChat;
 
     public EmoteChatRendererSecond(IngameChatManager manager, EmoteChatAddon addon, List<ChatLine> lines) {

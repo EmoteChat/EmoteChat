@@ -5,6 +5,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 public class ChatWidthCalculateClassTransformer extends PredicateClassNodeTransformer {
+
     @Override
     public void transform(String name, String transformedName, ClassNode node) {
         boolean obfuscated = name.equals("avu");
@@ -36,4 +37,5 @@ public class ChatWidthCalculateClassTransformer extends PredicateClassNodeTransf
     public boolean transforms(String name, String transformedName, byte[] basicClass) {
         return name.equals("net.minecraft.client.gui.GuiUtilRenderComponents") || name.equals("avu");
     }
+
 }

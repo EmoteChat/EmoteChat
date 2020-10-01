@@ -1,9 +1,9 @@
 package com.github.derrop.labymod.addons.emotechat.listener;
 
 import com.github.derrop.labymod.addons.emotechat.EmoteChatAddon;
-import com.github.derrop.labymod.addons.emotechat.gui.chat.settings.ChatShortcut;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.render.EmoteChatRendererMain;
 import com.github.derrop.labymod.addons.emotechat.gui.chat.render.EmoteChatRendererSecond;
+import com.github.derrop.labymod.addons.emotechat.gui.chat.settings.ChatShortcut;
 import net.labymod.core_implementation.mc18.gui.GuiChatAdapter;
 import net.labymod.core_implementation.mc18.gui.GuiIngameCustom;
 import net.labymod.ingamechat.GuiChatCustom;
@@ -75,6 +75,7 @@ public class ChatInjectListener {
     private final EmoteChatAddon addon;
 
     private EmoteChatRendererMain main;
+
     private EmoteChatRendererSecond second;
 
     private boolean injected;
@@ -140,7 +141,6 @@ public class ChatInjectListener {
 
         this.main.setLastGuiChat(chat);
         this.second.setLastGuiChat(chat);
-
     }
 
 }
