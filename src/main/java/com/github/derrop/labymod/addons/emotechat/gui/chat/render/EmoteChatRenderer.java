@@ -89,7 +89,7 @@ public class EmoteChatRenderer {
 
     private int mouseX;
     private int mouseY;
-    
+
     public EmoteChatRenderer(EmoteChatRendererType renderer, IngameChatManager manager, EmoteChatAddon addon) {
         this.renderer = (ChatRenderer) renderer;
         this.type = renderer;
@@ -397,7 +397,8 @@ public class EmoteChatRenderer {
 
         ChatLineEntry hovered = this.getHoveredEmote();
         if (hovered != null) {
-            BTTVEmote emote = hovered.getAsEmote();
+            BTTVEmote emote = this.addon.getEmoteProvider().getByGlobalIdentifier(hovered.getContent());
+
             if (emote.isComplete()) {
                 String hoverText = emote.getName();
                 if (!this.addon.isEmoteSaved(emote)) {
@@ -429,7 +430,7 @@ public class EmoteChatRenderer {
         if (chatLine instanceof EmoteChatLine) {
             if (((EmoteChatLine) chatLine).shouldRender()) {
                 for (ChatLineEntry entry : ((EmoteChatLine) chatLine).getEntries()) {
-                    BTTVEmote emote = entry.getAsEmote();
+                    BTTVEmote emote = this.addon.getEmoteProvider().getByGlobalIdentifier(entry.getContent());
 
                     if (entry.isEmote() && !entry.getContent().contains(" ") && this.drawImage(emote, x, y, alpha)) {
                         x += Constants.CHAT_EMOTE_SIZE;
@@ -550,10 +551,12 @@ public class EmoteChatRenderer {
     public void handleClicked(GuiChat lastGuiChat) {
         ChatLineEntry entry = this.getHoveredEmote();
         if (entry != null) {
-            BTTVEmote emote = entry.getAsEmote();
+            BTTVEmote emote = this.addon.getEmoteProvider().getByGlobalIdentifier(entry.getContent());
+
             if (this.addon.isEmoteSaved(emote)) {
                 return;
             }
+
             GuiScreen gui = new EmoteGuiYesNo(emote, (accepted, id) -> {
                 if (accepted) {
                     this.addon.addEmote(emote, emote.getName());

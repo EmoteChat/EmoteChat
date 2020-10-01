@@ -1,7 +1,6 @@
 package com.github.derrop.labymod.addons.emotechat.gui;
 
 import com.github.derrop.labymod.addons.emotechat.Constants;
-import com.github.derrop.labymod.addons.emotechat.bttv.BTTVEmote;
 import net.minecraft.client.gui.FontRenderer;
 
 import java.util.Arrays;
@@ -21,17 +20,13 @@ public class ChatLineEntry {
 
     private final String rawContent;
 
-    private String colors;
+    private final String colors;
 
     public ChatLineEntry(boolean emote, String content, String rawContent, String colors) {
         this.emote = emote;
         this.content = content;
         this.rawContent = rawContent;
         this.colors = colors;
-    }
-
-    public BTTVEmote getAsEmote() {
-        return BTTVEmote.getByGlobalIdentifier(this.content);
     }
 
     public boolean isEmote() {

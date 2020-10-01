@@ -47,4 +47,5 @@ public class ChatSendListener implements ChatModifier {
     public boolean shouldReplace(String message) {
         return this.addon.isEnabled() && Minecraft.getMinecraft().thePlayer != null;
     }
+
 }

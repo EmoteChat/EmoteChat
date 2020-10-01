@@ -59,6 +59,8 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
         drawRect(this.width - 6, this.height - 145, this.width - 5, this.height - 20, -2147483648);
         drawRect(this.width - 7, (int) this.scrollbar.getTop(), this.width - 4, (int) (this.scrollbar.getTop() + this.scrollbar.getBarLength()), 2147483647);
 
+        this.drawString(LabyModCore.getMinecraft().getFontRenderer(), "Emotes", this.width - 100, this.height - 165, -1);
+
         this.canScroll = mouseX > this.width - 100 && mouseX < this.width - 2 && mouseY > this.height - 150 && mouseY < this.height - 16;
         int row = 0;
         int column = 0;
@@ -95,8 +97,6 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
         }
 
         tooltipDrawRunnable.run();
-
-        this.drawString(LabyModCore.getMinecraft().getFontRenderer(), "Emotes", this.width - 100, this.height - 165, -1);
     }
 
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
