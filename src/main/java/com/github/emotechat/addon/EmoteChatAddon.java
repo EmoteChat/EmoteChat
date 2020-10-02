@@ -108,8 +108,8 @@ public class EmoteChatAddon extends LabyModAddon {
 
         ButtonElement reloadButton = new TimedButtonElement("Reload emotes", TimeUnit.MINUTES.toMillis(2));
         reloadButton.setClickListener(() -> {
-            this.emoteProvider.cleanupCache();
             this.emoteProvider.sendEmotesToServer();
+            this.emoteProvider.cleanupCache();
         });
         list.add(reloadButton);
 

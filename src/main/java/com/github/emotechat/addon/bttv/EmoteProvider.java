@@ -2,7 +2,6 @@ package com.github.emotechat.addon.bttv;
 
 
 import com.github.emotechat.addon.Constants;
-import com.github.emotechat.addon.bttv.backend.BackendEmoteInfo;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -48,25 +47,25 @@ public class EmoteProvider {
 
     private void fillEmoteAsync(BTTVEmote toFill, String globalIdentifier) {
         Constants.EXECUTOR_SERVICE.execute(() -> {
-            BackendEmoteInfo emoteInfo = this.retrieveInfoByGlobalIdentifier(globalIdentifier);
+            BTTVEmote emote = this.retrieveEmoteByGlobalIdentifier(globalIdentifier);
 
-            if (emoteInfo != null) {
-                toFill.id = emoteInfo.getBttvId();
-                toFill.name = emoteInfo.getName();
-                toFill.originalName = emoteInfo.getName();
-                toFill.imageType = emoteInfo.getImageType();
+            if (emote != null) {
+                toFill.id = emote.getId();
+                toFill.name = emote.getName();
+                toFill.originalName = emote.getName();
+                toFill.imageType = emote.getImageType();
                 toFill.iconData = null;
             }
         });
     }
 
-    public BackendEmoteInfo retrieveInfoByGlobalIdentifier(String globalIdentifier) {
+    public BTTVEmote retrieveEmoteByGlobalIdentifier(String globalIdentifier) {
         try {
             HttpURLConnection urlConnection = this.createRequest(this.backendServerURL + String.format(EMOTE_INFO_ROUTE, globalIdentifier));
             urlConnection.connect();
 
             try (InputStream inputStream = urlConnection.getInputStream(); InputStreamReader reader = new InputStreamReader(inputStream)) {
-                return Constants.GSON.fromJson(reader, BackendEmoteInfo.class);
+                return Constants.GSON.fromJson(reader, BTTVEmote.class);
             }
         } catch (IOException exception) {
             exception.printStackTrace();
