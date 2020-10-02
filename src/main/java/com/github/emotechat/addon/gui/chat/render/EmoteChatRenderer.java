@@ -430,9 +430,8 @@ public class EmoteChatRenderer {
         if (chatLine instanceof EmoteChatLine) {
             if (((EmoteChatLine) chatLine).shouldRender()) {
                 for (ChatLineEntry entry : ((EmoteChatLine) chatLine).getEntries()) {
-                    BTTVEmote emote = this.addon.getEmoteProvider().getByGlobalIdentifier(entry.getContent());
-
-                    if (entry.isEmote() && !entry.getContent().contains(" ") && this.drawImage(emote, x, y, alpha)) {
+                    if (entry.isEmote() && !entry.getContent().contains(" ")
+                            && this.drawImage(this.addon.getEmoteProvider().getByGlobalIdentifier(entry.getContent()), x, y, alpha)) {
                         x += Constants.CHAT_EMOTE_SIZE;
                     } else {
                         String content = entry.getContent();

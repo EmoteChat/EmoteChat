@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 
 public class EmoteProvider {
 
-    private static final String EMOTE_INFO_ROUTE = "/emotes/emote/%s";
+    private static final String EMOTE_INFO_ROUTE = "emotes/emote/%s";
 
-    private static final String EMOTE_CACHE_ROUTE = "/emotes/cache";
+    private static final String EMOTE_CACHE_ROUTE = "emotes/cache";
 
     private final Map<String, BTTVEmote> emoteCache = new ConcurrentHashMap<>();
 
@@ -38,13 +38,12 @@ public class EmoteProvider {
     }
 
     public BTTVEmote getByGlobalIdentifier(String globalIdentifier) {
-        if (!this.emoteCache.containsKey(globalIdentifier)) {
+        return this.emoteCache.computeIfAbsent(globalIdentifier, identifier -> {
             BTTVEmote toFill = new BTTVEmote("", "", "", "");
+            fillEmoteAsync(toFill, identifier);
 
-            this.emoteCache.put(globalIdentifier, toFill);
-            fillEmoteAsync(toFill, globalIdentifier);
-        }
-        return this.emoteCache.get(globalIdentifier);
+            return toFill;
+        });
     }
 
     private void fillEmoteAsync(BTTVEmote toFill, String globalIdentifier) {
@@ -80,18 +79,20 @@ public class EmoteProvider {
     }
 
     public void sendEmotesToServer(Collection<String> bttvIds) {
-        try {
-            HttpURLConnection urlConnection = this.createRequest(this.backendServerURL + EMOTE_CACHE_ROUTE);
-            urlConnection.setRequestMethod("POST");
+        Constants.EXECUTOR_SERVICE.execute(() -> {
+            try {
+                HttpURLConnection urlConnection = this.createRequest(this.backendServerURL + EMOTE_CACHE_ROUTE);
+                urlConnection.setRequestMethod("POST");
 
-            try (OutputStream outputStream = urlConnection.getOutputStream(); OutputStreamWriter writer = new OutputStreamWriter(outputStream)) {
-                Constants.GSON.toJson(bttvIds, writer);
+                try (OutputStream outputStream = urlConnection.getOutputStream(); OutputStreamWriter writer = new OutputStreamWriter(outputStream)) {
+                    Constants.GSON.toJson(bttvIds, writer);
+                }
+
+                urlConnection.getResponseCode();
+            } catch (IOException exception) {
+                exception.printStackTrace();
             }
-
-            urlConnection.getResponseCode();
-        } catch (IOException exception) {
-            exception.printStackTrace();
-        }
+        });
     }
 
     private HttpURLConnection createRequest(String url) throws IOException {
@@ -99,9 +100,9 @@ public class EmoteProvider {
 
         urlConnection.setDoInput(true);
         urlConnection.setDoOutput(true);
-        urlConnection.setUseCaches(true);
-        urlConnection.setConnectTimeout(5000);
-        urlConnection.setReadTimeout(5000);
+        urlConnection.setUseCaches(false);
+        urlConnection.setConnectTimeout(10000);
+        urlConnection.setReadTimeout(10000);
 
         urlConnection.setRequestProperty("User-Agent", "EmoteChat");
         urlConnection.setRequestProperty("Content-Type", "application/json");

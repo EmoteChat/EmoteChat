@@ -60,9 +60,9 @@ public class BTTVSearch {
 
         private int limit = 50;
 
-        private int connectTimeout = 3000;
+        private int connectTimeout = 5000;
 
-        private int readTimeout = 3000;
+        private int readTimeout = 5000;
 
         public Builder(String query) {
             this.query = query;
