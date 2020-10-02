@@ -33,7 +33,7 @@ plugins {
 }
 */
 version = "1.0"
-group = "com.github.derrop.labymod.addons" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+group = "com.github.emotechat" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "emote-chat"
 
 targetCompatibility = '1.8'
