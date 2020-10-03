@@ -12,6 +12,8 @@ public class ChatLineEntry {
 
     private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)§[0-9A-FK-OR]");
 
+    private static final Pattern EMOTE_PATTERN = Pattern.compile(Constants.EMOTE_WRAPPER + "[A-Za-z0-9]+\\+[A-Za-z0-9]{5}" + Constants.EMOTE_WRAPPER);
+
     private static final char COLOR_CHAR = 167;
 
     private final boolean emote;
@@ -48,8 +50,7 @@ public class ChatLineEntry {
 
         return Arrays.stream(line.split(" ")).map(word -> {
             String strippedWord = STRIP_COLOR_PATTERN.matcher(word).replaceAll("");
-            boolean emote = strippedWord.length() > 2
-                    && strippedWord.charAt(0) == Constants.EMOTE_WRAPPER && strippedWord.charAt(strippedWord.length() - 1) == Constants.EMOTE_WRAPPER;
+            boolean emote = EMOTE_PATTERN.matcher(strippedWord).matches();
 
             String colors = FontRenderer.getFormatFromString(currentLine.toString());
             currentLine.append(word);
