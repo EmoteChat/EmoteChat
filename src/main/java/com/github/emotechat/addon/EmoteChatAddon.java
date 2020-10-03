@@ -195,7 +195,10 @@ public class EmoteChatAddon extends LabyModAddon {
 
         emoteAddMenu.getSubSettings().addAll(new ArrayList<>(Arrays.asList(
                 searchBarElement,
-                new PreviewedDropDownElement("Results", searchResultList, searchResultList::getHoverSelected),
+                new PreviewedDropDownElement("Results", searchResultList,
+                        () -> searchResultList.getHoverSelected() != null
+                                ? searchResultList.getHoverSelected()
+                                : searchResultList.getSelected()),
                 emoteNameInput,
                 emoteAddButton
         )));
