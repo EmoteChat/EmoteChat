@@ -12,7 +12,7 @@ public class ChatLineEntry {
 
     private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)§[0-9A-FK-OR]");
 
-    private static final Pattern EMOTE_PATTERN = Pattern.compile(Constants.EMOTE_WRAPPER + "[A-Za-z0-9]+\\+[A-Za-z0-9]{5}" + Constants.EMOTE_WRAPPER);
+    private static final Pattern EMOTE_PATTERN = Pattern.compile(Constants.EMOTE_WRAPPER + "[A-Za-z0-9:]+\\+[A-Za-z0-9]{5}" + Constants.EMOTE_WRAPPER);
 
     private static final char COLOR_CHAR = 167;
 

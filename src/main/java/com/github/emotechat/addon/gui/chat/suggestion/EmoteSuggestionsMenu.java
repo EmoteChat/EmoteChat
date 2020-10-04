@@ -20,7 +20,6 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
-// TODO add a limit for emotes displayed at the same time and a scrollbar
 public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.CoordinatesConsumer {
 
     private final EmoteChatAddon addon;
@@ -79,6 +78,7 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
                 List<BTTVEmote> emotes = this.addon.getSavedEmotes().values().stream()
                         .filter(emote -> emote.getName().toLowerCase().contains(query))
                         .sorted(Comparator.comparingInt(emote -> emote.getName().length() - query.length()))
+                        .limit(15)
                         .collect(Collectors.toList());
 
                 this.suggestionMenu.update(emotes);
@@ -103,13 +103,15 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
     private Optional<String> getCurrentEmoteWord() {
         String chatText = this.textField.getText();
 
-        if (chatText != null && !chatText.isEmpty()) {
+        if (chatText != null && !chatText.isEmpty() && !chatText.endsWith(" ")) {
             String[] words = chatText.split(" ");
 
             if (words.length > 0) {
                 String currentWord = words[words.length - 1];
 
-                if (currentWord.length() != 0 && currentWord.charAt(0) == Constants.EMOTE_WRAPPER && (currentWord.length() == 1 || currentWord.charAt(currentWord.length() - 1) != Constants.EMOTE_WRAPPER)) {
+                if (currentWord.length() != 0
+                        && currentWord.charAt(0) == Constants.EMOTE_WRAPPER
+                        && (currentWord.length() == 1 || currentWord.charAt(currentWord.length() - 1) != Constants.EMOTE_WRAPPER)) {
                     return Optional.of(currentWord);
                 }
             }
