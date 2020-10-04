@@ -103,14 +103,20 @@ public class EmoteChatAddon extends LabyModAddon {
         EmoteListContainerElement emoteList = new EmoteListContainerElement("Saved emotes", new ControlElement.IconData(Material.CHEST), this);
         emoteList.update(this.savedEmotes);
 
-        list.add(emoteList);
-        list.add(this.createEmoteAddMenu());
+        ButtonElement cleanupButton = new ButtonElement("Cleanup emote cache");
+        cleanupButton.setClickListener(() -> {
+            this.emoteProvider.cleanupCache();
+        });
 
         ButtonElement reloadButton = new TimedButtonElement("Reload emotes", TimeUnit.MINUTES.toMillis(2));
         reloadButton.setClickListener(() -> {
             this.emoteProvider.sendEmotesToServer();
             this.emoteProvider.cleanupCache();
         });
+
+        list.add(emoteList);
+        list.add(this.createEmoteAddMenu());
+        list.add(cleanupButton);
         list.add(reloadButton);
 
         this.emoteLists.add(emoteList);
