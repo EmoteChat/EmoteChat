@@ -2,14 +2,14 @@ package com.github.emotechat.addon.asm.packet;
 
 import com.google.common.base.Preconditions;
 import net.minecraft.network.Packet;
-import net.minecraft.network.play.client.C01PacketChatMessage;
+import net.minecraft.network.play.client.CPacketChatMessage;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
 import java.lang.reflect.Field;
 
 public class PacketHandler {
 
-    private static final Field FIELD = ReflectionHelper.findField(C01PacketChatMessage.class, "message", "a", "field_149440_a");
+    private static final Field FIELD = ReflectionHelper.findField(CPacketChatMessage.class, "message", "a", "field_149440_a");
 
     private static ChatModifier chatModifier;
 
@@ -18,11 +18,11 @@ public class PacketHandler {
     }
 
     public static void handlePacket(Packet<?> packet) {
-        if (chatModifier == null || !(packet instanceof C01PacketChatMessage)) {
+        if (chatModifier == null || !(packet instanceof CPacketChatMessage)) {
             return;
         }
 
-        C01PacketChatMessage message = (C01PacketChatMessage) packet;
+        CPacketChatMessage message = (CPacketChatMessage) packet;
         if (!chatModifier.shouldReplace(message.getMessage())) {
             return;
         }

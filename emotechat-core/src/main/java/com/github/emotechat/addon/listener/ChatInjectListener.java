@@ -4,8 +4,8 @@ import com.github.emotechat.addon.EmoteChatAddon;
 import com.github.emotechat.addon.gui.chat.render.EmoteChatRendererMain;
 import com.github.emotechat.addon.gui.chat.render.EmoteChatRendererSecond;
 import com.github.emotechat.addon.gui.chat.settings.ChatShortcut;
-import net.labymod.core_implementation.mc18.gui.GuiChatAdapter;
-import net.labymod.core_implementation.mc18.gui.GuiIngameCustom;
+import net.labymod.core_implementation.mc112.gui.GuiChatAdapter;
+import net.labymod.core_implementation.mc112.gui.GuiIngameCustom;
 import net.labymod.ingamechat.GuiChatCustom;
 import net.labymod.ingamechat.IngameChatManager;
 import net.labymod.ingamechat.renderer.ChatRenderer;
@@ -134,7 +134,7 @@ public class ChatInjectListener {
         if (this.main == null) {
             return;
         }
-        if (!(event.gui instanceof GuiChat)) {
+        if (!(event.getGui() instanceof GuiChat)) {
             return;
         }
 
@@ -143,7 +143,7 @@ public class ChatInjectListener {
             this.addon.getEmoteProvider().sendEmotesToServer(newEmoteIds);
         }
 
-        GuiChat chat = (GuiChat) event.gui;
+        GuiChat chat = (GuiChat) event.getGui();
 
         this.main.setLastGuiChat(chat);
         this.second.setLastGuiChat(chat);

@@ -21,8 +21,8 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.ITextureObject;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
 
 import java.awt.*;
@@ -40,7 +40,7 @@ public class EmoteChatRenderer {
 
     private static final Field DOWNLOADED_IMAGE_CONTENT_FIELD;
 
-    private static final int SPACE_LENGTH = Minecraft.getMinecraft().fontRendererObj.getCharWidth(' ');
+    private static final int SPACE_LENGTH = LabyModCore.getMinecraft().getFontRenderer().getCharWidth(' ');
 
     static {
         Field scrollPos = null;
@@ -321,7 +321,7 @@ public class EmoteChatRenderer {
             int x = 0;
             int y = (pos - 1) * -9;
 
-            this.drawLine(Minecraft.getMinecraft().fontRendererObj, chatline, x, y, width, alpha);
+            this.drawLine(LabyModCore.getMinecraft().getFontRenderer(), chatline, x, y, width, alpha);
 
             LAST_RENDERED_LINES_COUNT_FIELD.setInt(this.renderer, visibleMessages);
         }
@@ -498,8 +498,8 @@ public class EmoteChatRenderer {
         int mouseX = Mouse.getX() / scaleFactor - 3;
         int mouseY = Mouse.getY() / scaleFactor - 27;
 
-        mouseX = MathHelper.floor_float((float) mouseX / chatScale);
-        mouseY = MathHelper.floor_float((float) mouseY / chatScale);
+        mouseX = MathHelper.floor((float) mouseX / chatScale);
+        mouseY = MathHelper.floor((float) mouseY / chatScale);
 
         return this.getHoveredEmote(mouseX, mouseY);
     }
@@ -512,8 +512,8 @@ public class EmoteChatRenderer {
         if (mouseX >= 0 && mouseY >= 0) {
             int lineCount = Math.min(this.renderer.getLineCount(), this.renderer.getChatLines().size());
 
-            if (mouseX <= MathHelper.floor_float(this.renderer.getChatWidth() / this.renderer.getChatScale()) && mouseY < Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT * lineCount + lineCount) {
-                int pos = mouseY / Minecraft.getMinecraft().fontRendererObj.FONT_HEIGHT + this.renderer.getScrollPos();
+            if (mouseX <= MathHelper.floor(this.renderer.getChatWidth() / this.renderer.getChatScale()) && mouseY < LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT * lineCount + lineCount) {
+                int pos = mouseY / LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT + this.renderer.getScrollPos();
 
                 if (pos >= 0 && pos < this.renderer.getChatLines().size()) {
                     ChatLine chatLine = this.renderer.getChatLines().get(pos);
@@ -528,7 +528,7 @@ public class EmoteChatRenderer {
 
                     for (ChatLineEntry entry : entries) {
                         if (!entry.isEmote()) {
-                            currentX += Minecraft.getMinecraft().fontRendererObj.getStringWidth(entry.getContent()) + SPACE_LENGTH;
+                            currentX += LabyModCore.getMinecraft().getFontRenderer().getStringWidth(entry.getContent()) + SPACE_LENGTH;
                             continue;
                         }
 

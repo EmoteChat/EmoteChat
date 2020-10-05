@@ -1,0 +1,45 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+minecraft {
+    version = "1.8.9-11.15.1.1855"
+    runDir = "run"
+    mappings = "stable_20"
+}
+
+dependencies {
+    compileOnly files('../libs/lm_api_mc1.8.9.jar')
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+reobf {
+    jar {
+        useNotchSrg()
+    }
+}

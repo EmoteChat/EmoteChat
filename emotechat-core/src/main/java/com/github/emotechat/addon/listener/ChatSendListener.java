@@ -4,7 +4,7 @@ import com.github.emotechat.addon.Constants;
 import com.github.emotechat.addon.EmoteChatAddon;
 import com.github.emotechat.addon.asm.packet.ChatModifier;
 import com.github.emotechat.addon.bttv.BTTVEmote;
-import net.minecraft.client.Minecraft;
+import net.labymod.core.LabyModCore;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -45,7 +45,7 @@ public class ChatSendListener implements ChatModifier {
 
     @Override
     public boolean shouldReplace(String message) {
-        return this.addon.isEnabled() && Minecraft.getMinecraft().thePlayer != null;
+        return this.addon.isEnabled() && LabyModCore.getMinecraft().getPlayer() != null;
     }
 
 }

@@ -1,0 +1,3 @@
+dependencies {
+    compileOnly files('../libs/lm_api_mc1.8.9.jar')
+}

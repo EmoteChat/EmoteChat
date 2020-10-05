@@ -61,7 +61,7 @@ public class ButtonElement extends ControlElement {
             LabyMod.getInstance().getDrawUtils().drawRectangle(x - 1, y, x, maxY, Color.GRAY.getRGB());
         }
 
-        int buttonWidth = super.displayName == null ? maxX - x : super.mc.fontRendererObj.getStringWidth(this.button.displayString) + 20;
+        int buttonWidth = super.displayName == null ? maxX - x : LabyModCore.getMinecraft().getFontRenderer().getStringWidth(this.button.displayString) + 20;
 
         this.button.setWidth(buttonWidth);
         this.button.enabled = this.enabled;

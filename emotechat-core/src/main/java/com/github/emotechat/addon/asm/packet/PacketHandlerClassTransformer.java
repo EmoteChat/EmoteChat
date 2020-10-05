@@ -21,7 +21,7 @@ public class PacketHandlerClassTransformer extends PredicateClassNodeTransformer
     }
 
     private void transform(ClassNode node, boolean obfuscated) {
-        String name = obfuscated ? "a" : "addToSendQueue";
+        String name = obfuscated ? "a" : "sendPacket";
         String desc = obfuscated ? "(Lff;)V" : "(Lnet/minecraft/network/Packet;)V";
 
         for (MethodNode method : node.methods) {

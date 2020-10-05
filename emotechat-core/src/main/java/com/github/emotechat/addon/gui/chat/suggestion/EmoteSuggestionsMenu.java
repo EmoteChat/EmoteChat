@@ -5,6 +5,7 @@ import com.github.emotechat.addon.Constants;
 import com.github.emotechat.addon.EmoteChatAddon;
 import com.github.emotechat.addon.bttv.BTTVEmote;
 import com.github.emotechat.addon.gui.emote.EmoteDropDownMenu;
+import net.labymod.core.LabyModCore;
 import net.labymod.ingamechat.GuiChatCustom;
 import net.labymod.ingamegui.ModuleGui;
 import net.labymod.ingamegui.enums.EnumDisplayType;
@@ -175,12 +176,12 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
         this.suggestionMenu.setEnabled(false);
         this.suggestionMenu.setOpen(true);
 
-        FontRenderer fontRenderer = Minecraft.getMinecraft().fontRendererObj;
+        FontRenderer fontRenderer = LabyModCore.getMinecraft().getFontRenderer();
 
         int queryWidth = fontRenderer.getStringWidth(this.textField.getText()) - fontRenderer.getStringWidth(this.lastQuery);
 
-        this.suggestionMenu.setX(this.textField.xPosition + queryWidth - 1); // TODO this is not updated when resizing the window
-        this.suggestionMenu.setY(this.textField.yPosition - (this.suggestionMenu.getHeight() * (this.suggestionMenu.getEmoteList().size() + 1)) - 3);
+        this.suggestionMenu.setX(this.textField.x + queryWidth - 1); // TODO this is not updated when resizing the window
+        this.suggestionMenu.setY(this.textField.y - (this.suggestionMenu.getHeight() * (this.suggestionMenu.getEmoteList().size() + 1)) - 3);
 
         this.suggestionMenu.getEmoteList()
                 .stream()
