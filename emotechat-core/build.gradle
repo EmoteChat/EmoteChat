@@ -25,7 +25,7 @@ dependencies {
     shadow group: 'com.madgag', name: 'animated-gif-lib', version: '1.4'
     compileOnly files('../libs/lm_api_mc1.8.9.jar')
 
-    shadow project(':emotechat-shared')
+    shadow project(':emotechat-adapter')
     shadow project(':emotechat-1.8')
     shadow project(':emotechat-1.12')
 }
