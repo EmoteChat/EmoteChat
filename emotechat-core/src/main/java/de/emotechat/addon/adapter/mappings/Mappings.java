@@ -17,7 +17,7 @@ public enum Mappings {
                     "(Lnet.minecraft.util.IChatComponent;ILnet.minecraft.client.gui.FontRenderer;ZZ)Ljava/util/List;",
                     "(Leu;ILavn;ZZ)Ljava/util/List;"
             ),
-            "de/emotechat/addon/adapter/v18/ChatWidthCalculator",
+            "de/emotechat/addon/adapter/v18/V18ChatWidthCalculator",
             new String[]{"message", "a", "field_149440_a"}
     ),
     V112(
@@ -31,7 +31,7 @@ public enum Mappings {
                     "(Lnet.minecraft.util.text.ITextComponent;ILnet.minecraft.client.gui.FontRenderer;ZZ)Ljava/util/List;",
                     "(Leu;ILavn;ZZ)Ljava/util/List;"
             ),
-            "de/emotechat/addon/adapter/v112/ChatWidthCalculator",
+            "de/emotechat/addon/adapter/v112/V112ChatWidthCalculator",
             new String[]{"message", "a", "field_149440_a"}
     );
 

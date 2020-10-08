@@ -48,7 +48,6 @@ public class V18EmoteChatAdapter implements EmoteChatAdapter {
         if (packet instanceof C01PacketChatMessage) {
             ((C01PacketChatMessage) packet).getMessage();
         }
-
         return null;
     }
 
