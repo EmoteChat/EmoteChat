@@ -6,41 +6,21 @@ buildscript {
             name = "forge"
             url = "http://files.minecraftforge.net/maven"
         }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+
+        dependencies {
+            classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+        }
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'com.github.johnrengelman.shadow'
+
+dependencies {
+    compileOnly files('../libs/lm_api_mc1.8.9.jar')
+}
 
 minecraft {
     version = "1.8.9-11.15.1.1855"
     runDir = "run"
     mappings = "stable_20"
-}
-
-dependencies {
-    shadow group: 'com.madgag', name: 'animated-gif-lib', version: '1.4'
-    compileOnly files('../libs/lm_api_mc1.8.9.jar')
-
-    shadow project(':emotechat-adapter')
-    shadow project(':emotechat-1.8')
-    shadow project(':emotechat-1.12')
-}
-
-shadowJar {
-    configurations = [project.configurations.compile]
-
-    exclude 'net/labymod/**'
-    exclude 'net/jpountz/**'
-    exclude 'assets/minecraft/labymod/**'
-    exclude 'BytecodeMethods.class'
-    exclude 'dummyThing'
-    exclude 'mcmod.info'
-}
-
-artifacts {
-    archives shadowJar
 }

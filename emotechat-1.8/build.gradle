@@ -6,23 +6,27 @@ buildscript {
             name = "forge"
             url = "http://files.minecraftforge.net/maven"
         }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+
+        dependencies {
+            classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
+        }
     }
 }
 
+apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'net.minecraftforge.gradle.forge'
+
+dependencies {
+    shadow group: 'com.madgag', name: 'animated-gif-lib', version: '1.4'
+    compileOnly files('../libs/lm_api_mc1.8.9.jar')
+
+    compileOnly project(":emotechat-core")
+}
 
 minecraft {
     version = "1.8.9-11.15.1.1855"
     runDir = "run"
     mappings = "stable_20"
-}
-
-dependencies {
-    compileOnly files('../libs/lm_api_mc1.8.9.jar')
-    compileOnly project(':emotechat-adapter')
 }
 
 processResources {
@@ -39,8 +43,51 @@ processResources {
     }
 }
 
+shadowJar {
+    configurations = [project.configurations.compile]
+    archiveName 'EmoteChat-1.8.jar'
+
+    exclude 'net/labymod/**'
+    exclude 'net/jpountz/**'
+    exclude 'assets/minecraft/labymod/**'
+    exclude 'BytecodeMethods.class'
+    exclude 'dummyThing'
+    exclude 'mcmod.info'
+}
+
+compileJava.doFirst {
+    copy {
+        from './../emotechat-core/src/main/java'
+        into './build/sources/main/java'
+    }
+    copy {
+        from './../emotechat-core/src/main/resources'
+        into './build/resources/main'
+    }
+    copy {
+        from './../emotechat-adapter/src/main/java'
+        into './build/sources/main/java'
+    }
+    copy {
+        from './../emotechat-adapter/src/main/resources'
+        into './build/resources/main'
+    }
+    copy {
+        from './src/main/java'
+        into './build/sources/main/java'
+    }
+    copy {
+        from './src/main/resources'
+        into './build/resources/main'
+    }
+}
+
 reobf {
     jar {
-        useNotchSrg()
+        setMappingType(net.minecraftforge.gradle.user.ReobfMappingType.NOTCH)
     }
+}
+
+artifacts {
+    archives shadowJar
 }
