@@ -14,7 +14,7 @@ public enum Mappings {
             new MethodMapping(
                     "func_178908_a",
                     "a",
-                    "(Lnet.minecraft.util.IChatComponent;ILnet.minecraft.client.gui.FontRenderer;ZZ)Ljava/util/List;",
+                    "(Lnet/minecraft/util/IChatComponent;ILnet/minecraft/client/gui/FontRenderer;ZZ)Ljava/util/List;",
                     "(Leu;ILavn;ZZ)Ljava/util/List;"
             ),
             "de/emotechat/addon/adapter/v18/V18ChatWidthCalculator",
@@ -22,14 +22,14 @@ public enum Mappings {
     ),
     V112(
             Source.ABOUT_MC_VERSION.startsWith("1.12"),
-            new ClassMapping("net.minecraft.client.network.NetHandlerPlayClient", "bcy"),
-            new MethodMapping("sendPacket", "a", "(Lnet/minecraft/network/Packet;)V", "(Lff;)V"),
-            new ClassMapping("net.minecraft.client.gui.GuiUtilRenderComponents", "avu"),
+            new ClassMapping("net.minecraft.client.network.NetHandlerPlayClient", "brz"),
+            new MethodMapping("sendPacket", "a", "(Lnet/minecraft/network/Packet;)V", "(Lht;)V"),
+            new ClassMapping("net.minecraft.client.gui.GuiUtilRenderComponents", "bjc"),
             new MethodMapping(
-                    "func_178908_a",
+                    "splitText",
                     "a",
-                    "(Lnet.minecraft.util.text.ITextComponent;ILnet.minecraft.client.gui.FontRenderer;ZZ)Ljava/util/List;",
-                    "(Leu;ILavn;ZZ)Ljava/util/List;"
+                    "(Lnet/minecraft/util/text/ITextComponent;ILnet/minecraft/client/gui/FontRenderer;ZZ)Ljava/util/List;",
+                    "(Lhh;ILbip;ZZ)Ljava/util/List;"
             ),
             "de/emotechat/addon/adapter/v112/V112ChatWidthCalculator",
             new String[]{"message", "a", "field_149440_a"}
@@ -48,7 +48,7 @@ public enum Mappings {
 
     private final ClassMapping guiUtilRenderComponentsMapping;
 
-    private final MethodMapping calculateLinesMapping;
+    private final MethodMapping splitTextMapping;
 
     private final String chatWidthCalculatorClassName;
 
@@ -58,14 +58,14 @@ public enum Mappings {
              ClassMapping netHandlerPlayClientMapping,
              MethodMapping sendPacketMapping,
              ClassMapping guiUtilRenderComponentsMapping,
-             MethodMapping calculateLinesMapping,
+             MethodMapping splitTextMapping,
              String chatWidthCalculatorClassName,
              String[] chatPacketMessageFieldNames) {
         this.active = active;
         this.netHandlerPlayClientMapping = netHandlerPlayClientMapping;
         this.sendPacketMapping = sendPacketMapping;
         this.guiUtilRenderComponentsMapping = guiUtilRenderComponentsMapping;
-        this.calculateLinesMapping = calculateLinesMapping;
+        this.splitTextMapping = splitTextMapping;
         this.chatWidthCalculatorClassName = chatWidthCalculatorClassName;
         this.chatPacketMessageFieldNames = chatPacketMessageFieldNames;
     }
@@ -86,8 +86,8 @@ public enum Mappings {
         return guiUtilRenderComponentsMapping;
     }
 
-    public MethodMapping getCalculateLinesMapping() {
-        return calculateLinesMapping;
+    public MethodMapping getSplitTextMapping() {
+        return splitTextMapping;
     }
 
     public String getChatWidthCalculatorClassName() {

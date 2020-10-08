@@ -11,14 +11,14 @@ public class ChatWidthCalculateClassTransformer extends PredicateClassNodeTransf
 
     private static final ClassMapping GUI_UTIL_MAPPING = Mappings.ACTIVE_MAPPINGS.getGuiUtilRenderComponentsMapping();
 
-    private static final MethodMapping CALCULATE_LINES_MAPPING = Mappings.ACTIVE_MAPPINGS.getCalculateLinesMapping();
+    private static final MethodMapping SPLIT_TEXT_MAPPING = Mappings.ACTIVE_MAPPINGS.getSplitTextMapping();
 
     @Override
     public void transform(String name, String transformedName, ClassNode node) {
         boolean obfuscated = name.equals(GUI_UTIL_MAPPING.getObfuscatedName());
 
-        String methodName = obfuscated ? CALCULATE_LINES_MAPPING.getObfuscatedName() : CALCULATE_LINES_MAPPING.getName();
-        String methodDesc = obfuscated ? CALCULATE_LINES_MAPPING.getObfuscatedDesc() : CALCULATE_LINES_MAPPING.getDesc();
+        String methodName = obfuscated ? SPLIT_TEXT_MAPPING.getObfuscatedName() : SPLIT_TEXT_MAPPING.getName();
+        String methodDesc = obfuscated ? SPLIT_TEXT_MAPPING.getObfuscatedDesc() : SPLIT_TEXT_MAPPING.getDesc();
 
         for (MethodNode method : node.methods) {
             if (method.name.equals(methodName) && method.desc.equals(methodDesc)) {
