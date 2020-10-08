@@ -2,6 +2,7 @@ package de.emotechat.addon.gui.chat.render;
 
 import de.emotechat.addon.Constants;
 import de.emotechat.addon.EmoteChatAddon;
+import de.emotechat.addon.MathHelper;
 import de.emotechat.addon.bttv.BTTVEmote;
 import de.emotechat.addon.gui.ChatLineEntry;
 import de.emotechat.addon.gui.emote.EmoteGuiYesNo;
@@ -22,7 +23,6 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Mouse;
 
 import java.awt.*;

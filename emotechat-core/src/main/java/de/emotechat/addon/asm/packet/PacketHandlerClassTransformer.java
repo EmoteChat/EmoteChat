@@ -1,28 +1,36 @@
 package de.emotechat.addon.asm.packet;
 
+import de.emotechat.addon.adapter.mappings.ClassMapping;
+import de.emotechat.addon.adapter.mappings.Mappings;
+import de.emotechat.addon.adapter.mappings.MethodMapping;
 import de.emotechat.addon.asm.PredicateClassNodeTransformer;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 public class PacketHandlerClassTransformer extends PredicateClassNodeTransformer {
 
+    private static final ClassMapping NET_HANDLER_PLAY_CLIENT_MAPPING = Mappings.ACTIVE_MAPPINGS.getNetHandlerPlayClientMapping();
+
+    private static final MethodMapping SEND_PACKET_MAPPING = Mappings.ACTIVE_MAPPINGS.getSendPacketMapping();
+
     @Override
     public boolean transforms(String name, String transformedName, byte[] basicClass) {
-        return name.equals("bcy") || name.equals("net.minecraft.client.network.NetHandlerPlayClient");
+        return name.equals(NET_HANDLER_PLAY_CLIENT_MAPPING.getObfuscatedName())
+                || name.equals(NET_HANDLER_PLAY_CLIENT_MAPPING.getName());
     }
 
     @Override
     public void transform(String name, String transformedName, ClassNode node) {
         try {
-            this.transform(node, name.equals("bcy"));
+            this.transform(node, name.equals(NET_HANDLER_PLAY_CLIENT_MAPPING.getObfuscatedName()));
         } catch (Exception exception) {
             exception.printStackTrace();
         }
     }
 
     private void transform(ClassNode node, boolean obfuscated) {
-        String name = obfuscated ? "a" : "sendPacket";
-        String desc = obfuscated ? "(Lff;)V" : "(Lnet/minecraft/network/Packet;)V";
+        String name = obfuscated ? SEND_PACKET_MAPPING.getObfuscatedName() : SEND_PACKET_MAPPING.getName();
+        String desc = obfuscated ? SEND_PACKET_MAPPING.getObfuscatedDesc() : SEND_PACKET_MAPPING.getDesc();
 
         for (MethodNode method : node.methods) {
             if (method.name.equals(name) && method.desc.equals(desc)) {
@@ -32,7 +40,7 @@ public class PacketHandlerClassTransformer extends PredicateClassNodeTransformer
     }
 
     private void transformAddToSendQueue(MethodNode method, boolean obfuscated) {
-        String desc = obfuscated ? "(Lff;)V" : "(Lnet/minecraft/network/Packet;)Z";
+        String desc = obfuscated ? SEND_PACKET_MAPPING.getObfuscatedDesc() : "(Lnet/minecraft/network/Packet;)Z";
 
         InsnList list = new InsnList();
         list.add(new VarInsnNode(Opcodes.ALOAD, 1));

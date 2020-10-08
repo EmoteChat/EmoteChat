@@ -180,8 +180,11 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
 
         int queryWidth = fontRenderer.getStringWidth(this.textField.getText()) - fontRenderer.getStringWidth(this.lastQuery);
 
-        this.suggestionMenu.setX(this.textField.x + queryWidth - 1); // TODO this is not updated when resizing the window
-        this.suggestionMenu.setY(this.textField.y - (this.suggestionMenu.getHeight() * (this.suggestionMenu.getEmoteList().size() + 1)) - 3);
+        int textFieldX = this.addon.getEmoteChatAdapter().getX(this.textField);
+        int textFieldY = this.addon.getEmoteChatAdapter().getY(this.textField);
+
+        this.suggestionMenu.setX(textFieldX + queryWidth - 1); // TODO this is not updated when resizing the window
+        this.suggestionMenu.setY(textFieldY - (this.suggestionMenu.getHeight() * (this.suggestionMenu.getEmoteList().size() + 1)) - 3);
 
         this.suggestionMenu.getEmoteList()
                 .stream()

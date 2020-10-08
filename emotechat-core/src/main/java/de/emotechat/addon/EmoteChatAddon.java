@@ -1,6 +1,8 @@
 package de.emotechat.addon;
 
 import com.google.gson.reflect.TypeToken;
+import de.emotechat.addon.adapter.EmoteChatAdapter;
+import de.emotechat.addon.adapter.mappings.Mappings;
 import de.emotechat.addon.asm.packet.PacketHandler;
 import de.emotechat.addon.bttv.BTTVEmote;
 import de.emotechat.addon.bttv.BTTVSearch;
@@ -22,6 +24,7 @@ import net.labymod.settings.elements.*;
 import net.labymod.utils.Material;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -33,9 +36,13 @@ public class EmoteChatAddon extends LabyModAddon {
     public static final Type SAVED_EMOTES_TYPE_TOKEN = new TypeToken<Map<String, BTTVEmote>>() {
     }.getType();
 
+    private static final String ADAPTER_CLASS_BASE = "de.emotechat.addon.adapter.%s.%sEmoteChatAdapter";
+
     private final MinecraftTickExecutor minecraftTickExecutor = new MinecraftTickExecutor();
 
     private EmoteProvider emoteProvider;
+
+    private EmoteChatAdapter emoteChatAdapter;
 
     private boolean enabled;
 
@@ -47,6 +54,8 @@ public class EmoteChatAddon extends LabyModAddon {
 
     @Override
     public void onEnable() {
+        this.loadEmoteChatAdapter();
+
         super.getApi().registerForgeListener(this.minecraftTickExecutor);
         super.getApi().registerForgeListener(new ChatInjectListener(this));
 
@@ -58,19 +67,8 @@ public class EmoteChatAddon extends LabyModAddon {
         KeyTypedHandler.setEmoteSuggestionsMenu(emoteSuggestionsMenu);
 
         PacketHandler.setChatModifier(new ChatSendListener(this));
+        PacketHandler.setEmoteChatAdapter(this.emoteChatAdapter);
         ChatShortcut.initListener(this);
-    }
-
-    public boolean isEnabled() {
-        return this.enabled;
-    }
-
-    public BTTVEmote getEmoteByName(String name) {
-        return this.savedEmotes.get(name.toLowerCase());
-    }
-
-    public boolean isEmoteSaved(BTTVEmote emote) {
-        return this.savedEmotes.values().stream().anyMatch(saved -> saved.getId().equals(emote.getId()));
     }
 
     @Override
@@ -120,6 +118,30 @@ public class EmoteChatAddon extends LabyModAddon {
         list.add(reloadButton);
 
         this.emoteLists.add(emoteList);
+    }
+
+    private void loadEmoteChatAdapter() {
+        String versionDiscriminator = Mappings.ACTIVE_MAPPINGS.name();
+
+        try {
+            Class<?> emoteChatAdapterClass = Class.forName(String.format(
+                    ADAPTER_CLASS_BASE,
+                    versionDiscriminator.toLowerCase(),
+                    versionDiscriminator
+            ));
+
+            this.emoteChatAdapter = (EmoteChatAdapter) emoteChatAdapterClass.getDeclaredConstructor().newInstance();
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    public BTTVEmote getEmoteByName(String name) {
+        return this.savedEmotes.get(name.toLowerCase());
+    }
+
+    public boolean isEmoteSaved(BTTVEmote emote) {
+        return this.savedEmotes.values().stream().anyMatch(saved -> saved.getId().equals(emote.getId()));
     }
 
     public boolean addEmote(BTTVEmote emote, String name) {
@@ -210,6 +232,14 @@ public class EmoteChatAddon extends LabyModAddon {
         )));
 
         return emoteAddMenu;
+    }
+
+    public EmoteChatAdapter getEmoteChatAdapter() {
+        return emoteChatAdapter;
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
     }
 
     public EmoteProvider getEmoteProvider() {

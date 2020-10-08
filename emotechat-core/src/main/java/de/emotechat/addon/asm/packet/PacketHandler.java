@@ -1,37 +1,46 @@
 package de.emotechat.addon.asm.packet;
 
 import com.google.common.base.Preconditions;
+import de.emotechat.addon.adapter.EmoteChatAdapter;
+import de.emotechat.addon.adapter.mappings.Mappings;
 import net.minecraft.network.Packet;
-import net.minecraft.network.play.client.CPacketChatMessage;
 import net.minecraftforge.fml.relauncher.ReflectionHelper;
 
 import java.lang.reflect.Field;
 
 public class PacketHandler {
 
-    private static final Field FIELD = ReflectionHelper.findField(CPacketChatMessage.class, "message", "a", "field_149440_a");
+    private static Field messageField;
 
     private static ChatModifier chatModifier;
+
+    private static EmoteChatAdapter emoteChatAdapter;
 
     public static void setChatModifier(ChatModifier chatModifier) {
         PacketHandler.chatModifier = chatModifier;
     }
 
+    public static void setEmoteChatAdapter(EmoteChatAdapter emoteChatAdapter) {
+        PacketHandler.emoteChatAdapter = emoteChatAdapter;
+        PacketHandler.messageField = ReflectionHelper.findField(emoteChatAdapter.getChatPacketClass(), Mappings.ACTIVE_MAPPINGS.getChatPacketMessageFieldNames());
+    }
+
     public static void handlePacket(Packet<?> packet) {
-        if (chatModifier == null || !(packet instanceof CPacketChatMessage)) {
+        String message = PacketHandler.emoteChatAdapter.getChatPacketMessage(packet);
+
+        if (PacketHandler.chatModifier == null || message == null) {
             return;
         }
 
-        CPacketChatMessage message = (CPacketChatMessage) packet;
-        if (!chatModifier.shouldReplace(message.getMessage())) {
+        if (!PacketHandler.chatModifier.shouldReplace(message)) {
             return;
         }
 
-        String result = chatModifier.replaceMessage(message.getMessage());
+        String result = PacketHandler.chatModifier.replaceMessage(message);
         Preconditions.checkNotNull(result);
 
         try {
-            FIELD.set(message, result);
+            PacketHandler.messageField.set(packet, result);
         } catch (IllegalAccessException exception) {
             exception.printStackTrace();
         }

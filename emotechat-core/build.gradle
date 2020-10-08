@@ -16,6 +16,7 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 
 dependencies {
+    compileOnly group: 'com.madgag', name: 'animated-gif-lib', version: '1.4'
     compileOnly files('../libs/lm_api_mc1.8.9.jar')
 }
 
