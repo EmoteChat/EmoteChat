@@ -1,13 +1,13 @@
 name: Gradle Github Actions
 
-on: [push]
+on: [ push ]
 
 jobs:
   build:
     strategy:
       matrix:
-        java: ['8']
-        os: [ubuntu-latest]
+        java: [ '8' ]
+        os: [ ubuntu-latest ]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -22,7 +22,12 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew
 
+      - name: Create ZIP
+        run: |
+          - mkdir -p temp/;
+          - cp */build/libs/EmoteChat-*.jar temp;
+
       - uses: actions/upload-artifact@master
         with:
           name: EmoteChat
-          path: '*/build/libs/EmoteChat-*.jar'
+          path: temp/
