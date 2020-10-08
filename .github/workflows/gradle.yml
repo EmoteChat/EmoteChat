@@ -22,12 +22,12 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew
 
-      - name: Create ZIP
+      - name: Release ZIP
         run: |
-          - mkdir -p temp/;
-          - cp */build/libs/EmoteChat-*.jar temp;
+          mkdir -p EmoteChat/;
+          cp */build/libs/EmoteChat-*.jar EmoteChat;
 
       - uses: actions/upload-artifact@master
         with:
           name: EmoteChat
-          path: temp/
+          path: EmoteChat/
