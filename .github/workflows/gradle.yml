@@ -25,4 +25,4 @@ jobs:
       - uses: actions/upload-artifact@master
         with:
           name: EmoteChat
-          path: /*/build/libs/EmoteChat-*.jar
+          path: '*/build/libs/EmoteChat-*.jar'
