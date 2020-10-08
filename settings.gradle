@@ -1,4 +1,3 @@
-include 'emotechat-adapter'
 include 'emotechat-core'
 include 'emotechat-1.8'
 include 'emotechat-1.12'

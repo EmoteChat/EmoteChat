@@ -17,10 +17,21 @@ apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'net.minecraftforge.gradle.forge'
 
 dependencies {
-    shadow group: 'com.madgag', name: 'animated-gif-lib', version: '1.4'
+    compile group: 'com.madgag', name: 'animated-gif-lib', version: '1.4'
     compileOnly files('../libs/lm_api_mc1.8.9.jar')
 
     compileOnly project(":emotechat-core")
+}
+
+compileJava.doFirst {
+    copy {
+        from './../emotechat-core/src/main/java'
+        into './build/sources/main/java'
+    }
+    copy {
+        from './src/main/java'
+        into './build/sources/main/java'
+    }
 }
 
 minecraft {
@@ -35,12 +46,14 @@ processResources {
 
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+        expand 'version': project.version, 'mcversion': project.minecraft.version
     }
 
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+
+    from './../emotechat-core/src/main/resources'
 }
 
 shadowJar {
@@ -55,39 +68,8 @@ shadowJar {
     exclude 'mcmod.info'
 }
 
-compileJava.doFirst {
-    copy {
-        from './../emotechat-core/src/main/java'
-        into './build/sources/main/java'
-    }
-    copy {
-        from './../emotechat-core/src/main/resources'
-        into './build/resources/main'
-    }
-    copy {
-        from './../emotechat-adapter/src/main/java'
-        into './build/sources/main/java'
-    }
-    copy {
-        from './../emotechat-adapter/src/main/resources'
-        into './build/resources/main'
-    }
-    copy {
-        from './src/main/java'
-        into './build/sources/main/java'
-    }
-    copy {
-        from './src/main/resources'
-        into './build/resources/main'
-    }
-}
-
 reobf {
-    jar {
+    shadowJar {
         setMappingType(net.minecraftforge.gradle.user.ReobfMappingType.NOTCH)
     }
-}
-
-artifacts {
-    archives shadowJar
 }
