@@ -16,7 +16,9 @@ public abstract class PredicateClassNodeTransformer implements PredicateClassTra
 
         this.transform(name, transformedName, node);
 
-        int flags = name.contains("GuiChatSymbols") ? ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS;
+        int flags = name.contains("net.labymod.ingamechat") && !name.contains("GuiChatSymbols")
+                ? ClassWriter.COMPUTE_MAXS
+                : ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES;
         ClassWriter writer = new ClassWriter(flags);
 
         node.accept(writer);

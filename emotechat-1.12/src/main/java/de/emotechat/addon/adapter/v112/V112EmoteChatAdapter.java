@@ -45,10 +45,7 @@ public class V112EmoteChatAdapter implements EmoteChatAdapter {
 
     @Override
     public String getChatPacketMessage(Packet<?> packet) {
-        if (packet instanceof CPacketChatMessage) {
-            return ((CPacketChatMessage) packet).getMessage();
-        }
-        return null;
+        return packet instanceof CPacketChatMessage ? ((CPacketChatMessage) packet).getMessage() : null;
     }
 
 }

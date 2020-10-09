@@ -45,10 +45,7 @@ public class V18EmoteChatAdapter implements EmoteChatAdapter {
 
     @Override
     public String getChatPacketMessage(Packet<?> packet) {
-        if (packet instanceof C01PacketChatMessage) {
-            ((C01PacketChatMessage) packet).getMessage();
-        }
-        return null;
+        return packet instanceof C01PacketChatMessage ? ((C01PacketChatMessage) packet).getMessage() : null;
     }
 
 }
