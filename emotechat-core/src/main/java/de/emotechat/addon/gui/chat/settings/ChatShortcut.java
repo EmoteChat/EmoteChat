@@ -4,11 +4,11 @@ import de.emotechat.addon.EmoteChatAddon;
 import net.labymod.ingamechat.GuiChatCustom;
 import net.labymod.ingamegui.enums.EnumDisplayType;
 import net.labymod.settings.elements.ControlElement;
-import net.labymod.utils.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.util.ResourceLocation;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -85,8 +85,8 @@ public class ChatShortcut {
     }
 
     public static void init(GuiChatCustom chat) throws IllegalAccessException, InvocationTargetException, InstantiationException {
-        Object button = BUTTON_CONSTRUCTOR.newInstance(chat, BUTTON_ID, "", new ControlElement.IconData(Material.EMPTY_MAP), true);
-        DISPLAY_NAME_FIELD.set(button, "Open EmoteChat Settings");
+        Object button = BUTTON_CONSTRUCTOR.newInstance(chat, BUTTON_ID, "", new ControlElement.IconData(new ResourceLocation("minecraft:emotechat/peepohappy.png")), true);
+        DISPLAY_NAME_FIELD.set(button, "Emote menu");
 
         Object[] buttons = (Object[]) BUTTONS_FIELD.get(chat);
         Object[] newButtons = (Object[]) Array.newInstance(BUTTON_CLASS, Array.getLength(buttons) + 1);
@@ -126,11 +126,13 @@ public class ChatShortcut {
                     int clickedButtonId = BUTTON_ID_FIELD.getInt(buttons[slot]);
 
                     if (clickedButtonId == BUTTON_ID) {
+                        GuiChatCustom.activeTab = slot;
+
                         GuiScreen currentScreen = Minecraft.getMinecraft().currentScreen;
                         GuiTextField textField = (GuiTextField) TEXT_INPUT_FIELD.get(chat);
                         String text = textField.getText();
 
-                        Minecraft.getMinecraft().displayGuiScreen(currentScreen instanceof GuiChatEmoteSettings ? new GuiChatCustom(text) : new GuiChatEmoteSettings(text, addon));
+                        Minecraft.getMinecraft().displayGuiScreen(currentScreen instanceof GuiChatEmoteMenu ? new GuiChatCustom(text) : new GuiChatEmoteMenu(text, addon));
                     }
                 } catch (IllegalAccessException exception) {
                     exception.printStackTrace();

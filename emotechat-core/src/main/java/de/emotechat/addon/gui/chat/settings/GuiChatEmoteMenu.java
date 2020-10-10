@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GuiChatEmoteSettings extends GuiChatCustom {
+public class GuiChatEmoteMenu extends GuiChatCustom {
 
     private final int EMOTE_SIZE = 15;
 
@@ -28,7 +28,7 @@ public class GuiChatEmoteSettings extends GuiChatCustom {
 
     private boolean canScroll;
 
-    public GuiChatEmoteSettings(String defaultText, EmoteChatAddon addon) {
+    public GuiChatEmoteMenu(String defaultText, EmoteChatAddon addon) {
         super(defaultText);
         this.addon = addon;
     }

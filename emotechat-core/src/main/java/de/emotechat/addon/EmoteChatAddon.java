@@ -77,15 +77,17 @@ public class EmoteChatAddon extends LabyModAddon {
 
         String backendServerURL = super.getConfig().has("backendServerURL")
                 ? super.getConfig().get("backendServerURL").getAsString()
-                : "";
+                : "https://api.emotechat.de";
+        super.getConfig().addProperty("backendServerURL", backendServerURL);
 
         this.savedEmotes = super.getConfig().has("savedEmotes")
                 ? Constants.GSON.fromJson(super.getConfig().get("savedEmotes"), SAVED_EMOTES_TYPE_TOKEN)
                 : new HashMap<>();
 
         this.emoteProvider = new EmoteProvider(backendServerURL, this.savedEmotes);
-
         this.emoteProvider.sendEmotesToServer(this.savedEmotes.values().stream().map(BTTVEmote::getId).collect(Collectors.toList()));
+
+        super.saveConfig();
     }
 
     @Override
