@@ -1,0 +1,75 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+
+        dependencies {
+            classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        }
+    }
+}
+
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+dependencies {
+    compile group: 'com.madgag', name: 'animated-gif-lib', version: '1.4'
+    compileOnly files('../libs/lm_api_mc1.12.2.jar')
+
+    compileOnly project(":emotechat-core")
+}
+
+compileJava.doFirst {
+    copy {
+        from './../emotechat-core/src/main/java'
+        into './build/sources/main/java'
+    }
+    copy {
+        from './src/main/java'
+        into './build/sources/main/java'
+    }
+}
+
+minecraft {
+    version = "1.12.2-14.23.0.2512"
+    runDir = "run"
+    mappings = "snapshot_20171003"
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+
+    from './../emotechat-core/src/main/resources'
+}
+
+shadowJar {
+    configurations = [project.configurations.compile]
+    archiveName 'EmoteChat-1.12.jar'
+
+    exclude 'net/labymod/**'
+    exclude 'net/jpountz/**'
+    exclude 'assets/minecraft/labymod/**'
+    exclude 'BytecodeMethods.class'
+    exclude 'dummyThing'
+    exclude 'mcmod.info'
+}
+
+reobf {
+    shadowJar {
+        setMappingType(net.minecraftforge.gradle.user.ReobfMappingType.NOTCH)
+    }
+}

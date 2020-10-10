@@ -1,0 +1,8 @@
+{
+  "uuid": "%uuid%",
+  "name": "EmoteChat",
+  "mainClass": "de.emotechat.addon.EmoteChatAddon",
+  "author": "derrop, juliarn",
+  "description": "Bring emotes from Twitch and Discord to the Minecraft chat!",
+  "transformerClass": "de.emotechat.addon.asm.EmoteClassTransformer"
+}
