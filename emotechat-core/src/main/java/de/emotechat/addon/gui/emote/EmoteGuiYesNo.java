@@ -12,7 +12,6 @@ import net.minecraft.client.gui.GuiYesNoCallback;
 public class EmoteGuiYesNo extends GuiYesNo {
 
     private static final int TOP_OFFSET = 70;
-    private static final int DISTANCE = 5;
 
     private final ControlElement.IconData iconData;
 
@@ -25,14 +24,22 @@ public class EmoteGuiYesNo extends GuiYesNo {
     public void drawScreen(int p_drawScreen_1_, int p_drawScreen_2_, float p_drawScreen_3_) {
         super.drawScreen(p_drawScreen_1_, p_drawScreen_2_, p_drawScreen_3_);
 
-        String text = super.messageLine1;
-        int width = LabyModCore.getMinecraft().getFontRenderer().getStringWidth(text);
-        int x = (super.width - width) / 2 - Constants.CHAT_EMOTE_SIZE - DISTANCE;
-        int y = TOP_OFFSET - (LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT / 2);
+        int textY = TOP_OFFSET - (LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT / 2);
+        int buttonsY = super.height / 102;
+
+        int x = (super.width / 2) - (Constants.SETTINGS_EMOTE_PREVIEW_SIZE / 2);
+        int y = (textY - buttonsY) + (Constants.SETTINGS_EMOTE_PREVIEW_SIZE / 2);
 
         Minecraft.getMinecraft().getTextureManager().bindTexture(this.iconData.getTextureIcon());
-
-        LabyMod.getInstance().getDrawUtils().drawTexture(x, y, 256, 256, Constants.CHAT_EMOTE_SIZE, Constants.CHAT_EMOTE_SIZE, 1F);
+        LabyMod.getInstance().getDrawUtils().drawTexture(
+                x,
+                y,
+                256,
+                256,
+                Constants.SETTINGS_EMOTE_PREVIEW_SIZE,
+                Constants.SETTINGS_EMOTE_PREVIEW_SIZE,
+                1F
+        );
     }
 
 }
