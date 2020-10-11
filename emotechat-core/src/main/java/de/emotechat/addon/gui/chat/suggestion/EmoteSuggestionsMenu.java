@@ -126,7 +126,7 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
 
         if (selected != null) {
             this.textField.setText(this.textField.getText().replace(
-                    currentEmoteWord, Constants.EMOTE_WRAPPER + selected.getName() + Constants.EMOTE_WRAPPER
+                    currentEmoteWord, Constants.EMOTE_WRAPPER + selected.getName() + Constants.EMOTE_WRAPPER + " "
             ));
             this.suggestionMenu.update(new ArrayList<>());
         }

@@ -14,8 +14,6 @@ public class ChatLineEntry {
 
     private static final Pattern EMOTE_PATTERN = Pattern.compile(Constants.EMOTE_WRAPPER + "[A-Za-z0-9:]+\\+[A-Za-z0-9]{5}" + Constants.EMOTE_WRAPPER);
 
-    private static final char COLOR_CHAR = 167;
-
     private final boolean emote;
 
     private final String content;
@@ -23,6 +21,8 @@ public class ChatLineEntry {
     private final String rawContent;
 
     private final String colors;
+
+    private boolean loadedEmote = false;
 
     public ChatLineEntry(boolean emote, String content, String rawContent, String colors) {
         this.emote = emote;
@@ -39,12 +39,22 @@ public class ChatLineEntry {
         return this.content;
     }
 
+    public String getRawContent() {
+        return rawContent;
+    }
+
     public String getColors() {
         return this.colors;
     }
 
-    // TODO: spaces are not displayed with fat (§l) strings
-    // TODO: spaces are missing after an emote that doesn't exist
+    public boolean isLoadedEmote() {
+        return loadedEmote;
+    }
+
+    public void setLoadedEmote(boolean loadedEmote) {
+        this.loadedEmote = loadedEmote;
+    }
+
     public static Collection<ChatLineEntry> parseEntries(String line) {
         StringBuilder currentLine = new StringBuilder();
 

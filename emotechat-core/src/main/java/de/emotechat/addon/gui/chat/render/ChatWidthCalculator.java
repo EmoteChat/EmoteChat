@@ -19,8 +19,7 @@ public class ChatWidthCalculator {
         int finalWidth = 0;
 
         for (ChatLineEntry entry : entries) {
-            // TODO causes problems when there is an argument which begins and ends with ':' but is not an emote
-            finalWidth += entry.isEmote() ? Constants.CHAT_EMOTE_SIZE : renderer.getStringWidth(entry.getContent());
+            finalWidth += entry.isLoadedEmote() ? Constants.CHAT_EMOTE_SIZE : renderer.getStringWidth(entry.getRawContent());
         }
 
         return finalWidth + ((entries.size() - 1) * spaceWidth);

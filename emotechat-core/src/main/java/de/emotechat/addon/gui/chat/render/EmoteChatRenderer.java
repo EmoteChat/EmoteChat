@@ -27,6 +27,7 @@ import org.lwjgl.input.Mouse;
 
 import java.awt.*;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -126,14 +127,17 @@ public class EmoteChatRenderer {
             return true;
         }
 
-        ChatLine[] lines = new ChatLine[]{
-                new EmoteChatLine(entries, false, message, secondChat, room, component, updateCounter, chatLineId, highlightColor),
-                new EmoteChatLine(entries, true, message, secondChat, room, component, updateCounter, chatLineId, highlightColor)
-        };
-
-        for (int i = 0; i < lines.length; i++) {
-            this.renderer.getChatLines().add(i, lines[i]);
-        }
+        this.renderer.getChatLines().add(0, new EmoteChatLine(
+                entries,
+                true,
+                message,
+                secondChat,
+                room,
+                component,
+                updateCounter,
+                chatLineId,
+                highlightColor
+        ));
 
         if (!refresh) {
             try {
@@ -228,7 +232,7 @@ public class EmoteChatRenderer {
         this.mouseX = this.renderer.lastMouseX;
         this.mouseY = this.renderer.lastMouseY;
 
-        List<ChatLine> chatLines = this.renderer.getChatLines();
+        List<ChatLine> chatLines = new ArrayList<>(this.renderer.getChatLines());
 
         if (chatLines.size() == 0 || !this.renderer.isVisible()) {
             return;
@@ -428,19 +432,43 @@ public class EmoteChatRenderer {
         y -= 8;
 
         if (chatLine instanceof EmoteChatLine) {
-            if (((EmoteChatLine) chatLine).shouldRender()) {
-                for (ChatLineEntry entry : ((EmoteChatLine) chatLine).getEntries()) {
+            EmoteChatLine emoteChatLine = (EmoteChatLine) chatLine;
+
+            if (emoteChatLine.shouldRender()) {
+                float textY = emoteChatLine.getEntries().stream().anyMatch(ChatLineEntry::isLoadedEmote)
+                        ? y + ((float) Constants.LINE_HEIGHT / 2F)
+                        : y;
+
+                for (ChatLineEntry entry : emoteChatLine.getEntries()) {
                     if (entry.isEmote() && !entry.getContent().contains(" ")
                             && this.drawImage(this.addon.getEmoteProvider().getByGlobalIdentifier(entry.getContent()), x, y, alpha)) {
+
+                        if (!entry.isLoadedEmote()) {
+                            entry.setLoadedEmote(true);
+
+                            if (!emoteChatLine.isGhostLineAdded()) {
+                                int currentLineIndex = this.renderer.getChatLines().indexOf(emoteChatLine);
+                                this.renderer.getChatLines().add(currentLineIndex, new EmoteChatLine(
+                                        emoteChatLine.getEntries(),
+                                        false,
+                                        emoteChatLine.getMessage(),
+                                        emoteChatLine.isSecondChat(),
+                                        emoteChatLine.getRoom(),
+                                        emoteChatLine.getComponent(),
+                                        emoteChatLine.getUpdateCounter(),
+                                        emoteChatLine.getChatLineId(),
+                                        emoteChatLine.getHighlightColor()
+                                ));
+
+                                emoteChatLine.setGhostLineAdded(true);
+                            }
+                        }
+
                         x += Constants.CHAT_EMOTE_SIZE;
                     } else {
-                        String content = entry.getContent();
-                        if (entry.isEmote()) {
-                            content = Constants.EMOTE_WRAPPER + content + Constants.EMOTE_WRAPPER;
-                        }
-                        content = entry.getColors() + content;
-                        this.drawLineComponent(content, x, y + ((float) Constants.LINE_HEIGHT / 2F), rgb);
-                        x += font.getStringWidth(entry.getContent());
+                        String content = entry.getColors() + entry.getRawContent();
+                        this.drawLineComponent(content, x, textY, rgb);
+                        x += font.getStringWidth(content);
                     }
                     x += SPACE_LENGTH;
                 }
@@ -527,8 +555,8 @@ public class EmoteChatRenderer {
                     Collection<ChatLineEntry> entries = ((EmoteChatLine) chatLine).getEntries();
 
                     for (ChatLineEntry entry : entries) {
-                        if (!entry.isEmote()) {
-                            currentX += LabyModCore.getMinecraft().getFontRenderer().getStringWidth(entry.getContent()) + SPACE_LENGTH;
+                        if (!entry.isLoadedEmote()) {
+                            currentX += LabyModCore.getMinecraft().getFontRenderer().getStringWidth(entry.getRawContent()) + SPACE_LENGTH;
                             continue;
                         }
 

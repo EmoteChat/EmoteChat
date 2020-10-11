@@ -11,7 +11,7 @@ public class EmoteClassTransformer implements IClassTransformer {
     private static final PredicateClassTransformer[] CLASS_TRANSFORMERS = new PredicateClassTransformer[]{
             new PacketHandlerClassTransformer(),
             new ChatKeyTypedClassTransformer()/*,
-            new ChatWidthCalculateClassTransformer()*/
+            new ChatWidthCalculateClassTransformer()*/ // TODO: fix ASM for 1.12.2 and chat width calculation in general
     };
 
     @Override
