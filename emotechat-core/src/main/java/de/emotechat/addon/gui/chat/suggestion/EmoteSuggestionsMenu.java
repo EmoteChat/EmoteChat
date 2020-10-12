@@ -29,11 +29,13 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
 
     private GuiTextField textField;
 
-    private int minecraftTextFieldLength;
+    private int minecraftTextFieldLength = -1;
 
     private String lastQuery;
 
     private GuiScreen lastGui;
+
+    private String lastText;
 
     public EmoteSuggestionsMenu(EmoteChatAddon addon) {
         this.addon = addon;
@@ -41,8 +43,6 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
 
     @Override
     public void accept(char typedChar, int keyCode) {
-        this.adjustTextFieldLength(this.textField.getText());
-
         if (this.suggestionMenu.getEmoteList().size() > 0) {
             boolean down = keyCode == 208;
             boolean up = keyCode == 200;
@@ -105,8 +105,8 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
         }
     }
 
-    private void adjustTextFieldLength(String chatText) {
-        int additionalEmoteChars = Arrays.stream(chatText.split(" "))
+    private void adjustTextFieldLength() {
+        int additionalEmoteChars = Arrays.stream(this.textField.getText().split(" "))
                 .map(word -> {
                     if (word.length() > 2 && word.charAt(0) == Constants.EMOTE_WRAPPER && word.charAt(word.length() - 1) == Constants.EMOTE_WRAPPER) {
                         String emoteName = word.substring(1, word.length() - 1);
@@ -118,7 +118,10 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
                 .mapToInt(emote -> (emote.getOriginalName().length() - emote.getName().length()) + 6)
                 .sum();
 
-        this.textField.setMaxStringLength(this.minecraftTextFieldLength - additionalEmoteChars);
+        int maxLength = this.minecraftTextFieldLength - additionalEmoteChars;
+
+        this.textField.setMaxStringLength(maxLength);
+        this.textField.setCursorPosition(Math.min(this.textField.getCursorPosition(), maxLength));
     }
 
     private Optional<String> getCurrentEmoteWord() {
@@ -172,11 +175,7 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
             words[cursorWordIndex] = replacedWord;
 
             int cursorPosition = this.textField.getCursorPosition() + (replacedWord.length() - word.length());
-
-            String replacedChatText = String.join(" ", words);
-            this.textField.setText(replacedChatText);
-            this.adjustTextFieldLength(replacedChatText);
-
+            this.textField.setText(String.join(" ", words));
             this.textField.setCursorPosition(cursorPosition);
 
             this.suggestionMenu.update(new ArrayList<>());
@@ -193,15 +192,22 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
             }
 
             this.textField = this.getTextField(currentGui);
-            if (this.textField != null) {
+            if (this.minecraftTextFieldLength == -1 && this.textField != null) {
                 this.minecraftTextFieldLength = this.textField.getMaxStringLength();
             }
 
             this.lastGui = currentGui;
         }
 
-        if (this.suggestionMenu.getEmoteList().size() > 0) {
-            this.drawSuggestionMenu();
+        if (this.textField != null) {
+            if (!Objects.equals(this.textField.getText(), this.lastText)) {
+                this.adjustTextFieldLength();
+                this.lastText = this.textField.getText();
+            }
+
+            if (this.suggestionMenu.getEmoteList().size() > 0) {
+                this.drawSuggestionMenu();
+            }
         }
     }
 
