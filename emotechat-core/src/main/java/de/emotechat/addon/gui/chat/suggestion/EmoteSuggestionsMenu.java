@@ -29,6 +29,8 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
 
     private GuiTextField textField;
 
+    private int minecraftTextFieldLength;
+
     private String lastQuery;
 
     private GuiScreen lastGui;
@@ -39,6 +41,8 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
 
     @Override
     public void accept(char typedChar, int keyCode) {
+        this.adjustTextFieldLength(this.textField.getText());
+
         if (this.suggestionMenu.getEmoteList().size() > 0) {
             boolean down = keyCode == 208;
             boolean up = keyCode == 200;
@@ -69,7 +73,7 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
             String currentEmoteWord = currentWordOptional.get();
 
             if (keyCode == 28) {
-                this.replaceCurrentEmoteWord(currentEmoteWord);
+                this.replaceCurrentEmoteWord();
                 return;
             }
 
@@ -97,18 +101,36 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
 
         if (hoverSelected != null) {
             this.suggestionMenu.setSelected(hoverSelected);
-            this.getCurrentEmoteWord().ifPresent(this::replaceCurrentEmoteWord);
+            this.getCurrentEmoteWord().ifPresent(ignored -> this.replaceCurrentEmoteWord());
         }
+    }
+
+    private void adjustTextFieldLength(String chatText) {
+        int additionalEmoteChars = Arrays.stream(chatText.split(" "))
+                .map(word -> {
+                    if (word.length() > 2 && word.charAt(0) == Constants.EMOTE_WRAPPER && word.charAt(word.length() - 1) == Constants.EMOTE_WRAPPER) {
+                        String emoteName = word.substring(1, word.length() - 1);
+                        return this.addon.getEmoteByName(emoteName);
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .mapToInt(emote -> (emote.getOriginalName().length() - emote.getName().length()) + 6)
+                .sum();
+
+        this.textField.setMaxStringLength(this.minecraftTextFieldLength - additionalEmoteChars);
     }
 
     private Optional<String> getCurrentEmoteWord() {
         String chatText = this.textField.getText();
 
-        if (chatText != null && !chatText.isEmpty() && !chatText.endsWith(" ")) {
+        if (chatText != null && !chatText.isEmpty()) {
             String[] words = chatText.split(" ");
 
-            if (words.length > 0) {
-                String currentWord = words[words.length - 1];
+            int currentWordIndex = this.getCurrentWordIndex();
+
+            if (words.length > currentWordIndex) {
+                String currentWord = words[currentWordIndex];
 
                 if (currentWord.length() != 0
                         && currentWord.charAt(0) == Constants.EMOTE_WRAPPER
@@ -121,13 +143,42 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
         return Optional.empty();
     }
 
-    private void replaceCurrentEmoteWord(String currentEmoteWord) {
+    private int getCurrentWordIndex() {
+        int cursorWordIndex = 0;
+
+        for (int i = 0; i < this.textField.getCursorPosition(); i++) {
+            if (this.textField.getText().charAt(i) == ' ') {
+                cursorWordIndex++;
+            }
+        }
+
+        return cursorWordIndex;
+    }
+
+    private void replaceCurrentEmoteWord() {
         BTTVEmote selected = this.suggestionMenu.getSelected();
 
         if (selected != null) {
-            this.textField.setText(this.textField.getText().replace(
-                    currentEmoteWord, Constants.EMOTE_WRAPPER + selected.getName() + Constants.EMOTE_WRAPPER + " "
-            ));
+            String chatText = this.textField.getText();
+
+            String[] words = chatText.split(" ");
+            int cursorWordIndex = this.getCurrentWordIndex();
+
+            boolean lastWord = words.length == cursorWordIndex + 1;
+
+            String word = words[cursorWordIndex];
+            String replacedWord = Constants.EMOTE_WRAPPER + selected.getName() + Constants.EMOTE_WRAPPER + (lastWord ? " " : "");
+
+            words[cursorWordIndex] = replacedWord;
+
+            int cursorPosition = this.textField.getCursorPosition() + (replacedWord.length() - word.length());
+
+            String replacedChatText = String.join(" ", words);
+            this.textField.setText(replacedChatText);
+            this.adjustTextFieldLength(replacedChatText);
+
+            this.textField.setCursorPosition(cursorPosition);
+
             this.suggestionMenu.update(new ArrayList<>());
         }
     }
@@ -142,6 +193,9 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
             }
 
             this.textField = this.getTextField(currentGui);
+            if (this.textField != null) {
+                this.minecraftTextFieldLength = this.textField.getMaxStringLength();
+            }
 
             this.lastGui = currentGui;
         }
@@ -178,7 +232,9 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
 
         FontRenderer fontRenderer = LabyModCore.getMinecraft().getFontRenderer();
 
-        int queryWidth = fontRenderer.getStringWidth(this.textField.getText()) - fontRenderer.getStringWidth(this.lastQuery);
+        int queryWidth = fontRenderer.getStringWidth(
+                this.textField.getText().substring(0, this.textField.getCursorPosition())
+        ) - fontRenderer.getStringWidth(this.lastQuery);
 
         int textFieldX = LabyModCore.getMinecraft().getXPosition(this.textField);
         int textFieldY = LabyModCore.getMinecraft().getYPosition(this.textField);
