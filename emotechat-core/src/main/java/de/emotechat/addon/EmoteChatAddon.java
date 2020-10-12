@@ -7,7 +7,7 @@ import de.emotechat.addon.asm.packet.PacketHandler;
 import de.emotechat.addon.bttv.BTTVEmote;
 import de.emotechat.addon.bttv.BTTVSearch;
 import de.emotechat.addon.bttv.EmoteProvider;
-import de.emotechat.addon.gui.chat.settings.ChatShortcut;
+import de.emotechat.addon.gui.chat.menu.ChatShortcut;
 import de.emotechat.addon.gui.chat.suggestion.EmoteSuggestionsMenu;
 import de.emotechat.addon.gui.chat.suggestion.KeyTypedHandler;
 import de.emotechat.addon.gui.element.PreviewedDropDownElement;
@@ -104,9 +104,7 @@ public class EmoteChatAddon extends LabyModAddon {
         emoteList.update(this.savedEmotes);
 
         ButtonElement cleanupButton = new ButtonElement("Cleanup emote cache");
-        cleanupButton.setClickListener(() -> {
-            this.emoteProvider.cleanupCache();
-        });
+        cleanupButton.setClickListener(() -> this.emoteProvider.cleanupCache());
 
         ButtonElement reloadButton = new TimedButtonElement("Reload emotes", TimeUnit.MINUTES.toMillis(2));
         reloadButton.setClickListener(() -> {

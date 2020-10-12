@@ -1,26 +1,51 @@
-package de.emotechat.addon.gui.chat.settings;
+package de.emotechat.addon.gui.chat.menu;
 
 import de.emotechat.addon.Constants;
 import de.emotechat.addon.EmoteChatAddon;
 import de.emotechat.addon.bttv.BTTVEmote;
+import net.labymod.addon.online.AddonInfoManager;
+import net.labymod.addon.online.info.AddonInfo;
 import net.labymod.core.LabyModCore;
 import net.labymod.gui.elements.Scrollbar;
 import net.labymod.ingamechat.GuiChatCustom;
 import net.labymod.main.LabyMod;
+import net.labymod.main.ModTextures;
+import net.labymod.settings.LabyModAddonsGui;
 import net.labymod.settings.elements.SettingsElement;
+import net.labymod.utils.manager.TooltipHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Mouse;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GuiChatEmoteMenu extends GuiChatCustom {
 
-    private final int EMOTE_SIZE = 15;
+    private static final int EMOTE_SIZE = 15;
 
-    private final int MAX_ROW_AMOUNT = 5;
+    private static final int MAX_ROW_AMOUNT = 5;
+
+    private static final int SETTINGS_ICON_SIZE = LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT;
+
+    private static final int SETTINGS_ICON_HOVER_INCREASE = 1;
+
+    private static final Field OPENED_ADDON_SETTINGS_FIELD;
+
+    static {
+        Field openedAddonSettingsField = null;
+
+        try {
+            openedAddonSettingsField = LabyModAddonsGui.class.getDeclaredField("openedAddonSettings");
+            openedAddonSettingsField.setAccessible(true);
+        } catch (NoSuchFieldException exception) {
+            exception.printStackTrace();
+        }
+
+        OPENED_ADDON_SETTINGS_FIELD = openedAddonSettingsField;
+    }
 
     private final EmoteChatAddon addon;
 
@@ -60,6 +85,28 @@ public class GuiChatEmoteMenu extends GuiChatCustom {
         drawRect(this.width - 7, (int) this.scrollbar.getTop(), this.width - 4, (int) (this.scrollbar.getTop() + this.scrollbar.getBarLength()), 2147483647);
 
         this.drawString(LabyModCore.getMinecraft().getFontRenderer(), "Emotes", this.width - 100, this.height - 165, -1);
+
+        int iconX = this.width - SETTINGS_ICON_SIZE - 2;
+        int iconY = this.height - 165;
+
+        boolean iconHovered = this.isSettingsIconHovered(mouseX, mouseY, iconX, iconY);
+
+        if (iconHovered) {
+            TooltipHelper.getHelper().pointTooltip(mouseX, mouseY, 0, "Addon settings");
+        }
+
+        int size = SETTINGS_ICON_SIZE + (iconHovered ? SETTINGS_ICON_HOVER_INCREASE * 2 : 0);
+
+        this.mc.getTextureManager().bindTexture(ModTextures.BUTTON_ADVANCED);
+        LabyMod.getInstance().getDrawUtils().drawTexture(
+                iconX - (iconHovered ? SETTINGS_ICON_HOVER_INCREASE : 0),
+                iconY - (iconHovered ? SETTINGS_ICON_HOVER_INCREASE : 0),
+                256,
+                256,
+                size,
+                size,
+                1F
+        );
 
         this.canScroll = mouseX > this.width - 100 && mouseX < this.width - 2 && mouseY > this.height - 150 && mouseY < this.height - 16;
         int row = 0;
@@ -101,6 +148,16 @@ public class GuiChatEmoteMenu extends GuiChatCustom {
 
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseButton);
+
+        int iconX = this.width - SETTINGS_ICON_SIZE - 2;
+        int iconY = this.height - 165;
+
+        if (this.isSettingsIconHovered(mouseX, mouseY, iconX, iconY)) {
+            LabyModCore.getMinecraft().playSound(SettingsElement.BUTTON_PRESS_SOUND, 2.0F);
+            this.openAddonSettings();
+            return;
+        }
+
         this.scrollbar.mouseAction(mouseX, mouseY, Scrollbar.EnumMouseAction.CLICKED);
         int row = 0;
         int column = 0;
@@ -136,6 +193,20 @@ public class GuiChatEmoteMenu extends GuiChatCustom {
         super.mouseReleased(mouseX, mouseY, state);
     }
 
+    private void openAddonSettings() {
+        AddonInfoManager.getInstance().init();
+        AddonInfo addonInfo = AddonInfoManager.getInstance().getAddonInfoMap().get(this.addon.about.uuid);
+
+        LabyModAddonsGui addonsGui = new LabyModAddonsGui(super.mc.currentScreen);
+        try {
+            OPENED_ADDON_SETTINGS_FIELD.set(addonsGui, addonInfo.getAddonElement());
+        } catch (IllegalAccessException exception) {
+            exception.printStackTrace();
+        }
+
+        super.mc.displayGuiScreen(addonsGui);
+    }
+
     private boolean isEmoteShown(int column) {
         double emoteHeight = column * EMOTE_SIZE + this.scrollbar.getScrollY();
 
@@ -151,6 +222,13 @@ public class GuiChatEmoteMenu extends GuiChatCustom {
                 && mouseX < emoteX + EMOTE_SIZE
                 && mouseY > emoteY
                 && mouseY < emoteY + EMOTE_SIZE;
+    }
+
+    private boolean isSettingsIconHovered(int mouseX, int mouseY, int iconX, int iconY) {
+        return mouseX > iconX
+                && mouseX < (iconX + SETTINGS_ICON_SIZE)
+                && mouseY > iconY
+                && mouseY < (iconY + SETTINGS_ICON_SIZE);
     }
 
 }

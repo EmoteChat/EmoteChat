@@ -1,9 +1,9 @@
 package de.emotechat.addon.listener;
 
 import de.emotechat.addon.EmoteChatAddon;
+import de.emotechat.addon.gui.chat.menu.ChatShortcut;
 import de.emotechat.addon.gui.chat.render.EmoteChatRendererMain;
 import de.emotechat.addon.gui.chat.render.EmoteChatRendererSecond;
-import de.emotechat.addon.gui.chat.settings.ChatShortcut;
 import net.labymod.ingamechat.GuiChatCustom;
 import net.labymod.ingamechat.IngameChatManager;
 import net.labymod.ingamechat.renderer.ChatRenderer;

@@ -1,4 +1,4 @@
-package de.emotechat.addon.gui.chat.settings;
+package de.emotechat.addon.gui.chat.menu;
 
 import de.emotechat.addon.EmoteChatAddon;
 import net.labymod.ingamechat.GuiChatCustom;

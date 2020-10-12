@@ -5,7 +5,6 @@ import de.emotechat.addon.bttv.BTTVEmote;
 import net.labymod.core.LabyModCore;
 import net.labymod.main.LabyMod;
 import net.labymod.settings.elements.ControlElement;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.gui.GuiYesNoCallback;
 
@@ -30,7 +29,7 @@ public class EmoteGuiYesNo extends GuiYesNo {
         int x = (super.width / 2) - (Constants.SETTINGS_EMOTE_PREVIEW_SIZE / 2);
         int y = (textY - buttonsY) + (Constants.SETTINGS_EMOTE_PREVIEW_SIZE / 2);
 
-        Minecraft.getMinecraft().getTextureManager().bindTexture(this.iconData.getTextureIcon());
+        super.mc.getTextureManager().bindTexture(this.iconData.getTextureIcon());
         LabyMod.getInstance().getDrawUtils().drawTexture(
                 x,
                 y,

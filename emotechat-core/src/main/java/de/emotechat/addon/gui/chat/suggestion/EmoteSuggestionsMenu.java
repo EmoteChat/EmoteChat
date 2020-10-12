@@ -180,8 +180,8 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
 
         int queryWidth = fontRenderer.getStringWidth(this.textField.getText()) - fontRenderer.getStringWidth(this.lastQuery);
 
-        int textFieldX = this.addon.getEmoteChatAdapter().getX(this.textField);
-        int textFieldY = this.addon.getEmoteChatAdapter().getY(this.textField);
+        int textFieldX = LabyModCore.getMinecraft().getXPosition(this.textField);
+        int textFieldY = LabyModCore.getMinecraft().getYPosition(this.textField);
 
         this.suggestionMenu.setX(textFieldX + queryWidth - 1); // TODO this is not updated when resizing the window
         this.suggestionMenu.setY(textFieldY - (this.suggestionMenu.getHeight() * (this.suggestionMenu.getEmoteList().size() + 1)) - 3);
