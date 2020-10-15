@@ -60,8 +60,8 @@ public class GuiChatEmoteMenu extends GuiChatCustom {
 
     public void initGui() {
         super.initGui();
-        this.scrollbar.setPosition(this.width - 8, this.height - 155, this.width - 3, this.height - 20);
-        this.scrollbar.update(this.addon.getSavedEmotes().size() / (MAX_ROW_AMOUNT + 1) + 1);
+        this.scrollbar.setPosition(this.width - 8, this.height - 150, this.width - 3, this.height - 20);
+        this.scrollbar.update(this.addon.getSavedEmotes().size() / MAX_ROW_AMOUNT - 1);
         this.scrollbar.setSpeed(EMOTE_SIZE);
     }
 
@@ -81,7 +81,7 @@ public class GuiChatEmoteMenu extends GuiChatCustom {
         this.scrollbar.calc();
 
         drawRect(this.width - 100, this.height - 155, this.width - 2, this.height - 16, -2147483648);
-        drawRect(this.width - 6, this.height - 145, this.width - 5, this.height - 20, -2147483648);
+        drawRect(this.width - 6, this.height - 150, this.width - 5, this.height - 20, -2147483648);
         drawRect(this.width - 7, (int) this.scrollbar.getTop(), this.width - 4, (int) (this.scrollbar.getTop() + this.scrollbar.getBarLength()), 2147483647);
 
         this.drawString(LabyModCore.getMinecraft().getFontRenderer(), "Emotes", this.width - 100, this.height - 165, -1);
