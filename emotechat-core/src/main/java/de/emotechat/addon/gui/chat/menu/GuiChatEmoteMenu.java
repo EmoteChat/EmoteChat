@@ -49,7 +49,7 @@ public class GuiChatEmoteMenu extends GuiChatCustom {
 
     private final EmoteChatAddon addon;
 
-    private final Scrollbar scrollbar = new Scrollbar(EMOTE_SIZE);
+    private final Scrollbar scrollbar = new Scrollbar(EMOTE_SIZE + 1);
 
     private boolean canScroll;
 
@@ -61,8 +61,8 @@ public class GuiChatEmoteMenu extends GuiChatCustom {
     public void initGui() {
         super.initGui();
         this.scrollbar.setPosition(this.width - 8, this.height - 150, this.width - 3, this.height - 20);
-        this.scrollbar.update(this.addon.getSavedEmotes().size() / MAX_ROW_AMOUNT - 1);
-        this.scrollbar.setSpeed(EMOTE_SIZE);
+        this.scrollbar.update((int) Math.ceil(this.addon.getSavedEmotes().size() / (MAX_ROW_AMOUNT + 1D)) - 1);
+        this.scrollbar.setSpeed(EMOTE_SIZE + 1);
     }
 
     public void handleMouseInput() throws IOException {
