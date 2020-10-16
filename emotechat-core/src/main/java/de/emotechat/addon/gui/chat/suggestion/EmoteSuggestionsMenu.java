@@ -110,7 +110,7 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
                 .map(word -> {
                     if (word.length() > 2 && word.charAt(0) == Constants.EMOTE_WRAPPER && word.charAt(word.length() - 1) == Constants.EMOTE_WRAPPER) {
                         String emoteName = word.substring(1, word.length() - 1);
-                        return this.addon.getEmoteByName(emoteName);
+                        return this.addon.getEmoteProvider().getEmoteByName(emoteName);
                     }
                     return null;
                 })

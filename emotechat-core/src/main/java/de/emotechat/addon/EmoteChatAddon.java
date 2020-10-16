@@ -12,7 +12,6 @@ import de.emotechat.addon.gui.chat.suggestion.EmoteSuggestionsMenu;
 import de.emotechat.addon.gui.chat.suggestion.KeyTypedHandler;
 import de.emotechat.addon.gui.element.PreviewedDropDownElement;
 import de.emotechat.addon.gui.element.button.ButtonElement;
-import de.emotechat.addon.gui.element.button.TimedButtonElement;
 import de.emotechat.addon.gui.emote.EmoteDropDownMenu;
 import de.emotechat.addon.gui.emote.EmoteListContainerElement;
 import de.emotechat.addon.listener.ChatInjectListener;
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -50,8 +48,6 @@ public class EmoteChatAddon extends LabyModAddon {
 
     private final Collection<EmoteListContainerElement> emoteLists = new ArrayList<>();
 
-    private final Collection<String> newEmoteIds = new HashSet<>();
-
     @Override
     public void onEnable() {
         this.loadEmoteChatAdapter();
@@ -63,12 +59,28 @@ public class EmoteChatAddon extends LabyModAddon {
         super.getApi().registerForgeListener(emoteSuggestionsMenu);
         GuiChatCustom.getModuleGui().getKeyTypeListeners().add(emoteSuggestionsMenu);
         GuiChatCustom.getModuleGui().getMouseClickListeners().add(emoteSuggestionsMenu);
-
         KeyTypedHandler.setEmoteSuggestionsMenu(emoteSuggestionsMenu);
 
         PacketHandler.setChatModifier(new ChatSendListener(this));
         PacketHandler.setEmoteChatAdapter(this.emoteChatAdapter);
+
         ChatShortcut.initListener(this);
+    }
+
+    private void loadEmoteChatAdapter() {
+        String versionDiscriminator = Mappings.ACTIVE_MAPPINGS.name();
+
+        try {
+            Class<?> emoteChatAdapterClass = Class.forName(String.format(
+                    ADAPTER_CLASS_BASE,
+                    versionDiscriminator.toLowerCase(),
+                    versionDiscriminator
+            ));
+
+            this.emoteChatAdapter = (EmoteChatAdapter) emoteChatAdapterClass.getDeclaredConstructor().newInstance();
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException exception) {
+            exception.printStackTrace();
+        }
     }
 
     @Override
@@ -84,9 +96,18 @@ public class EmoteChatAddon extends LabyModAddon {
                 ? Constants.GSON.fromJson(super.getConfig().get("savedEmotes"), SAVED_EMOTES_TYPE_TOKEN)
                 : new HashMap<>();
 
-        this.emoteProvider = new EmoteProvider(backendServerURL, this.savedEmotes);
+        this.emoteProvider = new EmoteProvider(backendServerURL, this.savedEmotes, this::updateEmotes);
         this.emoteProvider.sendEmotesToServer(this.savedEmotes.values().stream().map(BTTVEmote::getId).collect(Collectors.toList()));
 
+        super.saveConfig();
+    }
+
+    public void updateEmotes() {
+        for (EmoteListContainerElement emoteList : this.emoteLists) {
+            emoteList.update(this.savedEmotes);
+        }
+
+        super.getConfig().add("savedEmotes", Constants.GSON.toJsonTree(this.savedEmotes));
         super.saveConfig();
     }
 
@@ -106,70 +127,11 @@ public class EmoteChatAddon extends LabyModAddon {
         ButtonElement cleanupButton = new ButtonElement("Cleanup emote cache");
         cleanupButton.setClickListener(() -> this.emoteProvider.cleanupCache());
 
-        ButtonElement reloadButton = new TimedButtonElement("Reload emotes", TimeUnit.MINUTES.toMillis(2));
-        reloadButton.setClickListener(() -> {
-            this.emoteProvider.sendEmotesToServer();
-            this.emoteProvider.cleanupCache();
-        });
-
         list.add(emoteList);
         list.add(this.createEmoteAddMenu());
         list.add(cleanupButton);
-        list.add(reloadButton);
 
         this.emoteLists.add(emoteList);
-    }
-
-    private void loadEmoteChatAdapter() {
-        String versionDiscriminator = Mappings.ACTIVE_MAPPINGS.name();
-
-        try {
-            Class<?> emoteChatAdapterClass = Class.forName(String.format(
-                    ADAPTER_CLASS_BASE,
-                    versionDiscriminator.toLowerCase(),
-                    versionDiscriminator
-            ));
-
-            this.emoteChatAdapter = (EmoteChatAdapter) emoteChatAdapterClass.getDeclaredConstructor().newInstance();
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException exception) {
-            exception.printStackTrace();
-        }
-    }
-
-    public BTTVEmote getEmoteByName(String name) {
-        return this.savedEmotes.get(name.toLowerCase());
-    }
-
-    public boolean isEmoteSaved(BTTVEmote emote) {
-        return this.savedEmotes.values().stream().anyMatch(saved -> saved.getId().equals(emote.getId()));
-    }
-
-    public boolean addEmote(BTTVEmote emote, String name) {
-        if (emote == null || name.isEmpty() || name.contains(" ")) {
-            return false;
-        }
-
-        this.newEmoteIds.add(emote.getId());
-
-        BTTVEmote userEmote = new BTTVEmote(emote.getId(), name, emote.getName(), emote.getImageType());
-
-        this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
-        this.updateEmotes();
-        return true;
-    }
-
-    public void removeEmote(BTTVEmote emote) {
-        this.savedEmotes.remove(emote.getName().toLowerCase());
-        this.updateEmotes();
-    }
-
-    public void updateEmotes() {
-        for (EmoteListContainerElement emoteList : this.emoteLists) {
-            emoteList.update(this.savedEmotes);
-        }
-
-        super.getConfig().add("savedEmotes", Constants.GSON.toJsonTree(this.savedEmotes));
-        super.saveConfig();
     }
 
     private ListContainerElement createEmoteAddMenu() {
@@ -209,7 +171,7 @@ public class EmoteChatAddon extends LabyModAddon {
             String emoteName = emoteNameReference.get();
             BTTVEmote selectedEmote = searchResultList.getSelected();
 
-            if (!this.addEmote(selectedEmote, emoteName)) {
+            if (!this.getEmoteProvider().addEmote(selectedEmote, emoteName)) {
                 return;
             }
 
@@ -252,10 +214,6 @@ public class EmoteChatAddon extends LabyModAddon {
 
     public Map<String, BTTVEmote> getSavedEmotes() {
         return savedEmotes;
-    }
-
-    public Collection<String> getNewEmoteIds() {
-        return newEmoteIds;
     }
 
 }

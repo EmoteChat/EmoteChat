@@ -23,7 +23,7 @@ public class ChatSendListener implements ChatModifier {
 
             if (word.length() > 2 && word.charAt(0) == Constants.EMOTE_WRAPPER && word.charAt(word.length() - 1) == Constants.EMOTE_WRAPPER) {
                 String emoteName = word.substring(1, word.length() - 1);
-                BTTVEmote emote = this.addon.getEmoteByName(emoteName);
+                BTTVEmote emote = this.addon.getEmoteProvider().getEmoteByName(emoteName);
 
                 if (emote != null) {
                     String id = emote.getId();

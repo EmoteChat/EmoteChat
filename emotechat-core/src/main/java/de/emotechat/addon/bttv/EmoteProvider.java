@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -23,9 +24,41 @@ public class EmoteProvider {
 
     private final Map<String, BTTVEmote> savedEmotes;
 
-    public EmoteProvider(String backendServerURL, Map<String, BTTVEmote> savedEmotes) {
+    private final Runnable emoteChangeListener;
+
+    private final Collection<String> newEmoteIds = new HashSet<>();
+
+    public EmoteProvider(String backendServerURL, Map<String, BTTVEmote> savedEmotes, Runnable emoteChangeListener) {
         this.backendServerURL = backendServerURL + (backendServerURL.endsWith("/") ? "" : "/");
         this.savedEmotes = savedEmotes;
+        this.emoteChangeListener = emoteChangeListener;
+    }
+
+    public BTTVEmote getEmoteByName(String name) {
+        return this.savedEmotes.get(name.toLowerCase());
+    }
+
+    public boolean isEmoteSaved(BTTVEmote emote) {
+        return this.savedEmotes.values().stream().anyMatch(saved -> saved.getId().equals(emote.getId()));
+    }
+
+    public boolean addEmote(BTTVEmote emote, String name) {
+        if (emote == null || name.isEmpty() || name.contains(" ")) {
+            return false;
+        }
+
+        this.newEmoteIds.add(emote.getId());
+
+        BTTVEmote userEmote = new BTTVEmote(emote.getId(), name, emote.getName(), emote.getImageType());
+
+        this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
+        this.emoteChangeListener.run();
+        return true;
+    }
+
+    public void removeEmote(BTTVEmote emote) {
+        this.savedEmotes.remove(emote.getName().toLowerCase());
+        this.emoteChangeListener.run();
     }
 
     public void cleanupCache() {
@@ -75,6 +108,12 @@ public class EmoteProvider {
 
     public void sendEmotesToServer() {
         this.sendEmotesToServer(this.savedEmotes.values().stream().map(BTTVEmote::getId).collect(Collectors.toList()));
+    }
+
+    public void sendNewEmotesToServer() {
+        if (!this.newEmoteIds.isEmpty()) {
+            this.sendEmotesToServer(this.newEmoteIds);
+        }
     }
 
     public void sendEmotesToServer(Collection<String> bttvIds) {

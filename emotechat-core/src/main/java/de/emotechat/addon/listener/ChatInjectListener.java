@@ -20,7 +20,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
 
 public class ChatInjectListener {
 
@@ -141,10 +140,7 @@ public class ChatInjectListener {
             return;
         }
 
-        Collection<String> newEmoteIds = this.addon.getNewEmoteIds();
-        if (!newEmoteIds.isEmpty()) {
-            this.addon.getEmoteProvider().sendEmotesToServer(newEmoteIds);
-        }
+        this.addon.getEmoteProvider().sendNewEmotesToServer();
 
         GuiChat chat = (GuiChat) gui;
 

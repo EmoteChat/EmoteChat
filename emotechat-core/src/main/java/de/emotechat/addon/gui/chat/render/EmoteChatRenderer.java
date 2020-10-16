@@ -405,7 +405,7 @@ public class EmoteChatRenderer {
 
             if (emote.isComplete()) {
                 String hoverText = emote.getName();
-                if (!this.addon.isEmoteSaved(emote)) {
+                if (!this.addon.getEmoteProvider().isEmoteSaved(emote)) {
                     hoverText += " (Click to add)";
                 }
                 LabyMod.getInstance().getDrawUtils().drawHoveringText(this.mouseX, this.mouseY, hoverText);
@@ -580,13 +580,13 @@ public class EmoteChatRenderer {
         if (entry != null) {
             BTTVEmote emote = this.addon.getEmoteProvider().getByGlobalIdentifier(entry.getContent());
 
-            if (this.addon.isEmoteSaved(emote)) {
+            if (this.addon.getEmoteProvider().isEmoteSaved(emote)) {
                 return;
             }
 
             GuiScreen gui = new EmoteGuiYesNo(emote, (accepted, id) -> {
                 if (accepted) {
-                    this.addon.addEmote(emote, emote.getName());
+                    this.addon.getEmoteProvider().addEmote(emote, emote.getName());
                     LabyMod.getInstance().displayMessageInChat("§7The emote was successfully added to your local emotes");
                 }
                 Minecraft.getMinecraft().displayGuiScreen(lastGuiChat);

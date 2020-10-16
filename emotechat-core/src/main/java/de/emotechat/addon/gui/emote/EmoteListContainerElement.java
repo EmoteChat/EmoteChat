@@ -28,7 +28,7 @@ public class EmoteListContainerElement extends ListContainerElement {
                             ButtonElement emoteButton = new ButtonElement(emote.getName(), emote.asIconData(), "Remove");
 
                             emoteButton.setClickListener(() -> {
-                                this.addon.removeEmote(emote);
+                                this.addon.getEmoteProvider().removeEmote(emote);
                                 Minecraft.getMinecraft().currentScreen.initGui();
                             });
 
