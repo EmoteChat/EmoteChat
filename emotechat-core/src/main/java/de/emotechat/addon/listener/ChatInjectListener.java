@@ -140,8 +140,6 @@ public class ChatInjectListener {
             return;
         }
 
-        this.addon.getEmoteProvider().sendNewEmotesToServer();
-
         GuiChat chat = (GuiChat) gui;
 
         this.main.setLastGuiChat(chat);

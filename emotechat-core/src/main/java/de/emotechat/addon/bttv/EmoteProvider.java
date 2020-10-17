@@ -1,22 +1,20 @@
 package de.emotechat.addon.bttv;
 
 
+import com.google.gson.JsonObject;
 import de.emotechat.addon.Constants;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 public class EmoteProvider {
 
     private static final String EMOTE_INFO_ROUTE = "emotes/emote/%s";
 
-    private static final String EMOTE_CACHE_ROUTE = "emotes/cache";
+    private static final String EMOTE_ADD_ROUTE = "emotes/add";
 
     private final Map<String, BTTVEmote> emoteCache = new ConcurrentHashMap<>();
 
@@ -25,8 +23,6 @@ public class EmoteProvider {
     private final Map<String, BTTVEmote> savedEmotes;
 
     private final Runnable emoteChangeListener;
-
-    private final Collection<String> newEmoteIds = new HashSet<>();
 
     public EmoteProvider(String backendServerURL, Map<String, BTTVEmote> savedEmotes, Runnable emoteChangeListener) {
         this.backendServerURL = backendServerURL + (backendServerURL.endsWith("/") ? "" : "/");
@@ -47,7 +43,9 @@ public class EmoteProvider {
             return false;
         }
 
-        this.newEmoteIds.add(emote.getId());
+        if (!this.isEmoteSaved(emote)) {
+            this.sendEmoteToServer(emote.getId());
+        }
 
         BTTVEmote userEmote = new BTTVEmote(emote.getId(), name, emote.getName(), emote.getImageType());
 
@@ -106,24 +104,17 @@ public class EmoteProvider {
         }
     }
 
-    public void sendEmotesToServer() {
-        this.sendEmotesToServer(this.savedEmotes.values().stream().map(BTTVEmote::getId).collect(Collectors.toList()));
-    }
-
-    public void sendNewEmotesToServer() {
-        if (!this.newEmoteIds.isEmpty()) {
-            this.sendEmotesToServer(this.newEmoteIds);
-        }
-    }
-
-    public void sendEmotesToServer(Collection<String> bttvIds) {
+    public void sendEmoteToServer(String bttvId) {
         Constants.EXECUTOR_SERVICE.execute(() -> {
             try {
-                HttpURLConnection urlConnection = this.createRequest(this.backendServerURL + EMOTE_CACHE_ROUTE);
+                HttpURLConnection urlConnection = this.createRequest(this.backendServerURL + EMOTE_ADD_ROUTE);
                 urlConnection.setRequestMethod("POST");
 
                 try (OutputStream outputStream = urlConnection.getOutputStream(); OutputStreamWriter writer = new OutputStreamWriter(outputStream)) {
-                    Constants.GSON.toJson(bttvIds, writer);
+                    JsonObject jsonObject = new JsonObject();
+                    jsonObject.addProperty("emoteId", bttvId);
+
+                    Constants.GSON.toJson(jsonObject, writer);
                 }
 
                 urlConnection.getResponseCode();

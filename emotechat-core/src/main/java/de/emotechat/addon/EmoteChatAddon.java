@@ -27,7 +27,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 public class EmoteChatAddon extends LabyModAddon {
 
@@ -97,7 +96,6 @@ public class EmoteChatAddon extends LabyModAddon {
                 : new HashMap<>();
 
         this.emoteProvider = new EmoteProvider(backendServerURL, this.savedEmotes, this::updateEmotes);
-        this.emoteProvider.sendEmotesToServer(this.savedEmotes.values().stream().map(BTTVEmote::getId).collect(Collectors.toList()));
 
         super.saveConfig();
     }
