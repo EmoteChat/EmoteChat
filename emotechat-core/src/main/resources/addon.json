@@ -1,10 +1,10 @@
 {
   "uuid": "%uuid%",
-  "name": "EmoteChat-dev",
+  "name": "EmoteChat",
   "mainClass": "de.emotechat.addon.EmoteChatAddon",
   "transformerClass": "de.emotechat.addon.asm.EmoteClassTransformer",
   "author": "juliarn, derrop",
-  "description": "Bring emotes from Twitch and Discord to the Minecraft chat! Join http://discord.emotechat.de/ for support/bugs.",
+  "description": "Bring emotes from Twitch and Discord to the Minecraft chat! Join http://discord.emotechat.de for support or bugs.",
   "icon": "https://cdn.discordapp.com/emojis/402867832175460363.png",
   "category": 4
 }
