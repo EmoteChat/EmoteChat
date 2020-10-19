@@ -129,6 +129,18 @@ public class AnimatedIconData extends DynamicIconData {
         }
     }
 
+    private static IIOMetadataNode getNode(IIOMetadataNode rootNode, String nodeName) {
+        int nNodes = rootNode.getLength();
+        for (int i = 0; i < nNodes; i++) {
+            if (rootNode.item(i).getNodeName().compareToIgnoreCase(nodeName) == 0) {
+                return ((IIOMetadataNode) rootNode.item(i));
+            }
+        }
+        IIOMetadataNode node = new IIOMetadataNode(nodeName);
+        rootNode.appendChild(node);
+        return (node);
+    }
+
     private void java(URL url) throws Throwable {
         ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
         ImageInputStream inputStream = ImageIO.createImageInputStream(url.openStream());
@@ -146,7 +158,7 @@ public class AnimatedIconData extends DynamicIconData {
             if (image != null) {
                 this.images[i] = image;
 
-                IIOMetadata meta =  reader.getImageMetadata(0);
+                IIOMetadata meta = reader.getImageMetadata(0);
                 String metaFormatName = meta.getNativeMetadataFormatName();
 
                 IIOMetadataNode root = (IIOMetadataNode) meta.getAsTree(metaFormatName);
@@ -158,18 +170,6 @@ public class AnimatedIconData extends DynamicIconData {
                 }
             }
         }
-    }
-
-    private static IIOMetadataNode getNode(IIOMetadataNode rootNode, String nodeName) {
-        int nNodes = rootNode.getLength();
-        for (int i = 0; i < nNodes; i++) {
-            if (rootNode.item(i).getNodeName().compareToIgnoreCase(nodeName)== 0) {
-                return((IIOMetadataNode) rootNode.item(i));
-            }
-        }
-        IIOMetadataNode node = new IIOMetadataNode(nodeName);
-        rootNode.appendChild(node);
-        return(node);
     }
 
     private void thumbnail(URL url) throws Throwable {

@@ -70,7 +70,7 @@ public class EmoteProvider {
     public BTTVEmote getByGlobalIdentifier(String globalIdentifier) {
         return this.emoteCache.computeIfAbsent(globalIdentifier, identifier -> {
             BTTVEmote toFill = new BTTVEmote("", "", "", "");
-            fillEmoteAsync(toFill, identifier);
+            this.fillEmoteAsync(toFill, identifier);
 
             return toFill;
         });
