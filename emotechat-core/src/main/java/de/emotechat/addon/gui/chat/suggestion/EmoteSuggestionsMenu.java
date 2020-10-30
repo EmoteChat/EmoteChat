@@ -146,6 +146,18 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
         return Optional.empty();
     }
 
+    private String getPreviousWrittenText() {
+        return this.getPreviousWrittenText(this.textField.getText().split(" "));
+    }
+
+    private String getPreviousWrittenText(String[] words) {
+        return String.join(" ", Arrays.copyOfRange(
+                words,
+                0,
+                this.getCurrentWordIndex() + 1
+        ));
+    }
+
     private int getCurrentWordIndex() {
         int cursorWordIndex = 0;
 
@@ -165,20 +177,19 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
             String chatText = this.textField.getText();
 
             String[] words = chatText.split(" ");
-            int cursorWordIndex = this.getCurrentWordIndex();
+            int currentWordIndex = this.getCurrentWordIndex();
 
-            boolean lastWord = words.length == cursorWordIndex + 1;
+            boolean lastWord = words.length == currentWordIndex + 1;
 
-            String word = words[cursorWordIndex];
             String replacedWord = Constants.EMOTE_WRAPPER + selected.getName() + Constants.EMOTE_WRAPPER + (lastWord ? " " : "");
+            words[currentWordIndex] = replacedWord;
 
-            words[cursorWordIndex] = replacedWord;
+            int targetCursorPosition = this.getPreviousWrittenText(words).length();
 
-            int cursorPosition = this.textField.getCursorPosition() + (replacedWord.length() - word.length());
             this.textField.setText(String.join(" ", words));
-            this.textField.setCursorPosition(cursorPosition);
+            this.textField.setCursorPosition(targetCursorPosition);
 
-            this.suggestionMenu.update(new ArrayList<>());
+            this.suggestionMenu.clear();
         }
     }
 
@@ -238,14 +249,12 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
 
         FontRenderer fontRenderer = LabyModCore.getMinecraft().getFontRenderer();
 
-        int queryWidth = fontRenderer.getStringWidth(
-                this.textField.getText().substring(0, this.textField.getCursorPosition())
-        ) - fontRenderer.getStringWidth(this.lastQuery);
+        int preEmoteWordTextWidth = fontRenderer.getStringWidth(this.getPreviousWrittenText()) - fontRenderer.getStringWidth(this.lastQuery);
 
         int textFieldX = LabyModCore.getMinecraft().getXPosition(this.textField);
         int textFieldY = LabyModCore.getMinecraft().getYPosition(this.textField);
 
-        this.suggestionMenu.setX(textFieldX + queryWidth - 1); // TODO this is not updated when resizing the window
+        this.suggestionMenu.setX(textFieldX + preEmoteWordTextWidth - 1); // TODO this is not updated when resizing the window
         this.suggestionMenu.setY(textFieldY - (this.suggestionMenu.getHeight() * (this.suggestionMenu.getEmoteList().size() + 1)) - 3);
 
         this.suggestionMenu.getEmoteList()
