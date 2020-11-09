@@ -3,7 +3,6 @@ package de.emotechat.addon.adapter.v18;
 
 import de.emotechat.addon.adapter.EmoteChatAdapter;
 import net.labymod.core_implementation.mc18.gui.GuiChatAdapter;
-import net.labymod.core_implementation.mc18.gui.GuiIngameCustom;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.network.Packet;
@@ -24,7 +23,7 @@ public class V18EmoteChatAdapter implements EmoteChatAdapter {
 
     @Override
     public boolean isLabyModChat(GuiIngame guiIngame) {
-        return guiIngame instanceof GuiIngameCustom && guiIngame.getChatGUI() instanceof GuiChatAdapter;
+        return guiIngame.getChatGUI() instanceof GuiChatAdapter;
     }
 
     @Override

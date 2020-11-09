@@ -96,6 +96,17 @@ public class EmoteChatRenderer {
         this.type = renderer;
         this.manager = manager;
         this.addon = addon;
+
+        this.renderer.getChatLines().forEach(chatLine -> this.addChatLine(
+                chatLine.getMessage(),
+                chatLine.isSecondChat(),
+                chatLine.getRoom(),
+                chatLine.getComponent(),
+                chatLine.getUpdateCounter(),
+                chatLine.getChatLineId(),
+                chatLine.getHighlightColor(),
+                true
+        ));
     }
 
     public void renderChat(int updateCounter) {
