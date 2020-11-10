@@ -375,15 +375,18 @@ public class EmoteChatRenderer {
             }
         }
         GlStateManager.popMatrix();
-        if ((LabyMod.getSettings()).chatFilter && TAB_MENU_FIELD.getBoolean(this.renderer) && LabyMod.getInstance().getIngameChatManager().getVisibleRooms().size() > 1) {
+
+        IngameChatManager ingameChatManager = IngameChatManager.INSTANCE;
+
+        if ((LabyMod.getSettings()).chatFilter && TAB_MENU_FIELD.getBoolean(this.renderer) && ingameChatManager.getVisibleRooms().size() > 1) {
             HOVERING_ROOM_FIELD.set(this.renderer, null);
             double roomX = chatOpen ? 2.0D : 1.0D;
             double roomY = chatOpen ? (draw.getHeight() - 27) : (draw.getHeight() - 9);
-            for (String roomName : LabyMod.getInstance().getIngameChatManager().getVisibleRooms()) {
+            for (String roomName : ingameChatManager.getVisibleRooms()) {
                 if (roomName == null) {
                     continue;
                 }
-                Integer unread = LabyMod.getInstance().getIngameChatManager().getRoomsUnread().get(roomName);
+                Integer unread = ingameChatManager.getRoomsUnread().get(roomName);
                 if (unread == null) {
                     unread = 0;
                 }

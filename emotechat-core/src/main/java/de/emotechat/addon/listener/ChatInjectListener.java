@@ -7,7 +7,6 @@ import de.emotechat.addon.gui.chat.render.EmoteChatRendererSecond;
 import net.labymod.ingamechat.GuiChatCustom;
 import net.labymod.ingamechat.IngameChatManager;
 import net.labymod.ingamechat.renderer.ChatRenderer;
-import net.labymod.main.LabyMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiIngame;
@@ -105,7 +104,7 @@ public class ChatInjectListener {
         if (this.addon.getEmoteChatAdapter().isLabyModChat(ingameGUI)) {
             GuiNewChat adapter = ingameGUI.getChatGUI();
 
-            IngameChatManager ingameChatManager = LabyMod.getInstance().getIngameChatManager();
+            IngameChatManager ingameChatManager = IngameChatManager.INSTANCE;
 
             this.main = new EmoteChatRendererMain(ingameChatManager, this.addon, ingameChatManager.getMain().getChatLines());
             this.second = new EmoteChatRendererSecond(ingameChatManager, this.addon, ingameChatManager.getSecond().getChatLines());
