@@ -48,7 +48,7 @@ public class BTTVEmote {
     }
 
     public boolean isComplete() {
-        return this.id != null && this.name != null;
+        return this.id != null && this.name != null && this.originalName != null;
     }
 
     public String getId() {

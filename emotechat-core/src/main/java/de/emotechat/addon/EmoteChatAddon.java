@@ -95,6 +95,8 @@ public class EmoteChatAddon extends LabyModAddon {
                 ? Constants.GSON.fromJson(super.getConfig().get("savedEmotes"), SAVED_EMOTES_TYPE_TOKEN)
                 : new HashMap<>();
 
+        this.savedEmotes.values().removeIf(emote -> !emote.isComplete());
+
         this.emoteProvider = new EmoteProvider(backendServerURL, this.savedEmotes, this::updateEmotes);
 
         super.saveConfig();
