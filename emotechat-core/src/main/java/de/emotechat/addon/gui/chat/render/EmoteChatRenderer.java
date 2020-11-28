@@ -16,10 +16,7 @@ import net.labymod.utils.DrawUtils;
 import net.labymod.utils.ModColor;
 import net.labymod.utils.texture.ThreadDownloadTextureImage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.util.ResourceLocation;
@@ -96,17 +93,6 @@ public class EmoteChatRenderer {
         this.type = renderer;
         this.manager = manager;
         this.addon = addon;
-
-        this.renderer.getChatLines().forEach(chatLine -> this.addChatLine(
-                chatLine.getMessage(),
-                chatLine.isSecondChat(),
-                chatLine.getRoom(),
-                chatLine.getComponent(),
-                chatLine.getUpdateCounter(),
-                chatLine.getChatLineId(),
-                chatLine.getHighlightColor(),
-                true
-        ));
     }
 
     public void renderChat(int updateCounter) {
@@ -598,12 +584,16 @@ public class EmoteChatRenderer {
                 return;
             }
 
-            GuiScreen gui = new EmoteGuiYesNo(emote, (accepted, id) -> {
-                if (accepted) {
-                    this.addon.getEmoteProvider().addEmote(emote, emote.getName());
-                    LabyMod.getInstance().displayMessageInChat("§7The emote was successfully added to your local emotes");
+            // this can't be a lambda because it causes issues with the obfuscation mappings on Forge
+            @SuppressWarnings("Convert2Lambda") GuiScreen gui = new EmoteGuiYesNo(emote, new GuiYesNoCallback() {
+                @Override
+                public void confirmClicked(boolean accepted, int id) {
+                    if (accepted) {
+                        addon.getEmoteProvider().addEmote(emote, emote.getName());
+                        LabyMod.getInstance().displayMessageInChat("§7The emote was successfully added to your local emotes");
+                    }
+                    Minecraft.getMinecraft().displayGuiScreen(lastGuiChat);
                 }
-                Minecraft.getMinecraft().displayGuiScreen(lastGuiChat);
             }, 0);
             Minecraft.getMinecraft().displayGuiScreen(gui);
         }
