@@ -1,5 +1,7 @@
-package de.emotechat.addon.gui.chat.suggestion;
+package de.emotechat.addon.gui.chat;
 
+
+import de.emotechat.addon.gui.chat.suggestion.EmoteSuggestionsMenu;
 
 public class KeyTypedHandler {
 

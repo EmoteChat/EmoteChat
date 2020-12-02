@@ -4,11 +4,11 @@ package de.emotechat.addon.gui.chat.suggestion;
 import de.emotechat.addon.Constants;
 import de.emotechat.addon.EmoteChatAddon;
 import de.emotechat.addon.bttv.BTTVEmote;
+import de.emotechat.addon.gui.chat.MouseClickedHandler;
 import de.emotechat.addon.gui.emote.EmoteDropDownMenu;
 import net.labymod.core.LabyModCore;
 import net.labymod.ingamechat.GuiChatCustom;
 import net.labymod.ingamegui.ModuleGui;
-import net.labymod.ingamegui.enums.EnumDisplayType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiChat;
@@ -21,7 +21,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.CoordinatesConsumer {
+public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, MouseClickedHandler.MouseClickListener {
 
     private final EmoteChatAddon addon;
 
@@ -96,12 +96,14 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
     }
 
     @Override
-    public void accept(int mouseX, int mouseY, int state, EnumDisplayType displayType) {
-        BTTVEmote hoverSelected = this.suggestionMenu.getHoverSelected();
+    public void mouseClicked(int mouseX, int mouseY, int state) {
+        if (Minecraft.getMinecraft().currentScreen.equals(this.lastGui)) {
+            BTTVEmote hoverSelected = this.suggestionMenu.getHoverSelected();
 
-        if (hoverSelected != null) {
-            this.suggestionMenu.setSelected(hoverSelected);
-            this.getCurrentEmoteWord().ifPresent(ignored -> this.replaceCurrentEmoteWord());
+            if (hoverSelected != null) {
+                this.suggestionMenu.setSelected(hoverSelected);
+                this.getCurrentEmoteWord().ifPresent(ignored -> this.replaceCurrentEmoteWord());
+            }
         }
     }
 
@@ -202,12 +204,12 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
                 this.suggestionMenu.clear();
             }
 
+            this.lastGui = currentGui;
+
             this.textField = this.getTextField(currentGui);
             if (this.minecraftTextFieldLength == -1 && this.textField != null) {
                 this.minecraftTextFieldLength = this.textField.getMaxStringLength();
             }
-
-            this.lastGui = currentGui;
         }
 
         if (this.textField != null) {

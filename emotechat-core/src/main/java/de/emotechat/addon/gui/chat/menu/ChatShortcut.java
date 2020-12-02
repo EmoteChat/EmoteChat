@@ -1,8 +1,8 @@
 package de.emotechat.addon.gui.chat.menu;
 
 import de.emotechat.addon.EmoteChatAddon;
+import de.emotechat.addon.gui.chat.MouseClickedHandler;
 import net.labymod.ingamechat.GuiChatCustom;
-import net.labymod.ingamegui.enums.EnumDisplayType;
 import net.labymod.settings.elements.ControlElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiChat;
@@ -98,11 +98,7 @@ public class ChatShortcut {
     }
 
     public static void initListener(EmoteChatAddon addon) {
-        GuiChatCustom.getModuleGui().getMouseClickListeners().add((mouseX, mouseY, mouseButton, displayType) -> {
-            if (displayType != EnumDisplayType.INGAME) {
-                return;
-            }
-
+        MouseClickedHandler.addListener((mouseX, mouseY, mouseButton) -> {
             GuiScreen screen = Minecraft.getMinecraft().currentScreen;
             if (screen instanceof GuiChatCustom) {
                 click(addon, (GuiChatCustom) screen, mouseX, mouseY);
