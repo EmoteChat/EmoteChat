@@ -7,8 +7,7 @@ import de.emotechat.addon.asm.packet.PacketHandler;
 import de.emotechat.addon.bttv.BTTVEmote;
 import de.emotechat.addon.bttv.BTTVSearch;
 import de.emotechat.addon.bttv.EmoteProvider;
-import de.emotechat.addon.gui.chat.KeyTypedHandler;
-import de.emotechat.addon.gui.chat.MouseClickedHandler;
+import de.emotechat.addon.gui.chat.UserInputHandler;
 import de.emotechat.addon.gui.chat.menu.ChatShortcut;
 import de.emotechat.addon.gui.chat.suggestion.EmoteSuggestionsMenu;
 import de.emotechat.addon.gui.element.PreviewedDropDownElement;
@@ -57,9 +56,9 @@ public class EmoteChatAddon extends LabyModAddon {
 
         EmoteSuggestionsMenu emoteSuggestionsMenu = new EmoteSuggestionsMenu(this);
         super.getApi().registerForgeListener(emoteSuggestionsMenu);
+        UserInputHandler.addMouseListener(emoteSuggestionsMenu);
+        UserInputHandler.addKeyListener(emoteSuggestionsMenu);
         GuiChatCustom.getModuleGui().getKeyTypeListeners().add(emoteSuggestionsMenu);
-        MouseClickedHandler.addListener(emoteSuggestionsMenu);
-        KeyTypedHandler.setEmoteSuggestionsMenu(emoteSuggestionsMenu);
 
         PacketHandler.setChatModifier(new ChatSendListener(this));
         PacketHandler.setEmoteChatAdapter(this.emoteChatAdapter);

@@ -21,7 +21,7 @@ public class ChatMouseClickedTransformer extends PredicateClassNodeTransformer {
                     list.add(new VarInsnNode(Opcodes.ILOAD, 1));
                     list.add(new VarInsnNode(Opcodes.ILOAD, 2));
                     list.add(new VarInsnNode(Opcodes.ILOAD, 3));
-                    list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "de/emotechat/addon/gui/chat/MouseClickedHandler", "mouseClicked", "(III)V", false));
+                    list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "de/emotechat/addon/gui/chat/UserInputHandler", "mouseClicked", "(III)V", false));
 
                     methodNode.instructions.insert(methodNode.instructions.getFirst(), list);
                 });

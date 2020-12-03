@@ -17,7 +17,7 @@ public class ChatKeyTypedClassTransformer extends PredicateClassNodeTransformer 
 
                     list.add(new VarInsnNode(Opcodes.ILOAD, 1));
                     list.add(new VarInsnNode(Opcodes.ILOAD, 2));
-                    list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "de/emotechat/addon/gui/chat/KeyTypedHandler", "blockExecution", "(CI)Z", false));
+                    list.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "de/emotechat/addon/gui/chat/UserInputHandler", "keyTyped", "(CI)Z", false));
 
                     LabelNode labelNode = new LabelNode();
                     list.add(new JumpInsnNode(Opcodes.IFNE, labelNode));
