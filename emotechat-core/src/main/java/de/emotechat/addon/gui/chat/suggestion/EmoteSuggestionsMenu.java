@@ -4,11 +4,11 @@ package de.emotechat.addon.gui.chat.suggestion;
 import de.emotechat.addon.Constants;
 import de.emotechat.addon.EmoteChatAddon;
 import de.emotechat.addon.bttv.BTTVEmote;
+import de.emotechat.addon.gui.chat.UserInputHandler;
 import de.emotechat.addon.gui.emote.EmoteDropDownMenu;
 import net.labymod.core.LabyModCore;
 import net.labymod.ingamechat.GuiChatCustom;
 import net.labymod.ingamegui.ModuleGui;
-import net.labymod.ingamegui.enums.EnumDisplayType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiChat;
@@ -21,7 +21,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.CoordinatesConsumer {
+public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, ModuleGui.KeyConsumer, UserInputHandler.MouseClickListener {
 
     private final EmoteChatAddon addon;
 
@@ -42,41 +42,45 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
     }
 
     @Override
-    public void accept(char typedChar, int keyCode) {
+    public boolean keyTyped(char charTyped, int keyCode) {
         if (this.suggestionMenu.getEmoteList().size() > 0) {
-            boolean down = keyCode == 208;
-            boolean up = keyCode == 200;
+            switch (keyCode) {
+                case 1:
+                    this.suggestionMenu.clear();
+                    return true;
+                case 28:
+                    this.getCurrentEmoteWord().ifPresent(ignored -> this.replaceCurrentEmoteWord());
+                    return true;
+                case 200:
+                case 208:
+                    boolean down = keyCode == 208;
+                    boolean up = keyCode == 200;
 
-            if (down || up) {
-                BTTVEmote selected = this.suggestionMenu.getSelected();
+                    BTTVEmote selected = this.suggestionMenu.getSelected();
 
-                if (selected != null) {
-                    List<BTTVEmote> emoteList = this.suggestionMenu.getEmoteList();
+                    if (selected != null) {
+                        List<BTTVEmote> emoteList = this.suggestionMenu.getEmoteList();
 
-                    int currentIndex = emoteList.indexOf(selected);
-                    int newIndex = up && currentIndex == 0 ? emoteList.size() - 1 : down && currentIndex == emoteList.size() - 1 ? 0 : currentIndex + (up ? -1 : 1);
+                        int currentIndex = emoteList.indexOf(selected);
+                        int newIndex = up && currentIndex == 0 ? emoteList.size() - 1 : down && currentIndex == emoteList.size() - 1 ? 0 : currentIndex + (up ? -1 : 1);
 
-                    if (newIndex >= 0 && newIndex < emoteList.size()) {
-                        this.suggestionMenu.setSelected(emoteList.get(newIndex));
-                        return;
+                        if (newIndex >= 0 && newIndex < emoteList.size()) {
+                            this.suggestionMenu.setSelected(emoteList.get(newIndex));
+                        }
                     }
-                }
-            } else if (keyCode == 1) {
-                this.suggestionMenu.clear();
-                return;
+                    return true;
             }
         }
 
+        return false;
+    }
+
+    @Override
+    public void accept(char charTyped, int keyCode) {
         Optional<String> currentWordOptional = this.getCurrentEmoteWord();
 
         if (currentWordOptional.isPresent()) {
             String currentEmoteWord = currentWordOptional.get();
-
-            if (keyCode == 28) {
-                this.replaceCurrentEmoteWord();
-                return;
-            }
-
             String query = currentEmoteWord.substring(1).toLowerCase();
 
             if (!Objects.equals(query, this.lastQuery)) {
@@ -96,12 +100,14 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
     }
 
     @Override
-    public void accept(int mouseX, int mouseY, int state, EnumDisplayType displayType) {
-        BTTVEmote hoverSelected = this.suggestionMenu.getHoverSelected();
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+        if (this.textField != null) {
+            BTTVEmote hoverSelected = this.suggestionMenu.getHoverSelected();
 
-        if (hoverSelected != null) {
-            this.suggestionMenu.setSelected(hoverSelected);
-            this.getCurrentEmoteWord().ifPresent(ignored -> this.replaceCurrentEmoteWord());
+            if (hoverSelected != null) {
+                this.suggestionMenu.setSelected(hoverSelected);
+                this.getCurrentEmoteWord().ifPresent(ignored -> this.replaceCurrentEmoteWord());
+            }
         }
     }
 
@@ -202,12 +208,12 @@ public class EmoteSuggestionsMenu implements ModuleGui.KeyConsumer, ModuleGui.Co
                 this.suggestionMenu.clear();
             }
 
+            this.lastGui = currentGui;
+
             this.textField = this.getTextField(currentGui);
             if (this.minecraftTextFieldLength == -1 && this.textField != null) {
                 this.minecraftTextFieldLength = this.textField.getMaxStringLength();
             }
-
-            this.lastGui = currentGui;
         }
 
         if (this.textField != null) {
