@@ -18,7 +18,7 @@ public class ChatWidthCalculator {
         int finalWidth = 0;
 
         for (ChatLineEntry entry : entries) {
-            finalWidth += entry.isLoadedEmote() ? Constants.CHAT_EMOTE_SIZE : renderer.getStringWidth(entry.getRawContent());
+            finalWidth += entry.isLoadedEmote() ? Constants.CHAT_EMOTE_SIZE : renderer.getStringWidth(entry.getContent());
         }
 
         return finalWidth + ((entries.size() - 1) * spaceWidth);

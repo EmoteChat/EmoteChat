@@ -10,26 +10,27 @@ public class BTTVEmote {
 
     private static final String EMOTE_IMAGE_ENDPOINT = "https://cdn.betterttv.net/emote/%s/%dx";
 
-    protected String originalName;
+    private BTTVGlobalId globalId;
 
-    protected String id;
+    @SerializedName("id")
+    private String bttvId;
 
     @SerializedName("code")
-    protected String name;
+    private String name;
 
-    protected String imageType;
+    private String imageType;
 
-    protected transient ControlElement.IconData iconData;
+    private transient ControlElement.IconData iconData;
 
-    public BTTVEmote(String id, String name, String originalName, String imageType) {
-        this.id = id;
+    public BTTVEmote(BTTVGlobalId globalId, String bttvId, String name, String imageType) {
+        this.globalId = globalId;
+        this.bttvId = bttvId;
         this.name = name;
-        this.originalName = originalName;
         this.imageType = imageType;
     }
 
     public String getImageURL(int size) {
-        return String.format(EMOTE_IMAGE_ENDPOINT, this.id, size);
+        return String.format(EMOTE_IMAGE_ENDPOINT, this.bttvId, size);
     }
 
     public ControlElement.IconData asIconData() {
@@ -38,9 +39,9 @@ public class BTTVEmote {
         }
 
         if ("gif".equals(this.imageType)) {
-            return this.iconData = AnimatedIconData.create(this.id, this.getImageURL(3));
+            return this.iconData = AnimatedIconData.create(this.bttvId, this.getImageURL(3));
         }
-        return this.iconData = new DynamicIconData(this.id, this.getImageURL(3));
+        return this.iconData = new DynamicIconData(this.bttvId, this.getImageURL(3));
     }
 
     public ResourceLocation getTextureLocation() {
@@ -48,19 +49,29 @@ public class BTTVEmote {
     }
 
     public boolean isComplete() {
-        return this.id != null && this.name != null && this.originalName != null;
+        return this.bttvId != null && this.name != null
+                && this.globalId != null && this.globalId.getEmoteName() != null && this.globalId.getEmoteId() != null;
     }
 
-    public String getId() {
-        return id;
+    public BTTVGlobalId getGlobalId() {
+        return this.globalId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setGlobalId(BTTVGlobalId globalId) {
+        this.globalId = globalId;
+    }
+
+    public String getBttvId() {
+        return this.bttvId;
+    }
+
+    public void setBttvId(String bttvId) {
+        this.bttvId = bttvId;
+        this.iconData = null;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -68,19 +79,10 @@ public class BTTVEmote {
     }
 
     public String getImageType() {
-        return imageType;
+        return this.imageType;
     }
 
     public void setImageType(String imageType) {
         this.imageType = imageType;
     }
-
-    public String getOriginalName() {
-        return originalName;
-    }
-
-    public void setOriginalName(String originalName) {
-        this.originalName = originalName;
-    }
-
 }
