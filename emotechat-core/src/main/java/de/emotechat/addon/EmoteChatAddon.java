@@ -108,7 +108,7 @@ public class EmoteChatAddon extends LabyModAddon {
         this.emoteProvider = new EmoteProvider(this, backendServerURL, this.savedEmotes, this::updateEmotes);
 
         if (this.emoteProvider.init(this.savedEmotes.values())) {
-            this.savedEmotes.values().removeIf(emote -> emote.getBttvId() == null || emote.getName() == null);
+            this.savedEmotes.values().removeIf(emote -> !emote.isComplete());
         }
 
         super.saveConfig();

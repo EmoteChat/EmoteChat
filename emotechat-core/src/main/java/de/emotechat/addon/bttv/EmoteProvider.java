@@ -178,7 +178,8 @@ public class EmoteProvider {
             }
 
             try (InputStream inputStream = urlConnection.getInputStream(); Reader reader = new InputStreamReader(inputStream)) {
-                emote = Constants.GSON.fromJson(reader, BTTVEmote.class);
+                ServerEmote serverEmote = Constants.GSON.fromJson(reader, ServerEmote.class);
+                emote = new BTTVEmote(serverEmote.getGlobalId(), serverEmote.getBttvId(), serverEmote.getName(), serverEmote.getImageType());
             }
 
             urlConnection.disconnect();
@@ -218,5 +219,4 @@ public class EmoteProvider {
 
         return -1;
     }
-
 }
