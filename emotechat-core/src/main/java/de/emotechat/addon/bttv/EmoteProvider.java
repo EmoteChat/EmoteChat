@@ -44,7 +44,7 @@ public class EmoteProvider {
         this.emoteChangeListener = emoteChangeListener;
     }
 
-    public void init(Collection<BTTVEmote> emotes) {
+    public boolean init(Collection<BTTVEmote> emotes) {
         try {
             HttpURLConnection urlConnection = this.createRequest(this.backendServerURL + GLOBAL_IDS_ROUTE);
             urlConnection.setRequestMethod("POST");
@@ -53,6 +53,9 @@ public class EmoteProvider {
                 JsonArray array = new JsonArray();
 
                 for (BTTVEmote emote : emotes) {
+                    if (emote.getBttvId() == null) {
+                        continue;
+                    }
                     array.add(new JsonPrimitive(emote.getBttvId()));
                 }
 
@@ -63,7 +66,7 @@ public class EmoteProvider {
                 ServerEmote[] result = Constants.GSON.fromJson(reader, ServerEmote[].class);
                 for (ServerEmote emote : result) {
                     for (BTTVEmote presentEmote : emotes) {
-                        if (!presentEmote.getBttvId().equals(emote.getBttvId())) {
+                        if (presentEmote.getBttvId() == null || !presentEmote.getBttvId().equals(emote.getBttvId())) {
                             continue;
                         }
 
@@ -73,10 +76,12 @@ public class EmoteProvider {
                 }
             }
 
-            urlConnection.getResponseCode();
+            return urlConnection.getResponseCode() == 200;
         } catch (IOException exception) {
             exception.printStackTrace();
         }
+
+        return false;
     }
 
     public BTTVEmote getEmoteByName(String name) {
