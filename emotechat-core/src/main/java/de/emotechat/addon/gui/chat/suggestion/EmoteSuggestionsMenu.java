@@ -18,7 +18,11 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, ModuleGui.KeyConsumer, UserInputHandler.MouseClickListener {
@@ -43,6 +47,9 @@ public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, Modul
 
     @Override
     public boolean keyTyped(char charTyped, int keyCode) {
+        if (!this.addon.isEnabled()) {
+            return false;
+        }
         if (this.suggestionMenu.getEmoteList().size() > 0) {
             switch (keyCode) {
                 case 1:
@@ -77,6 +84,9 @@ public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, Modul
 
     @Override
     public void accept(char charTyped, int keyCode) {
+        if (!this.addon.isEnabled()) {
+            return;
+        }
         Optional<String> currentWordOptional = this.getCurrentEmoteWord();
 
         if (currentWordOptional.isPresent()) {

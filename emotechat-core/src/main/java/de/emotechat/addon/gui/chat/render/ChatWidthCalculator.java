@@ -6,7 +6,6 @@ import net.minecraft.client.gui.FontRenderer;
 
 import java.util.Collection;
 
-// TODO messages with emotes can be longer than max length
 public class ChatWidthCalculator {
 
     protected static int getStringWidth(FontRenderer renderer, String text) {

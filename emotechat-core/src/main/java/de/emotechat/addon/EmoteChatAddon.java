@@ -10,6 +10,7 @@ import de.emotechat.addon.bttv.EmoteProvider;
 import de.emotechat.addon.gui.chat.UserInputHandler;
 import de.emotechat.addon.gui.chat.menu.ChatShortcut;
 import de.emotechat.addon.gui.chat.suggestion.EmoteSuggestionsMenu;
+import de.emotechat.addon.gui.element.ModifiableBooleanElement;
 import de.emotechat.addon.gui.element.PreviewedDropDownElement;
 import de.emotechat.addon.gui.element.button.ButtonElement;
 import de.emotechat.addon.gui.emote.EmoteDropDownMenu;
@@ -19,13 +20,22 @@ import de.emotechat.addon.listener.ChatSendListener;
 import de.emotechat.addon.listener.MinecraftTickExecutor;
 import net.labymod.api.LabyModAddon;
 import net.labymod.ingamechat.GuiChatCustom;
-import net.labymod.settings.elements.*;
+import net.labymod.settings.elements.BooleanElement;
+import net.labymod.settings.elements.ControlElement;
+import net.labymod.settings.elements.ListContainerElement;
+import net.labymod.settings.elements.SettingsElement;
+import net.labymod.settings.elements.StringElement;
 import net.labymod.utils.Material;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class EmoteChatAddon extends LabyModAddon {
@@ -113,10 +123,10 @@ public class EmoteChatAddon extends LabyModAddon {
 
     @Override
     protected void fillSettings(List<SettingsElement> list) {
-        BooleanElement toggleEnabledElement = new BooleanElement(
+        BooleanElement toggleEnabledElement = new ModifiableBooleanElement(
                 "Enabled", this,
                 new ControlElement.IconData(Material.REDSTONE_COMPARATOR), "enabled",
-                true
+                () -> this.enabled
         );
         toggleEnabledElement.addCallback(enabled -> this.enabled = enabled);
         list.add(toggleEnabledElement);
@@ -204,6 +214,10 @@ public class EmoteChatAddon extends LabyModAddon {
         return this.enabled;
     }
 
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     public EmoteProvider getEmoteProvider() {
         return emoteProvider;
     }
@@ -215,5 +229,4 @@ public class EmoteChatAddon extends LabyModAddon {
     public Map<String, BTTVEmote> getSavedEmotes() {
         return savedEmotes;
     }
-
 }
