@@ -96,7 +96,7 @@ public class EmoteProvider {
             emote = this.sendEmoteToServer(emote.getBttvId());
         }
 
-        BTTVEmote userEmote = new BTTVEmote(emote.getGlobalId(), name, emote.getName(), emote.getImageType());
+        BTTVEmote userEmote = new BTTVEmote(emote.getGlobalId(), emote.getBttvId(), name, emote.getImageType());
 
         this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
         this.emoteChangeListener.run();
@@ -130,9 +130,9 @@ public class EmoteProvider {
             ServerEmote emote = this.retrieveEmoteByGlobalIdentifier(globalIdentifier);
 
             if (emote != null) {
-                toFill.setBttvId(emote.getBttvId());
                 toFill.setName(emote.getName());
                 toFill.setImageType(emote.getImageType());
+                toFill.setBttvId(emote.getBttvId());
             }
         });
     }
@@ -167,7 +167,7 @@ public class EmoteProvider {
 
             try (OutputStream outputStream = urlConnection.getOutputStream(); Writer writer = new OutputStreamWriter(outputStream)) {
                 JsonObject jsonObject = new JsonObject();
-                jsonObject.addProperty("emoteId", bttvId);
+                jsonObject.addProperty("bttvId", bttvId);
 
                 Constants.GSON.toJson(jsonObject, writer);
             }

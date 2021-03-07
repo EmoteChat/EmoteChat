@@ -131,7 +131,7 @@ public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, Modul
                     return null;
                 })
                 .filter(Objects::nonNull)
-                .mapToInt(emote -> (emote.getGlobalId().toString().length() - emote.getName().length()) + 6)
+                .mapToInt(emote -> emote.getGlobalId().toString().length() - emote.getName().length())
                 .sum();
 
         int maxLength = this.minecraftTextFieldLength - additionalEmoteChars;
