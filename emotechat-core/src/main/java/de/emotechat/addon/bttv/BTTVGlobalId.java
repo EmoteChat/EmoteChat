@@ -23,10 +23,18 @@ public class BTTVGlobalId implements Serializable {
         }
 
         int splitter = -1;
+        boolean foundLower = false;
 
         char[] chars = rawId.toCharArray();
         for (int i = 0; i < chars.length; i++) {
+            if (Character.isLowerCase(chars[i])) {
+                foundLower = true;
+            }
+
             if (Character.isUpperCase(chars[i]) && splitter == -1) {
+                if (!foundLower) {
+                    return null;
+                }
                 splitter = i;
             }
 
