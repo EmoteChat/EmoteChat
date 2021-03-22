@@ -1,6 +1,5 @@
 package de.emotechat.addon.bttv;
 
-
 import java.io.Serializable;
 import java.util.Objects;
 

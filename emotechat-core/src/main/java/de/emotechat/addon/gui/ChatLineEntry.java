@@ -1,7 +1,7 @@
 package de.emotechat.addon.gui;
 
-import de.emotechat.addon.Constants;
 import de.emotechat.addon.bttv.BTTVGlobalId;
+import de.emotechat.addon.bttv.LegacyBTTVGlobalId;
 import net.minecraft.client.gui.FontRenderer;
 
 import java.util.Arrays;
@@ -60,6 +60,9 @@ public class ChatLineEntry {
         return Arrays.stream(line.split(" ")).map(word -> {
             String strippedWord = STRIP_COLOR_PATTERN.matcher(word).replaceAll("");
             BTTVGlobalId emoteId = BTTVGlobalId.parse(idSplitter, strippedWord);
+            if (emoteId == null) {
+                emoteId = LegacyBTTVGlobalId.parseLegacy(strippedWord);
+            }
 
             String colors = FontRenderer.getFormatFromString(currentLine.toString());
             currentLine.append(word);

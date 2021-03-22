@@ -35,6 +35,7 @@ public class EmoteProvider {
 
     private static final String ID_SPLITTER_ROUTE = "emote/globalIds/splitter";
     private static final String GLOBAL_IDS_ROUTE = "emote/globalIds/provide";
+    private static final String LEGACY_EMOTE_INFO_ROUTE = "emotes/emote/%s";
     private static final String EMOTE_INFO_ROUTE = "emote/get/%s";
     private static final String EMOTE_ADD_ROUTE = "emote/add";
 
@@ -82,7 +83,8 @@ public class EmoteProvider {
             HttpURLConnection urlConnection = this.createRequest(this.backendServerURL + GLOBAL_IDS_ROUTE);
             urlConnection.setRequestMethod("POST");
 
-            try (OutputStream outputStream = urlConnection.getOutputStream(); Writer writer = new OutputStreamWriter(outputStream)) {
+            try (OutputStream outputStream = urlConnection.getOutputStream();
+                 Writer writer = new OutputStreamWriter(outputStream)) {
                 JsonArray array = new JsonArray();
 
                 for (BTTVEmote emote : emotes) {
@@ -181,6 +183,27 @@ public class EmoteProvider {
 
     public ServerEmote retrieveEmoteByGlobalIdentifier(BTTVGlobalId globalIdentifier) {
         try {
+            if (globalIdentifier instanceof LegacyBTTVGlobalId) {
+                HttpURLConnection urlConnection = this.createRequest(
+                        this.backendServerURL + String.format(LEGACY_EMOTE_INFO_ROUTE, ((LegacyBTTVGlobalId) globalIdentifier).getName() + "+" + ((LegacyBTTVGlobalId) globalIdentifier).getBttvId()));
+                urlConnection.connect();
+
+                if (urlConnection.getResponseCode() != 200) {
+                    urlConnection.disconnect();
+                    return null;
+                }
+
+                try (InputStream inputStream = urlConnection.getInputStream(); Reader reader = new InputStreamReader(inputStream)) {
+                    JsonObject object = Constants.GSON.fromJson(reader, JsonObject.class);
+                    return new ServerEmote(
+                            globalIdentifier,
+                            object.get("id").getAsString(),
+                            object.get("code").getAsString(),
+                            object.get("imageType").getAsString()
+                    );
+                }
+            }
+
             HttpURLConnection urlConnection = this.createRequest(
                     this.backendServerURL + String.format(EMOTE_INFO_ROUTE, globalIdentifier.toString("")));
             urlConnection.connect();
