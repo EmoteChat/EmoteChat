@@ -123,7 +123,7 @@ public class EmoteChatRenderer {
     }
 
     public boolean addChatLine(String message, boolean secondChat, String room, Object component, int updateCounter, int chatLineId, Integer highlightColor, boolean refresh) {
-        Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(message);
+        Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(this.addon.getEmoteProvider().getIdSplitter(), message);
         if (entries.stream().noneMatch(ChatLineEntry::isEmote)) {
             return true;
         }

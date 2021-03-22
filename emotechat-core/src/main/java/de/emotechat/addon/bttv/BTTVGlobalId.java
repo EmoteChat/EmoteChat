@@ -17,7 +17,37 @@ public class BTTVGlobalId implements Serializable {
         this.emoteId = emoteId;
     }
 
-    public static BTTVGlobalId parse(String rawId) {
+    private boolean isValid() {
+        if (this.emoteName.isEmpty() || this.emoteId.isEmpty()) {
+            return false;
+        }
+
+        for (char c : this.emoteName.toCharArray()) {
+            if (!Character.isLowerCase(c)) {
+                return false;
+            }
+        }
+
+        for (char c : this.emoteId.toCharArray()) {
+            if (!Character.isUpperCase(c)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static BTTVGlobalId parse(String idSplitter, String rawId) {
+        if (!idSplitter.isEmpty()) {
+            int index = rawId.lastIndexOf(idSplitter);
+            if (index == -1) {
+                return null;
+            }
+
+            BTTVGlobalId id = new BTTVGlobalId(rawId.substring(0, index), rawId.substring(index + 1));
+            return id.isValid() ? id : null;
+        }
+
         if (rawId.isEmpty()) {
             return null;
         }
@@ -66,9 +96,8 @@ public class BTTVGlobalId implements Serializable {
         this.emoteId = emoteId;
     }
 
-    @Override
-    public String toString() {
-        return this.emoteName + this.emoteId;
+    public String toString(String idSplitter) {
+        return this.emoteName + idSplitter + this.emoteId;
     }
 
     @Override

@@ -10,6 +10,7 @@ import net.labymod.addon.AddonLoader;
 import net.labymod.addon.online.AddonInfoManager;
 import net.labymod.addon.online.info.AddonInfo;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,13 +20,21 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 public class EmoteProvider {
 
-    private static final String GLOBAL_IDS_ROUTE = "emote/globalIds";
+    private static final ScheduledExecutorService SERVICE = Executors.newScheduledThreadPool(1);
+
+    private static final String ID_SPLITTER_ROUTE = "emote/globalIds/splitter";
+    private static final String GLOBAL_IDS_ROUTE = "emote/globalIds/provide";
     private static final String EMOTE_INFO_ROUTE = "emote/get/%s";
     private static final String EMOTE_ADD_ROUTE = "emote/add";
 
@@ -37,11 +46,35 @@ public class EmoteProvider {
     private final Map<String, BTTVEmote> savedEmotes;
     private final Runnable emoteChangeListener;
 
+    private final ScheduledFuture<?> scheduledFuture;
+
+    private String idSplitter = "";
+
     public EmoteProvider(EmoteChatAddon addon, String backendServerURL, Map<String, BTTVEmote> savedEmotes, Runnable emoteChangeListener) {
         this.addon = addon;
         this.backendServerURL = backendServerURL + (backendServerURL.endsWith("/") ? "" : "/");
         this.savedEmotes = savedEmotes;
         this.emoteChangeListener = emoteChangeListener;
+
+        this.scheduledFuture = SERVICE.scheduleAtFixedRate(this::loadIdSplitter, 0, 2, TimeUnit.MINUTES);
+    }
+
+    private void loadIdSplitter() {
+        try {
+            HttpURLConnection urlConnection = this.createRequest(this.backendServerURL + ID_SPLITTER_ROUTE);
+
+            try (InputStream inputStream = urlConnection.getInputStream();
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+                String line = reader.readLine();
+                this.idSplitter = line != null ? line : "";
+            }
+        } catch (IOException exception) {
+            exception.printStackTrace();
+        }
+    }
+
+    public void close() {
+        this.scheduledFuture.cancel(true);
     }
 
     public boolean init(Collection<BTTVEmote> emotes) {
@@ -86,6 +119,10 @@ public class EmoteProvider {
 
     public BTTVEmote getEmoteByName(String name) {
         return this.savedEmotes.get(name.toLowerCase());
+    }
+
+    public String getIdSplitter() {
+        return this.idSplitter;
     }
 
     public boolean isEmoteSaved(BTTVEmote emote) {
@@ -145,7 +182,7 @@ public class EmoteProvider {
     public ServerEmote retrieveEmoteByGlobalIdentifier(BTTVGlobalId globalIdentifier) {
         try {
             HttpURLConnection urlConnection = this.createRequest(
-                    this.backendServerURL + String.format(EMOTE_INFO_ROUTE, globalIdentifier.toString()));
+                    this.backendServerURL + String.format(EMOTE_INFO_ROUTE, globalIdentifier.toString("")));
             urlConnection.connect();
 
             if (urlConnection.getResponseCode() != 200) {

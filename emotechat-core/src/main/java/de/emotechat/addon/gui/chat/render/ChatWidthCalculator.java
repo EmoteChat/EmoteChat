@@ -1,6 +1,7 @@
 package de.emotechat.addon.gui.chat.render;
 
 import de.emotechat.addon.Constants;
+import de.emotechat.addon.bttv.EmoteProvider;
 import de.emotechat.addon.gui.ChatLineEntry;
 import net.minecraft.client.gui.FontRenderer;
 
@@ -8,8 +9,15 @@ import java.util.Collection;
 
 public class ChatWidthCalculator {
 
+    private static EmoteProvider emoteProvider;
+
+    public static void setEmoteProvider(EmoteProvider emoteProvider) {
+        ChatWidthCalculator.emoteProvider = emoteProvider;
+    }
+
     protected static int getStringWidth(FontRenderer renderer, String text) {
-        Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(text);
+        Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(
+                emoteProvider == null ? "" : emoteProvider.getIdSplitter(), text);
         if (entries.isEmpty()) {
             return 0;
         }

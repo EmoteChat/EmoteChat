@@ -54,12 +54,12 @@ public class ChatLineEntry {
         this.loadedEmote = loadedEmote;
     }
 
-    public static Collection<ChatLineEntry> parseEntries(String line) {
+    public static Collection<ChatLineEntry> parseEntries(String idSplitter, String line) {
         StringBuilder currentLine = new StringBuilder();
 
         return Arrays.stream(line.split(" ")).map(word -> {
             String strippedWord = STRIP_COLOR_PATTERN.matcher(word).replaceAll("");
-            BTTVGlobalId emoteId = BTTVGlobalId.parse(strippedWord);
+            BTTVGlobalId emoteId = BTTVGlobalId.parse(idSplitter, strippedWord);
 
             String colors = FontRenderer.getFormatFromString(currentLine.toString());
             currentLine.append(word);

@@ -9,6 +9,7 @@ import de.emotechat.addon.bttv.BTTVSearch;
 import de.emotechat.addon.bttv.EmoteProvider;
 import de.emotechat.addon.gui.chat.UserInputHandler;
 import de.emotechat.addon.gui.chat.menu.ChatShortcut;
+import de.emotechat.addon.gui.chat.render.ChatWidthCalculator;
 import de.emotechat.addon.gui.chat.suggestion.EmoteSuggestionsMenu;
 import de.emotechat.addon.gui.element.ModifiableBooleanElement;
 import de.emotechat.addon.gui.element.PreviewedDropDownElement;
@@ -105,7 +106,13 @@ public class EmoteChatAddon extends LabyModAddon {
                 ? Constants.GSON.fromJson(super.getConfig().get("savedEmotes"), SAVED_EMOTES_TYPE_TOKEN)
                 : new HashMap<>();
 
+        if (this.emoteProvider != null) {
+            this.emoteProvider.close();
+        }
+
         this.emoteProvider = new EmoteProvider(this, backendServerURL, this.savedEmotes, this::updateEmotes);
+
+        ChatWidthCalculator.setEmoteProvider(this.emoteProvider);
 
         if (this.emoteProvider.init(this.savedEmotes.values())) {
             this.savedEmotes.values().removeIf(emote -> !emote.isComplete());
