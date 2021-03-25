@@ -8,9 +8,6 @@ public class BTTVGlobalId implements Serializable {
     private String emoteName;
     private String emoteId;
 
-    public BTTVGlobalId() {
-    }
-
     public BTTVGlobalId(String emoteName, String emoteId) {
         this.emoteName = emoteName;
         this.emoteId = emoteId;
@@ -37,6 +34,10 @@ public class BTTVGlobalId implements Serializable {
     }
 
     public static BTTVGlobalId parse(String idSplitter, String rawId) {
+        if (rawId.isEmpty()) {
+            return null;
+        }
+
         if (!idSplitter.isEmpty()) {
             int index = rawId.lastIndexOf(idSplitter);
             if (index == -1) {
@@ -47,27 +48,25 @@ public class BTTVGlobalId implements Serializable {
             return id.isValid() ? id : null;
         }
 
-        if (rawId.isEmpty()) {
-            return null;
-        }
-
         int splitter = -1;
         boolean foundLower = false;
 
         char[] chars = rawId.toCharArray();
         for (int i = 0; i < chars.length; i++) {
-            if (Character.isLowerCase(chars[i])) {
+            char currentChar = chars[i];
+
+            if (Character.isLowerCase(currentChar)) {
                 foundLower = true;
             }
 
-            if (Character.isUpperCase(chars[i]) && splitter == -1) {
+            if (Character.isUpperCase(currentChar) && splitter == -1) {
                 if (!foundLower) {
                     return null;
                 }
                 splitter = i;
             }
 
-            if (Character.isLowerCase(chars[i]) && splitter != -1) {
+            if ((Character.isLowerCase(currentChar) || !Character.isAlphabetic(currentChar)) && splitter != -1) {
                 return null;
             }
         }
@@ -108,12 +107,12 @@ public class BTTVGlobalId implements Serializable {
             return false;
         }
         BTTVGlobalId that = (BTTVGlobalId) o;
-        return Objects.equals(emoteName, that.emoteName) &&
-                Objects.equals(emoteId, that.emoteId);
+        return Objects.equals(this.emoteName, that.emoteName) &&
+                Objects.equals(this.emoteId, that.emoteId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(emoteName, emoteId);
+        return Objects.hash(this.emoteName, this.emoteId);
     }
 }

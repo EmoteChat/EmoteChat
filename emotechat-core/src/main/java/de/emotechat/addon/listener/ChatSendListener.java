@@ -25,7 +25,7 @@ public class ChatSendListener implements ChatModifier {
                 String emoteName = word.substring(1, word.length() - 1);
                 BTTVEmote emote = this.addon.getEmoteProvider().getEmoteByName(emoteName);
 
-                if (emote != null) {
+                if (emote != null && emote.getGlobalId() != null) {
                     words[i] = emote.getGlobalId().toString(this.addon.getEmoteProvider().getIdSplitter());
                 }
             }

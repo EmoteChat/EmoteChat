@@ -130,7 +130,7 @@ public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, Modul
                     }
                     return null;
                 })
-                .filter(Objects::nonNull)
+                .filter(emote -> emote != null && emote.getGlobalId() != null)
                 .mapToInt(emote -> emote.getGlobalId().toString(this.addon.getEmoteProvider().getIdSplitter()).length() - emote.getName().length())
                 .sum();
 

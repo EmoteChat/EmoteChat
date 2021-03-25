@@ -140,6 +140,10 @@ public class EmoteProvider {
             emote = this.sendEmoteToServer(emote.getBttvId());
         }
 
+        if (emote == null) {
+            return false;
+        }
+
         BTTVEmote userEmote = new BTTVEmote(emote.getGlobalId(), emote.getBttvId(), name, emote.getImageType());
 
         this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
@@ -185,7 +189,7 @@ public class EmoteProvider {
         try {
             if (globalIdentifier instanceof LegacyBTTVGlobalId) {
                 HttpURLConnection urlConnection = this.createRequest(
-                        this.backendServerURL + String.format(LEGACY_EMOTE_INFO_ROUTE, ((LegacyBTTVGlobalId) globalIdentifier).getName() + "+" + ((LegacyBTTVGlobalId) globalIdentifier).getBttvId()));
+                        this.backendServerURL + String.format(LEGACY_EMOTE_INFO_ROUTE, globalIdentifier.getEmoteName() + "+" + globalIdentifier.getEmoteId()));
                 urlConnection.connect();
 
                 if (urlConnection.getResponseCode() != 200) {
