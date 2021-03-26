@@ -89,7 +89,7 @@ public class EmoteChatRenderer {
     private int mouseX;
     private int mouseY;
 
-    private ChatLineEntry hoveredChatLineEntry;
+    private BTTVEmote hoveredEmote;
 
     public EmoteChatRenderer(EmoteChatRendererType renderer, IngameChatManager manager, EmoteChatAddon addon) {
         this.renderer = (ChatRenderer) renderer;
@@ -232,7 +232,7 @@ public class EmoteChatRenderer {
         this.mouseX = this.renderer.lastMouseX;
         this.mouseY = this.renderer.lastMouseY;
 
-        this.hoveredChatLineEntry = null;
+        this.hoveredEmote = null;
 
         List<ChatLine> chatLines = new ArrayList<>(this.renderer.getChatLines());
 
@@ -406,6 +406,14 @@ public class EmoteChatRenderer {
                 }
             }
         }
+
+        if (this.hoveredEmote != null) {
+            String hoverText = this.hoveredEmote.getName();
+            if (!this.addon.getEmoteProvider().isEmoteSaved(this.hoveredEmote)) {
+                hoverText += " (Click to add)";
+            }
+            LabyMod.getInstance().getDrawUtils().drawHoveringText(this.mouseX, this.mouseY, hoverText);
+        }
     }
 
     private void drawLine(FontRenderer font, ChatLine chatLine, float x, float y, int width, int alpha, int mouseX, int mouseY) {
@@ -444,16 +452,10 @@ public class EmoteChatRenderer {
                                 && mouseY >= y
                                 && mouseY <= (y + Constants.CHAT_EMOTE_SIZE)) {
 
-                            this.hoveredChatLineEntry = entry;
-
                             BTTVEmote emote = this.addon.getEmoteProvider().getByGlobalIdentifier(entry.getEmoteId());
 
                             if (emote.isComplete()) {
-                                String hoverText = emote.getName();
-                                if (!this.addon.getEmoteProvider().isEmoteSaved(emote)) {
-                                    hoverText += " (Click to add)";
-                                }
-                                LabyMod.getInstance().getDrawUtils().drawHoveringText(mouseX, mouseY, hoverText);
+                                this.hoveredEmote = emote;
                             }
                         }
 
@@ -533,19 +535,17 @@ public class EmoteChatRenderer {
     }
 
     public void handleClicked(GuiChat lastGuiChat) {
-        if (this.hoveredChatLineEntry != null) {
-            BTTVEmote emote = this.addon.getEmoteProvider().getByGlobalIdentifier(this.hoveredChatLineEntry.getEmoteId());
-
-            if (this.addon.getEmoteProvider().isEmoteSaved(emote)) {
+        if (this.hoveredEmote != null) {
+            if (this.addon.getEmoteProvider().isEmoteSaved(this.hoveredEmote)) {
                 return;
             }
 
             // this can't be a lambda because it causes issues with the obfuscation mappings on Forge
-            @SuppressWarnings("Convert2Lambda") GuiScreen gui = new EmoteGuiYesNo(emote, new GuiYesNoCallback() {
+            @SuppressWarnings("Convert2Lambda") GuiScreen gui = new EmoteGuiYesNo(this.hoveredEmote, new GuiYesNoCallback() {
                 @Override
                 public void confirmClicked(boolean accepted, int id) {
                     if (accepted) {
-                        addon.getEmoteProvider().addEmote(emote, emote.getName());
+                        addon.getEmoteProvider().addEmote(hoveredEmote, hoveredEmote.getName());
                         LabyMod.getInstance().displayMessageInChat("§7The emote was successfully added to your local emotes");
                     }
                     Minecraft.getMinecraft().displayGuiScreen(lastGuiChat);

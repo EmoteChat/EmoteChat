@@ -156,12 +156,8 @@ public class EmoteProvider {
         this.emoteChangeListener.run();
     }
 
-    public void cleanupCache() {
-        this.emoteCache.forEach((name, emote) -> {
-            if (emote == null || emote.getGlobalId() == null || emote.getGlobalId().getEmoteName().isEmpty() || emote.getGlobalId().getEmoteId().isEmpty()) {
-                this.emoteCache.remove(name);
-            }
-        });
+    public void clearCache() {
+        this.emoteCache.clear();
     }
 
     public BTTVEmote getByGlobalIdentifier(BTTVGlobalId id) {
