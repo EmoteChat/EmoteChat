@@ -3,7 +3,7 @@ package de.emotechat.addon;
 import com.google.gson.reflect.TypeToken;
 import de.emotechat.addon.adapter.EmoteChatAdapter;
 import de.emotechat.addon.adapter.mappings.Mappings;
-import de.emotechat.addon.asm.packet.PacketHandler;
+import de.emotechat.addon.asm.chat.sending.SendMessageHandler;
 import de.emotechat.addon.bttv.BTTVEmote;
 import de.emotechat.addon.bttv.BTTVSearch;
 import de.emotechat.addon.bttv.EmoteProvider;
@@ -71,8 +71,7 @@ public class EmoteChatAddon extends LabyModAddon {
         UserInputHandler.addKeyListener(emoteSuggestionsMenu);
         GuiChatCustom.getModuleGui().getKeyTypeListeners().add(emoteSuggestionsMenu);
 
-        PacketHandler.setChatModifier(new ChatSendListener(this));
-        PacketHandler.setEmoteChatAdapter(this.emoteChatAdapter);
+        SendMessageHandler.setChatModifier(new ChatSendListener(this));
 
         ChatShortcut.initListener(this);
     }

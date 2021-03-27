@@ -540,12 +540,14 @@ public class EmoteChatRenderer {
                 return;
             }
 
+            BTTVEmote lastHoveredEmote = this.hoveredEmote;
+
             // this can't be a lambda because it causes issues with the obfuscation mappings on Forge
-            @SuppressWarnings("Convert2Lambda") GuiScreen gui = new EmoteGuiYesNo(this.hoveredEmote, new GuiYesNoCallback() {
+            @SuppressWarnings("Convert2Lambda") GuiScreen gui = new EmoteGuiYesNo(lastHoveredEmote, new GuiYesNoCallback() {
                 @Override
                 public void confirmClicked(boolean accepted, int id) {
                     if (accepted) {
-                        addon.getEmoteProvider().addEmote(hoveredEmote, hoveredEmote.getName());
+                        addon.getEmoteProvider().addEmote(lastHoveredEmote, lastHoveredEmote.getName());
                         LabyMod.getInstance().displayMessageInChat("§7The emote was successfully added to your local emotes");
                     }
                     Minecraft.getMinecraft().displayGuiScreen(lastGuiChat);
@@ -554,5 +556,4 @@ public class EmoteChatRenderer {
             Minecraft.getMinecraft().displayGuiScreen(gui);
         }
     }
-
 }

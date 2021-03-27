@@ -1,4 +1,4 @@
-package de.emotechat.addon.asm.packet;
+package de.emotechat.addon.asm.chat.sending;
 
 public interface ChatModifier {
 

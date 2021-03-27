@@ -2,7 +2,7 @@ package de.emotechat.addon.listener;
 
 import de.emotechat.addon.Constants;
 import de.emotechat.addon.EmoteChatAddon;
-import de.emotechat.addon.asm.packet.ChatModifier;
+import de.emotechat.addon.asm.chat.sending.ChatModifier;
 import de.emotechat.addon.bttv.BTTVEmote;
 import net.labymod.core.LabyModCore;
 
