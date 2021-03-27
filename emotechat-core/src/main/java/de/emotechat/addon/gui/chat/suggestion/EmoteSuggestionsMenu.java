@@ -101,11 +101,11 @@ public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, Modul
                         .collect(Collectors.toList());
 
                 this.suggestionMenu.update(emotes);
-
                 this.lastQuery = query;
             }
         } else {
             this.suggestionMenu.clear();
+            this.lastQuery = null;
         }
     }
 
@@ -150,10 +150,10 @@ public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, Modul
 
             if (words.length > currentWordIndex) {
                 String currentWord = words[currentWordIndex];
-
-                if (currentWord.length() != 0
+                if (!currentWord.isEmpty()
                         && currentWord.charAt(0) == Constants.EMOTE_WRAPPER
-                        && (currentWord.length() == 1 || currentWord.charAt(currentWord.length() - 1) != Constants.EMOTE_WRAPPER)) {
+                        && currentWord.length() > 1
+                        && currentWord.charAt(currentWord.length() - 1) != Constants.EMOTE_WRAPPER) {
                     return Optional.of(currentWord);
                 }
             }
