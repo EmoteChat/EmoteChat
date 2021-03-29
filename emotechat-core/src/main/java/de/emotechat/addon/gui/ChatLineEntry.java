@@ -47,7 +47,7 @@ public class ChatLineEntry {
     }
 
     public boolean isLoadedEmote() {
-        return loadedEmote;
+        return this.loadedEmote;
     }
 
     public void setLoadedEmote(boolean loadedEmote) {

@@ -21,12 +21,15 @@ import de.emotechat.addon.listener.ChatSendListener;
 import de.emotechat.addon.listener.MinecraftTickExecutor;
 import net.labymod.api.LabyModAddon;
 import net.labymod.ingamechat.GuiChatCustom;
+import net.labymod.main.LabyMod;
 import net.labymod.settings.elements.BooleanElement;
 import net.labymod.settings.elements.ControlElement;
 import net.labymod.settings.elements.ListContainerElement;
 import net.labymod.settings.elements.SettingsElement;
 import net.labymod.settings.elements.StringElement;
 import net.labymod.utils.Material;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -57,6 +60,10 @@ public class EmoteChatAddon extends LabyModAddon {
     private Map<String, BTTVEmote> savedEmotes = new HashMap<>();
 
     private final Collection<EmoteListContainerElement> emoteLists = new ArrayList<>();
+
+    private GuiButton addGuiButton;
+
+    private long emoteErrorRenderStart;
 
     @Override
     public void onEnable() {
@@ -110,12 +117,8 @@ public class EmoteChatAddon extends LabyModAddon {
         }
 
         this.emoteProvider = new EmoteProvider(this, backendServerURL, this.savedEmotes, this::updateEmotes);
-
+        this.emoteProvider.retrieveEmotesFromServer(this.savedEmotes.values());
         ChatWidthCalculator.setEmoteProvider(this.emoteProvider);
-
-        if (this.emoteProvider.init(this.savedEmotes.values())) {
-            this.savedEmotes.values().removeIf(emote -> !emote.isComplete());
-        }
 
         super.saveConfig();
     }
@@ -152,6 +155,27 @@ public class EmoteChatAddon extends LabyModAddon {
         this.emoteLists.add(emoteList);
     }
 
+    @Override
+    public void onRenderPreview(int mouseX, int mouseY, float partialTicks) {
+        if (this.emoteErrorRenderStart == -1) {
+            return;
+        }
+
+        String secondLine = "It might be banned or you are sending too many requests.";
+
+        LabyMod.getInstance().getDrawUtils().drawHoveringText(
+                (Minecraft.getMinecraft().currentScreen.width / 2)
+                        - (LabyMod.getInstance().getDrawUtils().getStringWidth(secondLine) / 2)
+                        - 5,
+                this.emoteChatAdapter.getButtonY(this.addGuiButton) + 35,
+                "Error while adding the emote!",
+                secondLine);
+
+        if ((System.currentTimeMillis() - this.emoteErrorRenderStart) > 3000) {
+            this.emoteErrorRenderStart = -1;
+        }
+    }
+
     private ListContainerElement createEmoteAddMenu() {
         ListContainerElement emoteAddMenu = new ListContainerElement("Add emote", new ControlElement.IconData(Material.NETHER_STAR));
         EmoteDropDownMenu searchResultList = new EmoteDropDownMenu(false, "Results");
@@ -174,7 +198,6 @@ public class EmoteChatAddon extends LabyModAddon {
         AtomicReference<String> emoteNameReference = new AtomicReference<>("");
 
         ButtonElement emoteAddButton = new ButtonElement("Save emote") {
-
             @Override
             public void draw(int x, int y, int maxX, int maxY, int mouseX, int mouseY) {
                 super.draw(x, y, maxX, maxY, mouseX, mouseY);
@@ -182,19 +205,22 @@ public class EmoteChatAddon extends LabyModAddon {
                 String emoteName = emoteNameReference.get();
                 super.setEnabled(!(searchResultList.getSelected() == null || emoteName.isEmpty() || emoteName.contains(" ")));
             }
-
         };
         emoteAddButton.setEnabled(false);
         emoteAddButton.setClickListener(() -> {
             String emoteName = emoteNameReference.get();
             BTTVEmote selectedEmote = searchResultList.getSelected();
 
-            if (!this.getEmoteProvider().addEmote(selectedEmote, emoteName)) {
-                return;
-            }
-
-            emoteAddButton.setText("Override");
+            this.getEmoteProvider().addEmote(selectedEmote, emoteName, success -> {
+                if (success) {
+                    emoteAddButton.setText("Override");
+                } else {
+                    this.emoteErrorRenderStart = System.currentTimeMillis();
+                }
+            });
         });
+
+        this.addGuiButton = emoteAddButton.getGuiButton();
 
         StringElement emoteNameInput = new StringElement("Set emote name", new ControlElement.IconData(Material.PAPER), "", emoteName -> {
             emoteAddButton.setText(this.savedEmotes.containsKey(emoteName.toLowerCase()) ? "Override" : "Save emote");

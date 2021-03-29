@@ -9,6 +9,7 @@ import de.emotechat.addon.EmoteChatAddon;
 import net.labymod.addon.AddonLoader;
 import net.labymod.addon.online.AddonInfoManager;
 import net.labymod.addon.online.info.AddonInfo;
+import net.minecraft.client.Minecraft;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,12 +23,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class EmoteProvider {
 
@@ -37,6 +40,7 @@ public class EmoteProvider {
     private static final String GLOBAL_IDS_ROUTE = "emote/globalIds/provide";
     private static final String LEGACY_EMOTE_INFO_ROUTE = "emotes/emote/%s";
     private static final String EMOTE_INFO_ROUTE = "emote/get/%s";
+    private static final String EMOTE_REPORT_ROUTE = "emote/report/%s";
     private static final String EMOTE_ADD_ROUTE = "emote/add";
 
     private final EmoteChatAddon addon;
@@ -78,7 +82,7 @@ public class EmoteProvider {
         this.scheduledFuture.cancel(true);
     }
 
-    public boolean init(Collection<BTTVEmote> emotes) {
+    public void retrieveEmotesFromServer(Collection<BTTVEmote> emotes) {
         try {
             HttpURLConnection urlConnection = this.createRequest(this.backendServerURL + GLOBAL_IDS_ROUTE);
             urlConnection.setRequestMethod("POST");
@@ -99,24 +103,29 @@ public class EmoteProvider {
 
             try (InputStream inputStream = urlConnection.getInputStream(); Reader reader = new InputStreamReader(inputStream)) {
                 ServerEmote[] result = Constants.GSON.fromJson(reader, ServerEmote[].class);
-                for (ServerEmote emote : result) {
-                    for (BTTVEmote presentEmote : emotes) {
-                        if (presentEmote.getBttvId() == null || !presentEmote.getBttvId().equals(emote.getBttvId())) {
-                            continue;
-                        }
 
-                        presentEmote.setGlobalId(emote.getGlobalId());
-                        presentEmote.setImageType(emote.getImageType());
-                    }
+                Map<String, ServerEmote> serverEmotes = new HashMap<>();
+                for (ServerEmote serverEmote : result) {
+                    serverEmotes.put(serverEmote.getBttvId(), serverEmote);
                 }
+
+                emotes.removeIf(presentEmote -> {
+                    ServerEmote serverEmote = serverEmotes.get(presentEmote.getBttvId());
+
+                    if (serverEmote == null || presentEmote.getName() == null) {
+                        return true;
+                    }
+
+                    presentEmote.setGlobalId(serverEmote.getGlobalId());
+                    presentEmote.setImageType(serverEmote.getImageType());
+                    return false;
+                });
             }
 
-            return urlConnection.getResponseCode() == 200;
+            urlConnection.getResponseCode();
         } catch (IOException exception) {
             exception.printStackTrace();
         }
-
-        return false;
     }
 
     public BTTVEmote getEmoteByName(String name) {
@@ -128,27 +137,55 @@ public class EmoteProvider {
     }
 
     public boolean isEmoteSaved(BTTVEmote emote) {
-        return this.savedEmotes.values().stream().anyMatch(saved -> saved.getGlobalId().equals(emote.getGlobalId()));
+        return this.savedEmotes.values().stream()
+                .anyMatch(saved -> saved.getGlobalId() != null && saved.getGlobalId().equals(emote.getGlobalId()));
     }
 
-    public boolean addEmote(BTTVEmote emote, String name) {
+    public void addEmote(final BTTVEmote emote, String name, Consumer<Boolean> successConsumer) {
         if (emote == null || name.isEmpty() || name.contains(" ")) {
-            return false;
+            successConsumer.accept(false);
+            return;
         }
 
-        if (!this.isEmoteSaved(emote)) {
-            emote = this.sendEmoteToServer(emote.getBttvId());
+        if (this.isEmoteSaved(emote)) {
+            successConsumer.accept(true);
+            return;
         }
 
-        if (emote == null) {
-            return false;
-        }
+        Constants.EXECUTOR_SERVICE.execute(() -> {
+            BTTVEmote newEmote = this.sendEmoteToServer(emote.getBttvId());
 
-        BTTVEmote userEmote = new BTTVEmote(emote.getGlobalId(), emote.getBttvId(), name, emote.getImageType());
+            Minecraft.getMinecraft().addScheduledTask(() -> {
+                if (newEmote == null) {
+                    successConsumer.accept(false);
+                    return;
+                }
 
-        this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
-        this.emoteChangeListener.run();
-        return true;
+                BTTVEmote userEmote = new BTTVEmote(newEmote.getGlobalId(), newEmote.getBttvId(), name, newEmote.getImageType());
+
+                this.savedEmotes.put(userEmote.getName().toLowerCase(), userEmote);
+                this.emoteChangeListener.run();
+
+                successConsumer.accept(true);
+            });
+        });
+    }
+
+    public void reportEmote(BTTVEmote emote, Consumer<Boolean> successCallback) {
+        Constants.EXECUTOR_SERVICE.execute(() -> {
+            try {
+                HttpURLConnection urlConnection = this.createRequest(
+                        this.backendServerURL + String.format(EMOTE_REPORT_ROUTE, emote.getBttvId()));
+                urlConnection.connect();
+
+                successCallback.accept(urlConnection.getResponseCode() == 200);
+
+                urlConnection.disconnect();
+            } catch (IOException exception) {
+                exception.printStackTrace();
+                successCallback.accept(false);
+            }
+        });
     }
 
     public void removeEmote(BTTVEmote emote) {
@@ -239,7 +276,7 @@ public class EmoteProvider {
 
             try (InputStream inputStream = urlConnection.getInputStream(); Reader reader = new InputStreamReader(inputStream)) {
                 ServerEmote serverEmote = Constants.GSON.fromJson(reader, ServerEmote.class);
-                emote = new BTTVEmote(serverEmote.getGlobalId(), serverEmote.getBttvId(), serverEmote.getName(), serverEmote.getImageType());
+                emote = serverEmote.toBTTVEmote();
             }
 
             urlConnection.disconnect();

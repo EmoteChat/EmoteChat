@@ -19,7 +19,7 @@ public class BTTVGlobalId implements Serializable {
         }
 
         for (char c : this.emoteName.toCharArray()) {
-            if (!Character.isLowerCase(c)) {
+            if (Character.isAlphabetic(c) && !Character.isLowerCase(c)) {
                 return false;
             }
         }

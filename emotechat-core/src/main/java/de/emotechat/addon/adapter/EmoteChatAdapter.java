@@ -1,6 +1,7 @@
 package de.emotechat.addon.adapter;
 
 
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.network.Packet;
@@ -18,4 +19,7 @@ public interface EmoteChatAdapter {
 
     String getChatPacketMessage(Packet<?> packet);
 
+    int getButtonX(GuiButton button);
+
+    int getButtonY(GuiButton button);
 }

@@ -14,8 +14,8 @@ public class EmoteGuiYesNo extends GuiYesNo {
 
     private final ControlElement.IconData iconData;
 
-    public EmoteGuiYesNo(BTTVEmote emote, GuiYesNoCallback callback, int parentButtonClickedId) {
-        super(callback, "Do you want to add " + emote.getName() + " to your list of emotes?", "", parentButtonClickedId);
+    public EmoteGuiYesNo(BTTVEmote emote, String title, String subTitle, GuiYesNoCallback callback, int parentButtonClickedId) {
+        super(callback, title, subTitle, parentButtonClickedId);
         this.iconData = emote.asIconData();
     }
 
@@ -24,10 +24,9 @@ public class EmoteGuiYesNo extends GuiYesNo {
         super.drawScreen(p_drawScreen_1_, p_drawScreen_2_, p_drawScreen_3_);
 
         int textY = TOP_OFFSET - (LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT / 2);
-        int buttonsY = super.height / 102;
 
         int x = (super.width / 2) - (Constants.SETTINGS_EMOTE_PREVIEW_SIZE / 2);
-        int y = (textY - buttonsY) + (Constants.SETTINGS_EMOTE_PREVIEW_SIZE / 2);
+        double y = textY - Constants.SETTINGS_EMOTE_PREVIEW_SIZE;
 
         super.mc.getTextureManager().bindTexture(this.iconData.getTextureIcon());
         LabyMod.getInstance().getDrawUtils().drawTexture(
@@ -40,5 +39,4 @@ public class EmoteGuiYesNo extends GuiYesNo {
                 1F
         );
     }
-
 }

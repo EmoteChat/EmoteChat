@@ -48,18 +48,16 @@ public class EmoteChatRendererMain extends ChatRendererMain implements EmoteChat
     }
 
     @Override
-    public String selectHoveredTab() {
-        this.renderer.handleClicked(this.lastGuiChat);
-        return super.selectHoveredTab();
+    public boolean renderHoveringResizeY(boolean forceRender) {
+        return this.renderer.renderHoveringResizeY(forceRender);
+    }
+
+    @Override
+    public GuiChat getLastChatGui() {
+        return this.lastGuiChat;
     }
 
     public void setLastGuiChat(GuiChat lastGuiChat) {
         this.lastGuiChat = lastGuiChat;
     }
-
-    @Override
-    public boolean renderHoveringResizeY(boolean forceRender) {
-        return this.renderer.renderHoveringResizeY(forceRender);
-    }
-
 }

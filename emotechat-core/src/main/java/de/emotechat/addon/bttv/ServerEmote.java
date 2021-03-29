@@ -17,6 +17,10 @@ public class ServerEmote {
         this.imageType = imageType;
     }
 
+    public BTTVEmote toBTTVEmote() {
+        return new BTTVEmote(this.globalId, this.bttvId, this.name, this.imageType);
+    }
+
     public BTTVGlobalId getGlobalId() {
         return this.globalId;
     }

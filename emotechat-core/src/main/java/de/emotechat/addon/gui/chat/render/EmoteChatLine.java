@@ -11,7 +11,7 @@ public class EmoteChatLine extends ChatLine {
 
     private final boolean render;
 
-    private boolean ghostLineAdded;
+    private EmoteChatLine ghostLine;
 
     public EmoteChatLine(Collection<ChatLineEntry> entries, boolean render, String message, boolean secondChat, String room, Object component, int updateCounter, int chatLineId, Integer highlightColor) {
         super(message, secondChat, room, component, updateCounter, chatLineId, highlightColor);
@@ -27,12 +27,11 @@ public class EmoteChatLine extends ChatLine {
         return this.render;
     }
 
-    public boolean isGhostLineAdded() {
-        return this.ghostLineAdded;
+    public EmoteChatLine getGhostLine() {
+        return this.ghostLine;
     }
 
-    public void setGhostLineAdded(boolean ghostLineAdded) {
-        this.ghostLineAdded = ghostLineAdded;
+    public void setGhostLine(EmoteChatLine ghostLine) {
+        this.ghostLine = ghostLine;
     }
-
 }

@@ -3,6 +3,7 @@ package de.emotechat.addon.adapter.v18;
 
 import de.emotechat.addon.adapter.EmoteChatAdapter;
 import net.labymod.core_implementation.mc18.gui.GuiChatAdapter;
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.network.Packet;
@@ -36,4 +37,13 @@ public class V18EmoteChatAdapter implements EmoteChatAdapter {
         return packet instanceof C01PacketChatMessage ? ((C01PacketChatMessage) packet).getMessage() : null;
     }
 
+    @Override
+    public int getButtonX(GuiButton button) {
+        return button.xPosition;
+    }
+
+    @Override
+    public int getButtonY(GuiButton button) {
+        return button.yPosition;
+    }
 }

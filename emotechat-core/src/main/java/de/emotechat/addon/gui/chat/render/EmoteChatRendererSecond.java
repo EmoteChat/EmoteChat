@@ -53,13 +53,11 @@ public class EmoteChatRendererSecond extends ChatRendererSecond implements Emote
     }
 
     @Override
-    public String selectHoveredTab() {
-        this.renderer.handleClicked(this.lastGuiChat);
-        return super.selectHoveredTab();
+    public GuiChat getLastChatGui() {
+        return this.lastGuiChat;
     }
 
     public void setLastGuiChat(GuiChat lastGuiChat) {
         this.lastGuiChat = lastGuiChat;
     }
-
 }
