@@ -167,7 +167,7 @@ public class EmoteChatAddon extends LabyModAddon {
                 (Minecraft.getMinecraft().currentScreen.width / 2)
                         - (LabyMod.getInstance().getDrawUtils().getStringWidth(secondLine) / 2)
                         - 5,
-                this.emoteChatAdapter.getButtonY(this.addGuiButton) + 35,
+                this.emoteChatAdapter.getButtonY(this.addGuiButton) + 40,
                 "Error while adding the emote!",
                 secondLine);
 

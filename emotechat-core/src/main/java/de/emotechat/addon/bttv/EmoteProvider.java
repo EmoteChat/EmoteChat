@@ -138,7 +138,7 @@ public class EmoteProvider {
 
     public boolean isEmoteSaved(BTTVEmote emote) {
         return this.savedEmotes.values().stream()
-                .anyMatch(saved -> saved.getGlobalId() != null && saved.getGlobalId().equals(emote.getGlobalId()));
+                .anyMatch(saved -> saved.getBttvId().equals(emote.getBttvId()));
     }
 
     public void addEmote(final BTTVEmote emote, String name, Consumer<Boolean> successConsumer) {
