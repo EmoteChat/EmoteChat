@@ -123,7 +123,7 @@ public class GuiChatEmoteMenu extends GuiChatCustom {
 
                 LabyMod.getInstance().getDrawUtils().drawTexture(
                         this.width - 98 + row * EMOTE_SIZE,
-                        (int) ((double) (this.height - 152 + column * EMOTE_SIZE) + this.scrollbar.getScrollY()),
+                        this.height - 152 + column * EMOTE_SIZE + this.scrollbar.getScrollY(),
                         256,
                         256,
                         EMOTE_SIZE - 1,
@@ -220,7 +220,7 @@ public class GuiChatEmoteMenu extends GuiChatCustom {
 
     private boolean isEmoteHovered(int mouseX, int mouseY, int row, int column) {
         int emoteX = this.width - 98 + row * EMOTE_SIZE;
-        int emoteY = (int) ((double) (this.height - 152 + column * EMOTE_SIZE) + this.scrollbar.getScrollY());
+        double emoteY = this.height - 152 + column * EMOTE_SIZE + this.scrollbar.getScrollY();
 
         return mouseX > emoteX
                 && mouseX < emoteX + EMOTE_SIZE

@@ -18,7 +18,11 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, ModuleGui.KeyConsumer, UserInputHandler.MouseClickListener {
@@ -43,6 +47,9 @@ public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, Modul
 
     @Override
     public boolean keyTyped(char charTyped, int keyCode) {
+        if (!this.addon.isEnabled()) {
+            return false;
+        }
         if (this.suggestionMenu.getEmoteList().size() > 0) {
             switch (keyCode) {
                 case 1:
@@ -77,6 +84,9 @@ public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, Modul
 
     @Override
     public void accept(char charTyped, int keyCode) {
+        if (!this.addon.isEnabled()) {
+            return;
+        }
         Optional<String> currentWordOptional = this.getCurrentEmoteWord();
 
         if (currentWordOptional.isPresent()) {
@@ -91,11 +101,11 @@ public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, Modul
                         .collect(Collectors.toList());
 
                 this.suggestionMenu.update(emotes);
-
                 this.lastQuery = query;
             }
         } else {
             this.suggestionMenu.clear();
+            this.lastQuery = null;
         }
     }
 
@@ -120,8 +130,8 @@ public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, Modul
                     }
                     return null;
                 })
-                .filter(Objects::nonNull)
-                .mapToInt(emote -> (emote.getOriginalName().length() - emote.getName().length()) + 6)
+                .filter(emote -> emote != null && emote.getGlobalId() != null)
+                .mapToInt(emote -> emote.getGlobalId().toString(this.addon.getEmoteProvider().getIdSplitter()).length() - emote.getName().length())
                 .sum();
 
         int maxLength = this.minecraftTextFieldLength - additionalEmoteChars;
@@ -140,10 +150,10 @@ public class EmoteSuggestionsMenu implements UserInputHandler.KeyListener, Modul
 
             if (words.length > currentWordIndex) {
                 String currentWord = words[currentWordIndex];
-
-                if (currentWord.length() != 0
+                if (!currentWord.isEmpty()
                         && currentWord.charAt(0) == Constants.EMOTE_WRAPPER
-                        && (currentWord.length() == 1 || currentWord.charAt(currentWord.length() - 1) != Constants.EMOTE_WRAPPER)) {
+                        && currentWord.length() > 1
+                        && currentWord.charAt(currentWord.length() - 1) != Constants.EMOTE_WRAPPER) {
                     return Optional.of(currentWord);
                 }
             }

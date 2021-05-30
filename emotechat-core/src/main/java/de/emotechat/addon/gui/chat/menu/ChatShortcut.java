@@ -69,8 +69,13 @@ public class ChatShortcut {
         TEXT_INPUT_FIELD = textInputField;
     }
 
-    public static boolean shouldInitialize(GuiChatCustom chat) throws IllegalAccessException {
-        if (BUTTON_CLASS == null || BUTTONS_FIELD == null || DISPLAY_NAME_FIELD == null || BUTTON_ID_FIELD == null || BUTTON_CONSTRUCTOR == null) {
+    public static boolean shouldInitialize(EmoteChatAddon addon, GuiChatCustom chat) throws IllegalAccessException {
+        if (!addon.isEnabled()
+                || BUTTON_CLASS == null
+                || BUTTONS_FIELD == null
+                || DISPLAY_NAME_FIELD == null
+                || BUTTON_ID_FIELD == null
+                || BUTTON_CONSTRUCTOR == null) {
             return false;
         }
 

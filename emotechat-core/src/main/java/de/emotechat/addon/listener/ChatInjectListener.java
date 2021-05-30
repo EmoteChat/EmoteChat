@@ -88,7 +88,7 @@ public class ChatInjectListener {
         if (Minecraft.getMinecraft().currentScreen instanceof GuiChatCustom) {
             GuiChatCustom customChat = (GuiChatCustom) Minecraft.getMinecraft().currentScreen;
             try {
-                if (ChatShortcut.shouldInitialize(customChat)) {
+                if (ChatShortcut.shouldInitialize(this.addon, customChat)) {
                     ChatShortcut.init(customChat);
                 }
             } catch (IllegalAccessException | InvocationTargetException | InstantiationException exception) {

@@ -44,6 +44,10 @@ public class ButtonElement extends ControlElement {
         this.enabled = enabled;
     }
 
+    public GuiButton getGuiButton() {
+        return this.button;
+    }
+
     @Override
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         super.mouseClicked(mouseX, mouseY, mouseButton);

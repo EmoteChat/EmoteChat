@@ -1,6 +1,7 @@
 package de.emotechat.addon.gui;
 
-import de.emotechat.addon.Constants;
+import de.emotechat.addon.bttv.BTTVGlobalId;
+import de.emotechat.addon.bttv.LegacyBTTVGlobalId;
 import net.minecraft.client.gui.FontRenderer;
 
 import java.util.Arrays;
@@ -12,22 +13,20 @@ public class ChatLineEntry {
 
     private static final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)§[0-9A-FK-OR]");
 
-    private static final Pattern EMOTE_PATTERN = Pattern.compile(Constants.EMOTE_WRAPPER + "[A-Za-z0-9:]+\\+[A-Za-z0-9]{5}" + Constants.EMOTE_WRAPPER);
-
     private final boolean emote;
 
     private final String content;
 
-    private final String rawContent;
+    private final BTTVGlobalId emoteId;
 
     private final String colors;
 
     private boolean loadedEmote = false;
 
-    public ChatLineEntry(boolean emote, String content, String rawContent, String colors) {
-        this.emote = emote;
+    public ChatLineEntry(BTTVGlobalId emoteId, String content, String colors) {
+        this.emote = emoteId != null;
+        this.emoteId = emoteId;
         this.content = content;
-        this.rawContent = rawContent;
         this.colors = colors;
     }
 
@@ -39,8 +38,8 @@ public class ChatLineEntry {
         return this.content;
     }
 
-    public String getRawContent() {
-        return rawContent;
+    public BTTVGlobalId getEmoteId() {
+        return this.emoteId;
     }
 
     public String getColors() {
@@ -48,24 +47,27 @@ public class ChatLineEntry {
     }
 
     public boolean isLoadedEmote() {
-        return loadedEmote;
+        return this.loadedEmote;
     }
 
     public void setLoadedEmote(boolean loadedEmote) {
         this.loadedEmote = loadedEmote;
     }
 
-    public static Collection<ChatLineEntry> parseEntries(String line) {
+    public static Collection<ChatLineEntry> parseEntries(String idSplitter, String line) {
         StringBuilder currentLine = new StringBuilder();
 
         return Arrays.stream(line.split(" ")).map(word -> {
             String strippedWord = STRIP_COLOR_PATTERN.matcher(word).replaceAll("");
-            boolean emote = EMOTE_PATTERN.matcher(strippedWord).matches();
+            BTTVGlobalId emoteId = BTTVGlobalId.parse(idSplitter, strippedWord);
+            if (emoteId == null) {
+                emoteId = LegacyBTTVGlobalId.parseLegacy(strippedWord);
+            }
 
             String colors = FontRenderer.getFormatFromString(currentLine.toString());
             currentLine.append(word);
 
-            return new ChatLineEntry(emote, (emote ? strippedWord.substring(1, strippedWord.length() - 1) : word), word, colors);
+            return new ChatLineEntry(emoteId, word, colors);
         }).collect(Collectors.toList());
     }
 

@@ -2,7 +2,7 @@ package de.emotechat.addon.listener;
 
 import de.emotechat.addon.Constants;
 import de.emotechat.addon.EmoteChatAddon;
-import de.emotechat.addon.asm.packet.ChatModifier;
+import de.emotechat.addon.asm.chat.sending.ChatModifier;
 import de.emotechat.addon.bttv.BTTVEmote;
 import net.labymod.core.LabyModCore;
 
@@ -25,12 +25,8 @@ public class ChatSendListener implements ChatModifier {
                 String emoteName = word.substring(1, word.length() - 1);
                 BTTVEmote emote = this.addon.getEmoteProvider().getEmoteByName(emoteName);
 
-                if (emote != null) {
-                    String id = emote.getId();
-                    int idLength = id.length();
-
-                    String globalIdentifier = emote.getOriginalName() + "+" + id.substring(idLength - 5, idLength);
-                    words[i] = Constants.EMOTE_WRAPPER + globalIdentifier + Constants.EMOTE_WRAPPER;
+                if (emote != null && emote.getGlobalId() != null) {
+                    words[i] = emote.getGlobalId().toString(this.addon.getEmoteProvider().getIdSplitter());
                 }
             }
         }

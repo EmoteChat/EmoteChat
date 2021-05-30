@@ -3,13 +3,15 @@ package de.emotechat.addon;
 import com.google.gson.reflect.TypeToken;
 import de.emotechat.addon.adapter.EmoteChatAdapter;
 import de.emotechat.addon.adapter.mappings.Mappings;
-import de.emotechat.addon.asm.packet.PacketHandler;
+import de.emotechat.addon.asm.chat.sending.SendMessageHandler;
 import de.emotechat.addon.bttv.BTTVEmote;
 import de.emotechat.addon.bttv.BTTVSearch;
 import de.emotechat.addon.bttv.EmoteProvider;
 import de.emotechat.addon.gui.chat.UserInputHandler;
 import de.emotechat.addon.gui.chat.menu.ChatShortcut;
+import de.emotechat.addon.gui.chat.render.ChatWidthCalculator;
 import de.emotechat.addon.gui.chat.suggestion.EmoteSuggestionsMenu;
+import de.emotechat.addon.gui.element.ModifiableBooleanElement;
 import de.emotechat.addon.gui.element.PreviewedDropDownElement;
 import de.emotechat.addon.gui.element.button.ButtonElement;
 import de.emotechat.addon.gui.emote.EmoteDropDownMenu;
@@ -19,13 +21,25 @@ import de.emotechat.addon.listener.ChatSendListener;
 import de.emotechat.addon.listener.MinecraftTickExecutor;
 import net.labymod.api.LabyModAddon;
 import net.labymod.ingamechat.GuiChatCustom;
-import net.labymod.settings.elements.*;
+import net.labymod.main.LabyMod;
+import net.labymod.settings.elements.BooleanElement;
+import net.labymod.settings.elements.ControlElement;
+import net.labymod.settings.elements.ListContainerElement;
+import net.labymod.settings.elements.SettingsElement;
+import net.labymod.settings.elements.StringElement;
 import net.labymod.utils.Material;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class EmoteChatAddon extends LabyModAddon {
@@ -47,6 +61,10 @@ public class EmoteChatAddon extends LabyModAddon {
 
     private final Collection<EmoteListContainerElement> emoteLists = new ArrayList<>();
 
+    private GuiButton addGuiButton;
+
+    private long emoteErrorRenderStart;
+
     @Override
     public void onEnable() {
         this.loadEmoteChatAdapter();
@@ -60,8 +78,7 @@ public class EmoteChatAddon extends LabyModAddon {
         UserInputHandler.addKeyListener(emoteSuggestionsMenu);
         GuiChatCustom.getModuleGui().getKeyTypeListeners().add(emoteSuggestionsMenu);
 
-        PacketHandler.setChatModifier(new ChatSendListener(this));
-        PacketHandler.setEmoteChatAdapter(this.emoteChatAdapter);
+        SendMessageHandler.setChatModifier(new ChatSendListener(this));
 
         ChatShortcut.initListener(this);
     }
@@ -95,9 +112,13 @@ public class EmoteChatAddon extends LabyModAddon {
                 ? Constants.GSON.fromJson(super.getConfig().get("savedEmotes"), SAVED_EMOTES_TYPE_TOKEN)
                 : new HashMap<>();
 
-        this.savedEmotes.values().removeIf(emote -> !emote.isComplete());
+        if (this.emoteProvider != null) {
+            this.emoteProvider.close();
+        }
 
-        this.emoteProvider = new EmoteProvider(backendServerURL, this.savedEmotes, this::updateEmotes);
+        this.emoteProvider = new EmoteProvider(this, backendServerURL, this.savedEmotes, this::updateEmotes);
+        this.emoteProvider.retrieveEmotesFromServer(this.savedEmotes.values());
+        ChatWidthCalculator.setEmoteProvider(this.emoteProvider);
 
         super.saveConfig();
     }
@@ -113,10 +134,10 @@ public class EmoteChatAddon extends LabyModAddon {
 
     @Override
     protected void fillSettings(List<SettingsElement> list) {
-        BooleanElement toggleEnabledElement = new BooleanElement(
+        BooleanElement toggleEnabledElement = new ModifiableBooleanElement(
                 "Enabled", this,
                 new ControlElement.IconData(Material.REDSTONE_COMPARATOR), "enabled",
-                true
+                () -> this.enabled
         );
         toggleEnabledElement.addCallback(enabled -> this.enabled = enabled);
         list.add(toggleEnabledElement);
@@ -124,14 +145,35 @@ public class EmoteChatAddon extends LabyModAddon {
         EmoteListContainerElement emoteList = new EmoteListContainerElement("Saved emotes", new ControlElement.IconData(Material.CHEST), this);
         emoteList.update(this.savedEmotes);
 
-        ButtonElement cleanupButton = new ButtonElement("Cleanup emote cache");
-        cleanupButton.setClickListener(() -> this.emoteProvider.cleanupCache());
+        ButtonElement cleanupButton = new ButtonElement("Clear emote cache");
+        cleanupButton.setClickListener(this.emoteProvider::clearCache);
 
         list.add(emoteList);
         list.add(this.createEmoteAddMenu());
         list.add(cleanupButton);
 
         this.emoteLists.add(emoteList);
+    }
+
+    @Override
+    public void onRenderPreview(int mouseX, int mouseY, float partialTicks) {
+        if (this.emoteErrorRenderStart == -1) {
+            return;
+        }
+
+        String secondLine = "It might be banned or you are sending too many requests.";
+
+        LabyMod.getInstance().getDrawUtils().drawHoveringText(
+                (Minecraft.getMinecraft().currentScreen.width / 2)
+                        - (LabyMod.getInstance().getDrawUtils().getStringWidth(secondLine) / 2)
+                        - 5,
+                this.emoteChatAdapter.getButtonY(this.addGuiButton) + 40,
+                "Error while adding the emote!",
+                secondLine);
+
+        if ((System.currentTimeMillis() - this.emoteErrorRenderStart) > 3000) {
+            this.emoteErrorRenderStart = -1;
+        }
     }
 
     private ListContainerElement createEmoteAddMenu() {
@@ -156,7 +198,6 @@ public class EmoteChatAddon extends LabyModAddon {
         AtomicReference<String> emoteNameReference = new AtomicReference<>("");
 
         ButtonElement emoteAddButton = new ButtonElement("Save emote") {
-
             @Override
             public void draw(int x, int y, int maxX, int maxY, int mouseX, int mouseY) {
                 super.draw(x, y, maxX, maxY, mouseX, mouseY);
@@ -164,19 +205,22 @@ public class EmoteChatAddon extends LabyModAddon {
                 String emoteName = emoteNameReference.get();
                 super.setEnabled(!(searchResultList.getSelected() == null || emoteName.isEmpty() || emoteName.contains(" ")));
             }
-
         };
         emoteAddButton.setEnabled(false);
         emoteAddButton.setClickListener(() -> {
             String emoteName = emoteNameReference.get();
             BTTVEmote selectedEmote = searchResultList.getSelected();
 
-            if (!this.getEmoteProvider().addEmote(selectedEmote, emoteName)) {
-                return;
-            }
-
-            emoteAddButton.setText("Override");
+            this.getEmoteProvider().addEmote(selectedEmote, emoteName, success -> {
+                if (success) {
+                    emoteAddButton.setText("Override");
+                } else {
+                    this.emoteErrorRenderStart = System.currentTimeMillis();
+                }
+            });
         });
+
+        this.addGuiButton = emoteAddButton.getGuiButton();
 
         StringElement emoteNameInput = new StringElement("Set emote name", new ControlElement.IconData(Material.PAPER), "", emoteName -> {
             emoteAddButton.setText(this.savedEmotes.containsKey(emoteName.toLowerCase()) ? "Override" : "Save emote");
@@ -204,6 +248,10 @@ public class EmoteChatAddon extends LabyModAddon {
         return this.enabled;
     }
 
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     public EmoteProvider getEmoteProvider() {
         return emoteProvider;
     }
@@ -215,5 +263,4 @@ public class EmoteChatAddon extends LabyModAddon {
     public Map<String, BTTVEmote> getSavedEmotes() {
         return savedEmotes;
     }
-
 }

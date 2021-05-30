@@ -2,9 +2,9 @@ package de.emotechat.addon.gui.chat.render;
 
 import de.emotechat.addon.Constants;
 import de.emotechat.addon.EmoteChatAddon;
-import de.emotechat.addon.MathHelper;
 import de.emotechat.addon.bttv.BTTVEmote;
 import de.emotechat.addon.gui.ChatLineEntry;
+import de.emotechat.addon.gui.chat.UserInputHandler;
 import de.emotechat.addon.gui.emote.EmoteGuiYesNo;
 import net.labymod.core.LabyModCore;
 import net.labymod.ingamechat.IngameChatManager;
@@ -16,11 +16,12 @@ import net.labymod.utils.DrawUtils;
 import net.labymod.utils.ModColor;
 import net.labymod.utils.texture.ThreadDownloadTextureImage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.*;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiYesNoCallback;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.input.Mouse;
 
 import java.awt.*;
 import java.lang.reflect.Field;
@@ -28,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class EmoteChatRenderer {
+public class EmoteChatRenderer implements UserInputHandler.MouseClickListener {
 
     private static final Field SCROLL_POS_FIELD;
     protected static final Field ANIMATION_SHIFT_FIELD;
@@ -88,11 +89,15 @@ public class EmoteChatRenderer {
     private int mouseX;
     private int mouseY;
 
+    private BTTVEmote hoveredEmote;
+
     public EmoteChatRenderer(EmoteChatRendererType renderer, IngameChatManager manager, EmoteChatAddon addon) {
         this.renderer = (ChatRenderer) renderer;
         this.type = renderer;
         this.manager = manager;
         this.addon = addon;
+
+        UserInputHandler.addMouseListener(this);
     }
 
     public void renderChat(int updateCounter) {
@@ -119,7 +124,7 @@ public class EmoteChatRenderer {
     }
 
     public boolean addChatLine(String message, boolean secondChat, String room, Object component, int updateCounter, int chatLineId, Integer highlightColor, boolean refresh) {
-        Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(message);
+        Collection<ChatLineEntry> entries = ChatLineEntry.parseEntries(this.addon.getEmoteProvider().getIdSplitter(), message);
         if (entries.stream().noneMatch(ChatLineEntry::isEmote)) {
             return true;
         }
@@ -229,6 +234,8 @@ public class EmoteChatRenderer {
         this.mouseX = this.renderer.lastMouseX;
         this.mouseY = this.renderer.lastMouseY;
 
+        this.hoveredEmote = null;
+
         List<ChatLine> chatLines = new ArrayList<>(this.renderer.getChatLines());
 
         if (chatLines.size() == 0 || !this.renderer.isVisible()) {
@@ -267,6 +274,9 @@ public class EmoteChatRenderer {
         if (!this.renderer.isChatOpen()) {
             SCROLL_POS_FIELD.setInt(this.renderer, 0);
         }
+
+        int mouseX = (int) ((this.mouseX - posX) / scale);
+        int mouseY = (int) ((this.mouseY - posY) / scale);
 
         int pos = -this.renderer.getScrollPos();
 
@@ -322,7 +332,7 @@ public class EmoteChatRenderer {
             int x = 0;
             int y = (pos - 1) * -9;
 
-            this.drawLine(LabyModCore.getMinecraft().getFontRenderer(), chatline, x, y, width, alpha);
+            this.drawLine(LabyModCore.getMinecraft().getFontRenderer(), chatline, x, y, width, alpha, mouseX, mouseY);
 
             LAST_RENDERED_LINES_COUNT_FIELD.setInt(this.renderer, visibleMessages);
         }
@@ -364,7 +374,7 @@ public class EmoteChatRenderer {
 
         IngameChatManager ingameChatManager = IngameChatManager.INSTANCE;
 
-        if ((LabyMod.getSettings()).chatFilter && TAB_MENU_FIELD.getBoolean(this.renderer) && ingameChatManager.getVisibleRooms().size() > 1) {
+        if (LabyMod.getSettings().chatFilter && TAB_MENU_FIELD.getBoolean(this.renderer) && ingameChatManager.getVisibleRooms().size() > 1) {
             HOVERING_ROOM_FIELD.set(this.renderer, null);
             double roomX = chatOpen ? 2.0D : 1.0D;
             double roomY = chatOpen ? (draw.getHeight() - 27) : (draw.getHeight() - 9);
@@ -388,7 +398,7 @@ public class EmoteChatRenderer {
                 double roomWidth = draw.getStringWidth(string) * 0.7D + 2.0D;
                 double roomHeight = 8.0D;
                 boolean hover = ((this.mouseX - 2) >= roomX && (this.mouseX - 2) < roomX + roomWidth && posY - this.mouseY < 0.0D && posY - this.mouseY > -roomHeight);
-                if (!(LabyMod.getSettings()).fastChat) {
+                if (!LabyMod.getSettings().fastChat) {
                     draw.drawRect(roomX, roomY - (double) (selected ? 1 : -1), roomX + roomWidth, roomY + roomHeight, notificationColor);
                 }
                 draw.drawString(ModColor.cl(hover ? "e" : (selected ? "f" : "7")) + string, roomX + 1.0D, roomY + 2.0D, 0.7D);
@@ -399,24 +409,23 @@ public class EmoteChatRenderer {
             }
         }
 
-        ChatLineEntry hovered = this.getHoveredEmote();
-        if (hovered != null) {
-            BTTVEmote emote = this.addon.getEmoteProvider().getByGlobalIdentifier(hovered.getContent());
+        if (this.hoveredEmote != null) {
+            StringBuilder hoverText = new StringBuilder(this.hoveredEmote.getName());
 
-            if (emote.isComplete()) {
-                String hoverText = emote.getName();
-                if (!this.addon.getEmoteProvider().isEmoteSaved(emote)) {
-                    hoverText += " (Click to add)";
-                }
-                LabyMod.getInstance().getDrawUtils().drawHoveringText(this.mouseX, this.mouseY, hoverText);
+            hoverText.append(" (");
+            if (!this.addon.getEmoteProvider().isEmoteSaved(this.hoveredEmote)) {
+                hoverText.append("Click to add | ");
             }
+            hoverText.append("Right-click to report)");
+
+            LabyMod.getInstance().getDrawUtils().drawHoveringText(this.mouseX, this.mouseY, hoverText.toString());
         }
     }
 
-    private void drawLine(FontRenderer font, ChatLine chatLine, float x, float y, int width, int alpha) {
+    private void drawLine(FontRenderer font, ChatLine chatLine, float x, float y, int width, int alpha, int mouseX, int mouseY) {
         int rgb = 16777215 + (alpha << 24);
 
-        if (!(LabyMod.getSettings()).fastChat || chatLine.getHighlightColor() != null) {
+        if (!LabyMod.getSettings().fastChat || chatLine.getHighlightColor() != null) {
             DrawUtils.drawRect(
                     (int) x,
                     (int) y - Constants.LINE_HEIGHT,
@@ -441,14 +450,26 @@ public class EmoteChatRenderer {
 
                 for (ChatLineEntry entry : emoteChatLine.getEntries()) {
                     if (entry.isEmote() && !entry.getContent().contains(" ")
-                            && this.drawImage(this.addon.getEmoteProvider().getByGlobalIdentifier(entry.getContent()), x, y, alpha)) {
+                            && this.drawImage(this.addon.getEmoteProvider().getByGlobalIdentifier(entry.getEmoteId()), x, y, alpha)) {
+
+                        if (this.renderer.isChatOpen()
+                                && mouseX >= x
+                                && mouseX <= (x + Constants.CHAT_EMOTE_SIZE)
+                                && mouseY >= y
+                                && mouseY <= (y + Constants.CHAT_EMOTE_SIZE)) {
+
+                            BTTVEmote emote = this.addon.getEmoteProvider().getByGlobalIdentifier(entry.getEmoteId());
+
+                            if (emote.isComplete()) {
+                                this.hoveredEmote = emote;
+                            }
+                        }
 
                         if (!entry.isLoadedEmote()) {
                             entry.setLoadedEmote(true);
 
-                            if (!emoteChatLine.isGhostLineAdded()) {
-                                int currentLineIndex = this.renderer.getChatLines().indexOf(emoteChatLine);
-                                this.renderer.getChatLines().add(currentLineIndex, new EmoteChatLine(
+                            if (emoteChatLine.getGhostLine() == null) {
+                                EmoteChatLine ghostLine = new EmoteChatLine(
                                         emoteChatLine.getEntries(),
                                         false,
                                         emoteChatLine.getMessage(),
@@ -458,15 +479,25 @@ public class EmoteChatRenderer {
                                         emoteChatLine.getUpdateCounter(),
                                         emoteChatLine.getChatLineId(),
                                         emoteChatLine.getHighlightColor()
-                                ));
+                                );
 
-                                emoteChatLine.setGhostLineAdded(true);
+                                int currentLineIndex = this.renderer.getChatLines().indexOf(emoteChatLine);
+                                this.renderer.getChatLines().add(currentLineIndex, ghostLine);
+
+                                emoteChatLine.setGhostLine(ghostLine);
                             }
                         }
 
                         x += Constants.CHAT_EMOTE_SIZE;
                     } else {
-                        String content = entry.getColors() + entry.getRawContent();
+                        entry.setLoadedEmote(false);
+
+                        if (emoteChatLine.getEntries().stream().noneMatch(ChatLineEntry::isLoadedEmote)) {
+                            this.renderer.getChatLines().remove(emoteChatLine.getGhostLine());
+                            emoteChatLine.setGhostLine(null);
+                        }
+
+                        String content = entry.getColors() + entry.getContent();
                         this.drawLineComponent(content, x, textY, rgb);
                         x += font.getStringWidth(content);
                     }
@@ -518,85 +549,59 @@ public class EmoteChatRenderer {
         return true;
     }
 
-    public ChatLineEntry getHoveredEmote() {
-        ScaledResolution scaledResolution = LabyMod.getInstance().getDrawUtils().getScaledResolution();
-        int scaleFactor = scaledResolution.getScaleFactor();
-        float chatScale = this.renderer.getChatScale();
+    @Override
+    public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+        if (this.hoveredEmote != null) {
+            BTTVEmote lastHoveredEmote = this.hoveredEmote;
 
-        int mouseX = Mouse.getX() / scaleFactor - 3;
-        int mouseY = Mouse.getY() / scaleFactor - 27;
-
-        mouseX = MathHelper.floor((float) mouseX / chatScale);
-        mouseY = MathHelper.floor((float) mouseY / chatScale);
-
-        return this.getHoveredEmote(mouseX, mouseY);
-    }
-
-    public ChatLineEntry getHoveredEmote(int mouseX, int mouseY) {
-        if (!this.renderer.isChatOpen()) {
-            return null;
-        }
-
-        if (mouseX >= 0 && mouseY >= 0) {
-            int lineCount = Math.min(this.renderer.getLineCount(), this.renderer.getChatLines().size());
-
-            if (mouseX <= MathHelper.floor(this.renderer.getChatWidth() / this.renderer.getChatScale()) && mouseY < LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT * lineCount + lineCount) {
-                int pos = mouseY / LabyModCore.getMinecraft().getFontRenderer().FONT_HEIGHT + this.renderer.getScrollPos();
-
-                if (pos >= 0 && pos < this.renderer.getChatLines().size()) {
-                    ChatLine chatLine = this.renderer.getChatLines().get(pos);
-
-                    if (!(chatLine instanceof EmoteChatLine)) {
-                        return null;
-                    }
-
-                    int currentX = 0;
-
-                    Collection<ChatLineEntry> entries = ((EmoteChatLine) chatLine).getEntries();
-
-                    for (ChatLineEntry entry : entries) {
-                        if (!entry.isLoadedEmote()) {
-                            currentX += LabyModCore.getMinecraft().getFontRenderer().getStringWidth(entry.getRawContent()) + SPACE_LENGTH;
-                            continue;
-                        }
-
-                        currentX += Constants.CHAT_EMOTE_SIZE;
-
-                        if (mouseX >= currentX - Constants.CHAT_EMOTE_SIZE && mouseX <= currentX) {
-                            return entry;
-                        }
-
-                        currentX += SPACE_LENGTH;
-                    }
+            if (mouseButton == 0) {
+                if (this.addon.getEmoteProvider().isEmoteSaved(this.hoveredEmote)) {
+                    return;
                 }
+
+                // this can't be a lambda because it causes issues with the obfuscation mappings on Forge
+                @SuppressWarnings("Convert2Lambda")
+                GuiScreen guiScreen = new EmoteGuiYesNo(
+                        lastHoveredEmote,
+                        "Do you want to add " + lastHoveredEmote.getName() + " to your list of emotes?",
+                        "",
+                        new GuiYesNoCallback() {
+                            @Override
+                            public void confirmClicked(boolean accepted, int id) {
+                                if (accepted) {
+                                    addon.getEmoteProvider().addEmote(lastHoveredEmote, lastHoveredEmote.getName(), successful ->
+                                            LabyMod.getInstance().displayMessageInChat(successful
+                                                    ? "§7The emote was successfully added to your local emotes."
+                                                    : "§cError while adding the emote! It might be banned or you are sending too many requests."));
+                                }
+                                Minecraft.getMinecraft().displayGuiScreen(type.getLastChatGui());
+                            }
+                        },
+                        0);
+                Minecraft.getMinecraft().displayGuiScreen(guiScreen);
+            } else if (mouseButton == 1) {
+                // this can't be a lambda because it causes issues with the obfuscation mappings on Forge
+                @SuppressWarnings("Convert2Lambda")
+                GuiScreen guiScreen = new EmoteGuiYesNo(
+                        lastHoveredEmote,
+                        "Do you want to report " + lastHoveredEmote.getName() + "?",
+                        "This should only be done if either the image or name of the emote is inappropriate.",
+                        new GuiYesNoCallback() {
+                            @Override
+                            public void confirmClicked(boolean accepted, int id) {
+                                if (accepted) {
+                                    addon.getEmoteProvider().reportEmote(lastHoveredEmote, success ->
+                                            Minecraft.getMinecraft().addScheduledTask(() ->
+                                                    LabyMod.getInstance().displayMessageInChat(success
+                                                            ? "§7The emote was successfully reported."
+                                                            : "§cError while reporting the emote! If you just reported an emote, please wait a few minutes before reporting again.")));
+                                }
+                                Minecraft.getMinecraft().displayGuiScreen(type.getLastChatGui());
+                            }
+                        },
+                        0);
+                Minecraft.getMinecraft().displayGuiScreen(guiScreen);
             }
         }
-
-        return null;
     }
-
-    public void handleClicked(GuiChat lastGuiChat) {
-        ChatLineEntry entry = this.getHoveredEmote();
-        if (entry != null) {
-            BTTVEmote emote = this.addon.getEmoteProvider().getByGlobalIdentifier(entry.getContent());
-
-            if (this.addon.getEmoteProvider().isEmoteSaved(emote)) {
-                return;
-            }
-
-            // this can't be a lambda because it causes issues with the obfuscation mappings on Forge
-            @SuppressWarnings("Convert2Lambda") GuiScreen gui = new EmoteGuiYesNo(emote, new GuiYesNoCallback() {
-                @Override
-                public void confirmClicked(boolean accepted, int id) {
-                    if (accepted) {
-                        addon.getEmoteProvider().addEmote(emote, emote.getName());
-                        LabyMod.getInstance().displayMessageInChat("§7The emote was successfully added to your local emotes");
-                    }
-                    Minecraft.getMinecraft().displayGuiScreen(lastGuiChat);
-                }
-            }, 0);
-            Minecraft.getMinecraft().displayGuiScreen(gui);
-        }
-    }
-
 }

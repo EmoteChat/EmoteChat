@@ -40,7 +40,8 @@ public class EmoteDropDownMenu extends DropDownMenu<BTTVEmote> {
             BTTVEmote emote = (BTTVEmote) object;
 
             BTTVEmote selected = super.getSelected();
-            boolean highlight = this.highlightSelected && selected != null && selected.getId().equals(emote.getId());
+            boolean highlight = this.highlightSelected && selected != null && selected.getGlobalId() != null
+                    && emote.getGlobalId() != null && selected.getGlobalId().equals(emote.getGlobalId());
 
             Minecraft.getMinecraft().getTextureManager().bindTexture(emote.asIconData().getTextureIcon());
 
