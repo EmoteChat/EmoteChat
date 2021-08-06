@@ -13,6 +13,7 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -172,9 +173,12 @@ public class AnimatedIconData extends DynamicIconData {
         }
     }
 
-    private void thumbnail(URL url) throws Throwable {
+    private void thumbnail(URL url) {
         this.resourceLocations = new ResourceLocation[1];
-        this.images = new BufferedImage[]{ImageIO.read(url)};
+        try {
+            this.images = new BufferedImage[]{ImageIO.read(url)};
+        } catch (IOException ignored) {
+        }
     }
 
     @Override
